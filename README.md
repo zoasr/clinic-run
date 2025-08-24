@@ -1,6 +1,6 @@
 # Clinic System App
 
-A comprehensive offline clinic management system built with React, Node.js, and SQLite.
+A comprehensive offline clinic management system built with React, Bun, and SQLite(libsql).
 
 ## Features
 
@@ -17,33 +17,37 @@ A comprehensive offline clinic management system built with React, Node.js, and 
 ### Option 1: Run Executable (Recommended)
 
 1. Build the executable:
-\`\`\`bash
+
+```bash
 chmod +x scripts/build-executable.sh
 ./scripts/build-executable.sh
-\`\`\`
+```
 
 2. Run the clinic system:
-\`\`\`bash
+
+```bash
 ./clinic-system
-\`\`\`
+```
 
 ### Option 2: Development Mode
 
 1. Install dependencies:
-\`\`\`bash
-npm install
-\`\`\`
+
+```bash
+bun install
+```
 
 2. Start the server:
-\`\`\`bash
-npm run dev
-\`\`\`
+
+```bash
+bun run dev
+```
 
 ### Option 3: Docker
 
-\`\`\`bash
+```bash
 docker-compose up -d
-\`\`\`
+```
 
 ## Default Login
 
@@ -54,7 +58,7 @@ docker-compose up -d
 
 - **Deno** (recommended) or **Bun** for building executables
 - **Node.js 18+** for development
-- **SQLite** (included)
+- **SQLite(libsql)** (included)
 
 ## Build Targets
 
@@ -90,6 +94,3 @@ The system can be compiled for multiple platforms:
 ## License
 
 MIT License - See LICENSE file for details
-\`\`\`
-
-```json file="" isHidden
