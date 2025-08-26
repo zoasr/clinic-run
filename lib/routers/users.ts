@@ -10,7 +10,9 @@ const userInputSchema = z.object({
 	password: z.string(),
 	firstName: z.string(),
 	lastName: z.string(),
-	role: z.string().optional(),
+	role: z
+		.union([z.literal("staff"), z.literal("doctor"), z.literal("admin")])
+		.optional(),
 });
 
 export const usersRouter = router({
@@ -66,7 +68,7 @@ export const usersRouter = router({
 	getByRole: adminProcedure
 		.input(
 			z.object({
-				role: z.string(),
+				role: z.enum(["staff", "doctor"]),
 			})
 		)
 		.query(async ({ input, ctx }) => {
@@ -92,17 +94,30 @@ export const usersRouter = router({
 	create: adminProcedure
 		.input(userInputSchema)
 		.mutation(async ({ input }) => {
-			const newUser = await auth.api.signUpEmail({
+			const newUser = await auth.api.createUser({
 				body: {
 					name: input.firstName + " " + input.lastName,
 					email: input.email,
 					password: input.password,
-					username: input.username,
-					firstName: input.firstName,
-					lastName: input.lastName,
-					role: input.role || "staff",
+					role: input.role,
+					data: {
+						username: input.username,
+						firstName: input.firstName,
+						lastName: input.lastName,
+					},
 				},
 			});
+			// auth.api.signUpEmail({
+			// 	body: {
+			// 		name: input.firstName + " " + input.lastName,
+			// 		email: input.email,
+			// 		password: input.password,
+			// 		username: input.username,
+			// 		firstName: input.firstName,
+			// 		lastName: input.lastName,
+			// 		role: input.role,
+			// 	},
+			// });
 
 			return newUser.user;
 		}),
@@ -115,6 +130,15 @@ export const usersRouter = router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			if (input.data.role) {
+				await auth.api.setRole({
+					body: {
+						userId: input.id,
+						role: input.data.role,
+					},
+					headers: ctx.req.headers,
+				});
+			}
 			const updatedUser = await ctx.db
 				.update(authSchema.user)
 				.set({

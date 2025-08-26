@@ -1,7 +1,21 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin as adminPlugin } from "better-auth/plugins";
 import { db } from "./db/index.js";
+import { z } from "zod";
 import * as authSchema from "./db/schema/auth-schema.js";
+
+import { ac, admin, doctor, staff } from "./permissions";
+
+const rolesObj = {
+	admin,
+	doctor,
+	staff,
+} as const;
+
+export const roles = Object.keys(rolesObj) as Array<keyof typeof rolesObj>;
+export type Role = (typeof roles)[number];
+export const roleSchema = z.enum(roles);
 
 // Initialize auth with database
 export const auth = betterAuth({
@@ -50,6 +64,15 @@ export const auth = betterAuth({
 			},
 		},
 	},
+	plugins: [
+		// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation
+		adminPlugin({
+			ac,
+			defaultRole: "staff",
+			adminRoles: ["admin"],
+			roles: rolesObj,
+		}),
+	],
 });
 
 export type Session = typeof auth.$Infer.Session;

@@ -8,6 +8,13 @@
       "when": 1756064201275,
       "tag": "0000_new_terrax",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1756217206883,
+      "tag": "0001_curved_spot",
+      "breakpoints": true
     }
   ]
 }
