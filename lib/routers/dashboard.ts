@@ -6,41 +6,94 @@ import * as schema from "../db/schema/schema.js";
 export const dashboardRouter = router({
 	getStats: protectedProcedure.query(async ({ ctx }) => {
 		const today = new Date().toISOString().split("T")[0];
+		const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+		const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
 		const [
 			totalPatients,
 			todayAppointments,
+			yesterdayAppointments,
 			pendingAppointments,
-			lowStockMedications,
+			allMedications,
 		] = await Promise.all([
+			// Total active patients
 			ctx.db
 				.select()
 				.from(schema.patients)
 				.where(eq(schema.patients.isActive, true)),
+
+			// Today's appointments
 			ctx.db
 				.select()
 				.from(schema.appointments)
 				.where(eq(schema.appointments.appointmentDate, today)),
+
+			// Yesterday's appointments for comparison
+			ctx.db
+				.select()
+				.from(schema.appointments)
+				.where(eq(schema.appointments.appointmentDate, yesterday)),
+
+			// Pending appointments (scheduled but not completed/cancelled)
 			ctx.db
 				.select()
 				.from(schema.appointments)
 				.where(eq(schema.appointments.status, "scheduled")),
+
+			// All active medications for stock analysis
 			ctx.db
 				.select()
 				.from(schema.medications)
 				.where(eq(schema.medications.isActive, true)),
 		]);
 
-		// Filter low stock medications
-		const lowStock = lowStockMedications.filter(
-			(med) => med.quantity <= med.minStockLevel
+		// Calculate stock levels
+		const lowStock = allMedications.filter(
+			(med) => med.quantity <= med.minStockLevel && med.quantity > 0
 		);
+		const outOfStock = allMedications.filter(
+			(med) => med.quantity === 0
+		);
+		const healthyStock = allMedications.filter(
+			(med) => med.quantity > med.minStockLevel
+		);
+
+		// Calculate appointment trends
+		const todayCount = todayAppointments.length;
+		const yesterdayCount = yesterdayAppointments.length;
+		const appointmentChange = yesterdayCount > 0
+			? ((todayCount - yesterdayCount) / yesterdayCount) * 100
+			: todayCount > 0 ? 100 : 0;
+
+		// Get upcoming appointments (next 7 days)
+		const upcomingAppointments = await ctx.db
+			.select()
+			.from(schema.appointments)
+			.where(eq(schema.appointments.status, "scheduled"));
+
+		const nextWeekAppointments = upcomingAppointments.filter(apt => {
+			const aptDate = new Date(apt.appointmentDate);
+			const todayDate = new Date(today);
+			const diffTime = aptDate.getTime() - todayDate.getTime();
+			const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+			return diffDays >= 0 && diffDays <= 7;
+		});
 
 		return {
 			totalPatients: totalPatients.length,
-			todayAppointments: todayAppointments.length,
+			todayAppointments: todayCount,
+			yesterdayAppointments: yesterdayCount,
+			appointmentChange: Math.round(appointmentChange),
 			pendingAppointments: pendingAppointments.length,
+			upcomingAppointments: nextWeekAppointments.length,
 			lowStockMedications: lowStock.length,
+			outOfStockMedications: outOfStock.length,
+			totalMedications: allMedications.length,
+			stockLevels: {
+				healthy: healthyStock.length,
+				low: lowStock.length,
+				out: outOfStock.length,
+			},
 		};
 	}),
 

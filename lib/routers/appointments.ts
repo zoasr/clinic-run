@@ -3,39 +3,9 @@ import { router, protectedProcedure } from "../trpc.js";
 import { eq, and, asc, desc } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
+import { createInsertSchema } from "drizzle-zod";
 
-const appointmentInputSchema = z.object({
-	patientId: z
-		.number({ message: "Patient is required" })
-		.int("Patient must be an integer")
-		.positive("Patient must be a valid id"),
-	doctorId: z
-		.string({ message: "Doctor is required" })
-		.trim()
-		.min(1, "Doctor is required"),
-	appointmentDate: z
-		.string({ message: "Date is required" })
-		.trim()
-		.regex(/^\d{4}-\d{2}-\d{2}$/u, "Date must be YYYY-MM-DD"),
-	appointmentTime: z
-		.string({ message: "Time is required" })
-		.trim()
-		.regex(/^\d{2}:\d{2}$/u, "Time must be HH:MM"),
-	duration: z
-		.number({ message: "Duration is required" })
-		.int("Duration must be an integer")
-		.min(1, "Duration must be at least 1 minute")
-		.max(480, "Duration must be 8 hours or less"),
-	type: z
-		.string({ message: "Type is required" })
-		.trim()
-		.min(1, "Type is required"),
-	status: z
-		.string({ message: "Status is required" })
-		.trim()
-		.min(1, "Status is required"),
-	notes: z.string().trim().max(2000).optional(),
-});
+const appointmentInputSchema = createInsertSchema(schema.appointments);
 
 export const appointmentsRouter = router({
 	getAll: protectedProcedure

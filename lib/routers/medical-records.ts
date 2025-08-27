@@ -3,18 +3,9 @@ import { router, protectedProcedure } from "../trpc.js";
 import { eq, and, desc } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
+import { createInsertSchema } from "drizzle-zod";
 
-const medicalRecordInputSchema = z.object({
-	patientId: z.number(),
-	doctorId: z.string(),
-	visitDate: z.string(),
-	chiefComplaint: z.string(),
-	diagnosis: z.string(),
-	treatment: z.string(),
-	prescription: z.string().optional(),
-	notes: z.string().optional(),
-	vitalSigns: z.string().optional(),
-});
+const medicalRecordInputSchema = createInsertSchema(schema.medicalRecords);
 
 export const medicalRecordsRouter = router({
 	getAll: protectedProcedure
@@ -78,6 +69,57 @@ export const medicalRecordsRouter = router({
 				.orderBy(desc(schema.medicalRecords.visitDate));
 
 			return records;
+		}),
+
+	getById: protectedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const record = await ctx.db
+				.select({
+					id: schema.medicalRecords.id,
+					patientId: schema.medicalRecords.patientId,
+					doctorId: schema.medicalRecords.doctorId,
+					appointmentId: schema.medicalRecords.appointmentId,
+					visitDate: schema.medicalRecords.visitDate,
+					chiefComplaint: schema.medicalRecords.chiefComplaint,
+					diagnosis: schema.medicalRecords.diagnosis,
+					treatment: schema.medicalRecords.treatment,
+					prescription: schema.medicalRecords.prescription,
+					notes: schema.medicalRecords.notes,
+					vitalSigns: schema.medicalRecords.vitalSigns,
+					patient: {
+						id: schema.patients.id,
+						firstName: schema.patients.firstName,
+						lastName: schema.patients.lastName,
+						patientId: schema.patients.patientId,
+					},
+					doctor: {
+						id: authSchema.user.id,
+						firstName: authSchema.user.firstName,
+						lastName: authSchema.user.lastName,
+					},
+				})
+				.from(schema.medicalRecords)
+				.leftJoin(
+					schema.patients,
+					eq(schema.medicalRecords.patientId, schema.patients.id)
+				)
+				.leftJoin(
+					authSchema.user,
+					eq(schema.medicalRecords.doctorId, authSchema.user.id)
+				)
+				.where(eq(schema.medicalRecords.id, input.id))
+				.limit(1);
+
+			if (record.length === 0) {
+				throw new Error("Medical record not found");
+			}
+
+			return record[0];
 		}),
 
 	create: protectedProcedure

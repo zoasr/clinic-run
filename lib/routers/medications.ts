@@ -2,18 +2,9 @@ import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
 import { eq, like, and, asc } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
+import { createInsertSchema } from "drizzle-zod";
 
-const medicationInputSchema = z.object({
-	name: z.string(),
-	description: z.string().optional(),
-	quantity: z.number(),
-	minStockLevel: z.number(),
-	unit: z.string(),
-	price: z.number().optional(),
-	manufacturer: z.string().optional(),
-	expiryDate: z.string().optional(),
-	category: z.string().optional(),
-});
+const medicationInputSchema = createInsertSchema(schema.medications);
 
 export const medicationsRouter = router({
 	getAll: protectedProcedure

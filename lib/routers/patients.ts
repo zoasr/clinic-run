@@ -2,20 +2,25 @@ import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
 import { eq, like, and, desc } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
+import { createInsertSchema } from "drizzle-zod";
 
-const patientInputSchema = z.object({
-	firstName: z.string(),
-	lastName: z.string(),
-	dateOfBirth: z.string(),
-	gender: z.string(),
-	phone: z.string().optional(),
-	email: z.email().optional(),
-	address: z.string().optional(),
-	emergencyContact: z.string().optional(),
-	emergencyPhone: z.string().optional(),
-	medicalHistory: z.string().optional(),
-	allergies: z.string().optional(),
-	bloodType: z.string().optional(),
+// const patientInputSchema = z.object({
+// 	firstName: z.string(),
+// 	lastName: z.string(),
+// 	dateOfBirth: z.string(),
+// 	gender: z.string(),
+// 	phone: z.string().optional(),
+// 	email: z.email().optional(),
+// 	address: z.string().optional(),
+// 	emergencyContact: z.string().optional(),
+// 	emergencyPhone: z.string().optional(),
+// 	medicalHistory: z.string().optional(),
+// 	allergies: z.string().optional(),
+// 	bloodType: z.string().optional(),
+// });
+
+const patientInputSchema = createInsertSchema(schema.patients).omit({
+	patientId: true,
 });
 
 export const patientsRouter = router({

@@ -31,6 +31,76 @@ export async function seedDatabase() {
 			console.log("Added admin user: ", newUser);
 		}
 
+		// Create sample doctors
+		const doctor1Exists = await db
+			.select()
+			.from(authSchema.user)
+			.where(eq(authSchema.user.username, "dr.smith"))
+			.limit(1);
+
+		if (doctor1Exists.length === 0) {
+			const doctor1 = await auth.api.createUser({
+				body: {
+					email: "dr.smith@clinic.local",
+					password: "doctor123",
+					name: "Dr. John Smith",
+					role: "doctor",
+					data: {
+						firstName: "John",
+						lastName: "Smith",
+						username: "dr.smith",
+					},
+				},
+			});
+			console.log("Added doctor: ", doctor1);
+		}
+
+		const doctor2Exists = await db
+			.select()
+			.from(authSchema.user)
+			.where(eq(authSchema.user.username, "dr.jones"))
+			.limit(1);
+
+		if (doctor2Exists.length === 0) {
+			const doctor2 = await auth.api.createUser({
+				body: {
+					email: "dr.jones@clinic.local",
+					password: "doctor123",
+					name: "Dr. Sarah Jones",
+					role: "doctor",
+					data: {
+						firstName: "Sarah",
+						lastName: "Jones",
+						username: "dr.jones",
+					},
+				},
+			});
+			console.log("Added doctor: ", doctor2);
+		}
+
+		const doctor3Exists = await db
+			.select()
+			.from(authSchema.user)
+			.where(eq(authSchema.user.username, "dr.brown"))
+			.limit(1);
+
+		if (doctor3Exists.length === 0) {
+			const doctor3 = await auth.api.createUser({
+				body: {
+					email: "dr.brown@clinic.local",
+					password: "doctor123",
+					name: "Dr. Michael Brown",
+					role: "doctor",
+					data: {
+						firstName: "Michael",
+						lastName: "Brown",
+						username: "dr.brown",
+					},
+				},
+			});
+			console.log("Added doctor: ", doctor3);
+		}
+
 		// Add sample medications
 		const medicationExists = await db
 			.select()
