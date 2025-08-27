@@ -15,17 +15,20 @@ export async function seedDatabase() {
 			.limit(1);
 
 		if (adminExists.length === 0) {
-			await auth.api.signUpEmail({
+			const newUser = await auth.api.createUser({
 				body: {
-					name: "admin",
-					email: "admin@clinic.local",
-					password: "admin123",
-					firstName: "System",
-					lastName: "Administrator",
-					username: "admin",
+					email: "admin@clinic.local", // required
+					password: "admin123", // required
+					name: "Admin User", // required
 					role: "admin",
+					data: {
+						firstName: "System",
+						lastName: "Administrator",
+						username: "admin",
+					},
 				},
 			});
+			console.log("Added admin user: ", newUser);
 		}
 
 		// Add sample medications

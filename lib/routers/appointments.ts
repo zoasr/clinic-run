@@ -26,7 +26,10 @@ const appointmentInputSchema = z.object({
 		.int("Duration must be an integer")
 		.min(1, "Duration must be at least 1 minute")
 		.max(480, "Duration must be 8 hours or less"),
-	type: z.string({ message: "Type is required" }).trim().min(1, "Type is required"),
+	type: z
+		.string({ message: "Type is required" })
+		.trim()
+		.min(1, "Type is required"),
 	status: z
 		.string({ message: "Status is required" })
 		.trim()
@@ -102,6 +105,17 @@ export const appointmentsRouter = router({
 				);
 
 			return appointments;
+		}),
+	getById: protectedProcedure
+		.input(z.object({ id: z.number() }))
+		.query(async ({ input, ctx }) => {
+			const { id } = input;
+			const appointment = await ctx.db
+				.select()
+				.from(schema.appointments)
+				.where(eq(schema.appointments.id, id))
+				.limit(1);
+			return appointment[0];
 		}),
 
 	getByPatientId: protectedProcedure
