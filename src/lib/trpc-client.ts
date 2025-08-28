@@ -2,8 +2,6 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { QueryClient } from "@tanstack/react-query";
 import type { AppRouter } from "../../lib/routers/index.js";
-import { authClient } from "./auth.js";
-import { invoices, labTests } from "lib/db/schema/schema.js";
 
 const baseURL = import.meta.env.VITE_SERVER_URL || "http://localhost:3031";
 
