@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPrescriptionsRouteImport } from './routes/_authenticated/prescriptions'
 import { Route as AuthenticatedPatientsRouteImport } from './routes/_authenticated/patients'
 import { Route as AuthenticatedMedicationsRouteImport } from './routes/_authenticated/medications'
@@ -44,6 +46,7 @@ import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_au
 import { Route as AuthenticatedDoctorsAddRouteImport } from './routes/_authenticated/doctors/add'
 import { Route as AuthenticatedAppointmentsNewRouteImport } from './routes/_authenticated/appointments.new'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments.$appointmentId'
+import { Route as AuthenticatedUsersUserIdEditRouteImport } from './routes/_authenticated/users/$userId.edit'
 import { Route as AuthenticatedPatientsEditPatientIdRouteImport } from './routes/_authenticated/patients.edit.$patientId'
 import { Route as AuthenticatedMedicationsStockMedicationIdRouteImport } from './routes/_authenticated/medications.stock.$medicationId'
 import { Route as AuthenticatedMedicalRecordsEditMedicalRecordIdRouteImport } from './routes/_authenticated/medical-records.edit.$medicalRecordId'
@@ -61,6 +64,16 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPrescriptionsRoute =
@@ -249,6 +262,12 @@ const AuthenticatedAppointmentsAppointmentIdRoute =
     path: '/$appointmentId',
     getParentRoute: () => AuthenticatedAppointmentsRoute,
   } as any)
+const AuthenticatedUsersUserIdEditRoute =
+  AuthenticatedUsersUserIdEditRouteImport.update({
+    id: '/users/$userId/edit',
+    path: '/users/$userId/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPatientsEditPatientIdRoute =
   AuthenticatedPatientsEditPatientIdRouteImport.update({
     id: '/edit/$patientId',
@@ -283,6 +302,8 @@ export interface FileRoutesByFullPath {
   '/medications': typeof AuthenticatedMedicationsRouteWithChildren
   '/patients': typeof AuthenticatedPatientsRouteWithChildren
   '/prescriptions': typeof AuthenticatedPrescriptionsRouteWithChildren
+  '/profile': typeof AuthenticatedProfileRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/appointments/new': typeof AuthenticatedAppointmentsNewRoute
@@ -313,9 +334,12 @@ export interface FileRoutesByFullPath {
   '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
+  '/users/$userId/edit': typeof AuthenticatedUsersUserIdEditRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/appointments/new': typeof AuthenticatedAppointmentsNewRoute
@@ -346,6 +370,7 @@ export interface FileRoutesByTo {
   '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
+  '/users/$userId/edit': typeof AuthenticatedUsersUserIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -358,6 +383,8 @@ export interface FileRoutesById {
   '/_authenticated/medications': typeof AuthenticatedMedicationsRouteWithChildren
   '/_authenticated/patients': typeof AuthenticatedPatientsRouteWithChildren
   '/_authenticated/prescriptions': typeof AuthenticatedPrescriptionsRouteWithChildren
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/_authenticated/appointments/new': typeof AuthenticatedAppointmentsNewRoute
@@ -388,6 +415,7 @@ export interface FileRoutesById {
   '/_authenticated/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/_authenticated/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/_authenticated/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
+  '/_authenticated/users/$userId/edit': typeof AuthenticatedUsersUserIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -400,6 +428,8 @@ export interface FileRouteTypes {
     | '/medications'
     | '/patients'
     | '/prescriptions'
+    | '/profile'
+    | '/settings'
     | '/'
     | '/appointments/$appointmentId'
     | '/appointments/new'
@@ -430,9 +460,12 @@ export interface FileRouteTypes {
     | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
     | '/patients/edit/$patientId'
+    | '/users/$userId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/profile'
+    | '/settings'
     | '/'
     | '/appointments/$appointmentId'
     | '/appointments/new'
@@ -463,6 +496,7 @@ export interface FileRouteTypes {
     | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
     | '/patients/edit/$patientId'
+    | '/users/$userId/edit'
   id:
     | '__root__'
     | '/_authenticated'
@@ -474,6 +508,8 @@ export interface FileRouteTypes {
     | '/_authenticated/medications'
     | '/_authenticated/patients'
     | '/_authenticated/prescriptions'
+    | '/_authenticated/profile'
+    | '/_authenticated/settings'
     | '/_authenticated/'
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/appointments/new'
@@ -504,6 +540,7 @@ export interface FileRouteTypes {
     | '/_authenticated/medical-records/edit/$medicalRecordId'
     | '/_authenticated/medications/stock/$medicationId'
     | '/_authenticated/patients/edit/$patientId'
+    | '/_authenticated/users/$userId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -532,6 +569,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/prescriptions': {
@@ -758,6 +809,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
       parentRoute: typeof AuthenticatedAppointmentsRoute
     }
+    '/_authenticated/users/$userId/edit': {
+      id: '/_authenticated/users/$userId/edit'
+      path: '/users/$userId/edit'
+      fullPath: '/users/$userId/edit'
+      preLoaderRoute: typeof AuthenticatedUsersUserIdEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/patients/edit/$patientId': {
       id: '/_authenticated/patients/edit/$patientId'
       path: '/edit/$patientId'
@@ -937,11 +995,14 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMedicationsRoute: typeof AuthenticatedMedicationsRouteWithChildren
   AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRouteWithChildren
   AuthenticatedPrescriptionsRoute: typeof AuthenticatedPrescriptionsRouteWithChildren
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedDoctorsAddRoute: typeof AuthenticatedDoctorsAddRoute
   AuthenticatedUsersAddRoute: typeof AuthenticatedUsersAddRoute
   AuthenticatedDoctorsIndexRoute: typeof AuthenticatedDoctorsIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedUsersUserIdEditRoute: typeof AuthenticatedUsersUserIdEditRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -953,11 +1014,14 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMedicationsRoute: AuthenticatedMedicationsRouteWithChildren,
   AuthenticatedPatientsRoute: AuthenticatedPatientsRouteWithChildren,
   AuthenticatedPrescriptionsRoute: AuthenticatedPrescriptionsRouteWithChildren,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedDoctorsAddRoute: AuthenticatedDoctorsAddRoute,
   AuthenticatedUsersAddRoute: AuthenticatedUsersAddRoute,
   AuthenticatedDoctorsIndexRoute: AuthenticatedDoctorsIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedUsersUserIdEditRoute: AuthenticatedUsersUserIdEditRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
