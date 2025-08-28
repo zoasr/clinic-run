@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, desc, like } from "drizzle-orm";
+import { eq, and, desc, like, or } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -27,7 +27,11 @@ export const invoicesRouter = router({
 
 			if (search) {
 				whereConditions.push(
-					like(schema.invoices.invoiceNumber, `%${search}%`)
+					or(
+						like(schema.invoices.invoiceNumber, `%${search}%`),
+						like(schema.patients.firstName, `%${search}%`),
+						like(schema.patients.lastName, `%${search}%`)
+					)
 				);
 			}
 			if (status) {
