@@ -1,8 +1,6 @@
-import type React from "react";
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm, Field } from "@tanstack/react-form";
+import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -219,7 +217,13 @@ export function AppointmentForm({
 				</div>
 			</div>
 
-			<form onSubmit={form.handleSubmit} className="space-y-6">
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					form.handleSubmit();
+				}}
+				className="space-y-6"
+			>
 				{/* Patient Selection */}
 				<Card>
 					<CardHeader>
