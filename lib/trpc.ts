@@ -44,11 +44,6 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 		});
 	}
 
-	console.log("Session validated successfully in middleware:", {
-		userId: ctx.session.user.id,
-		email: ctx.session.user.email,
-	});
-
 	return next({
 		ctx: {
 			...ctx,
