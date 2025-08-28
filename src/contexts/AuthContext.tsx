@@ -1,6 +1,5 @@
-"use client";
-
-import { authClient } from "@/lib/auth";
+import { authClient, User, type Session } from "@/lib/auth";
+import { redirect } from "@tanstack/react-router";
 import type React from "react";
 import {
 	createContext,
@@ -10,98 +9,100 @@ import {
 	type ReactNode,
 } from "react";
 
-type User = Awaited<ReturnType<typeof authClient.signIn.email>>;
-
-interface AuthContextType {
+export interface AuthContextType {
+	isAuthenticated: boolean;
 	user: User | null;
-	token: string | null;
+	session: Session | null;
 	login: (username: string, password: string) => Promise<boolean>;
 	logout: () => void;
-	isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+	const [user, setUser] = useState<User | null>(null);
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+
+	// Restore auth state on app load
+	useEffect(() => {
+		const token = localStorage.getItem("auth-token");
+		if (token) {
+			// Validate token with your API
+			const initAuth = async () => {
+				try {
+					const response = await authClient.getSession();
+					console.log(response);
+
+					// Better-Auth wraps the session in a data property
+					if (response?.data?.user) {
+						setUser(response.data.user);
+						setIsAuthenticated(true);
+					} else {
+						setUser(null);
+					}
+				} catch (error) {
+					console.error("Failed to get session:", error);
+					setUser(null);
+				} finally {
+					setIsLoading(false);
+				}
+			};
+			initAuth();
+		} else {
+			setIsLoading(false);
+		}
+	}, []);
+
+	// Show loading state while checking auth
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				Loading...
+			</div>
+		);
+	}
+
+	const login = async (username: string, password: string) => {
+		// Replace with your authentication logic
+		const response = await authClient.signIn.email({
+			email: username,
+			password,
+		});
+		console.log(response);
+		if (response.error) {
+			console.error("Login error:", response.error);
+			return false;
+		}
+		if (response.data.user) {
+			//  @ts-ignore
+			setUser(response.data.user);
+			setIsAuthenticated(true);
+			// Store token for persistence
+			localStorage.setItem("auth-token", response.data.token);
+			redirect({ to: "/" });
+		}
+		return true;
+	};
+
+	const logout = async () => {
+		setUser(null);
+		setIsAuthenticated(false);
+		localStorage.removeItem("auth-token");
+		await authClient.signOut();
+	};
+
+	return (
+		<AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+			{children}
+		</AuthContext.Provider>
+	);
+}
+
+export function useAuth() {
 	const context = useContext(AuthContext);
 	if (context === undefined) {
 		throw new Error("useAuth must be used within an AuthProvider");
 	}
 	return context;
-};
-
-interface AuthProviderProps {
-	children: ReactNode;
 }
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-	const [user, setUser] = useState<User | null>(null);
-	const [token, setToken] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-
-	useEffect(() => {
-		const storedToken = localStorage.getItem("clinic_token");
-		const storedUser = localStorage.getItem("clinic_user");
-
-		if (storedToken && storedUser) {
-			setToken(storedToken);
-			setUser(JSON.parse(storedUser));
-		}
-		setIsLoading(false);
-	}, []);
-
-	const login = async (
-		username: string,
-		password: string
-	): Promise<boolean> => {
-		try {
-			const { data } = await authClient.signIn.email({
-				email: username,
-				password,
-			});
-
-			if (data && data.user) {
-				// Transform the user object to match our expected User type
-				const userData = {
-					...data.user,
-					// Provide default values for required fields if they don't exist
-					username: data.user.email || data.user.email.split("@")[0],
-					firstName: data.user.name?.split(" ")[0] || "",
-					lastName:
-						data.user.name?.split(" ").slice(1).join(" ") || "",
-					role: "user",
-					isActive: true,
-				};
-
-				setUser(userData);
-				setToken(data.token);
-				localStorage.setItem("clinic_token", data.token);
-				localStorage.setItem("clinic_user", JSON.stringify(userData));
-				return true;
-			}
-			return false;
-		} catch (error) {
-			console.error("Login error:", error);
-			return false;
-		}
-	};
-
-	const logout = () => {
-		setUser(null);
-		setToken(null);
-		localStorage.removeItem("clinic_token");
-		localStorage.removeItem("clinic_user");
-	};
-
-	const value = {
-		user,
-		token,
-		login,
-		logout,
-		isLoading,
-	};
-
-	return (
-		<AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-	);
-};

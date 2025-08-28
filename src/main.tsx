@@ -1,24 +1,48 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
-import { RouterProvider, createRouter } from "@tanstack/react-router"
-import { routeTree } from "./routeTree.gen"
-import { AuthProvider } from "./contexts/AuthContext"
-import "./index.css"
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
+import { AuthContextType, AuthProvider, useAuth } from "./contexts/AuthContext";
+import { TRPCProviderWrapper } from "./lib/trpc-provider";
+import "./index.css";
 
 // Create a new router instance
-const router = createRouter({ routeTree })
+const router = createRouter({
+	routeTree,
+	context: {
+		// auth will be passed down from App component
+		auth: {
+			isAuthenticated: false,
+			user: null,
+			login: async (username: string, password: string) => {
+				return false;
+			},
+			logout: () => {},
+		},
+	},
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router
-  }
+	interface Register {
+		router: typeof router;
+	}
 }
+const Router = () => {
+	const auth = useAuth();
+	return <RouterProvider router={router} context={{ auth }} />;
+};
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  </React.StrictMode>,
-)
+const MainApp = () => {
+	return (
+		<React.StrictMode>
+			<TRPCProviderWrapper>
+				<AuthProvider>
+					<Router />
+				</AuthProvider>
+			</TRPCProviderWrapper>
+		</React.StrictMode>
+	);
+};
+
+ReactDOM.createRoot(document.getElementById("root")!).render(<MainApp />);

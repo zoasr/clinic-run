@@ -1,26 +1,23 @@
-"use client";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { Toaster } from "sonner";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { AuthContextType } from "@/contexts/AuthContext";
+import NotFound from "@/components/not-found";
 
-import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-import { useAuth } from "../contexts/AuthContext";
-import Sidebar from "../components/Sidebar";
-
-export const Route = createRootRoute({
+interface MyRouterContext {
+	auth: AuthContextType;
+}
+export const Route = createRootRouteWithContext<MyRouterContext>()({
 	component: () => {
-		const { user } = useAuth();
-
-		if (!user) {
-			return <Outlet />;
-		}
-
 		return (
-			<div className="flex h-screen ">
-				<Sidebar />
-				<main className="flex-1 overflow-auto">
-					<Outlet />
-				</main>
-				<TanStackRouterDevtools />
-			</div>
+			<>
+				<Toaster position="bottom-right" />
+				<TanStackRouterDevtools position="bottom-right" />
+				<Outlet />
+			</>
 		);
+	},
+	notFoundComponent: () => {
+		return <NotFound />;
 	},
 });
