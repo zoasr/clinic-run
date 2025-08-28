@@ -173,3 +173,20 @@ export const labTests = sqliteTable("lab_tests", {
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
+
+// System settings table
+export const systemSettings = sqliteTable("system_settings", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	key: text("key").notNull().unique(),
+	value: text("value").notNull(),
+	description: text("description"),
+	category: text("category").notNull().default("general"), // general, clinic, security, notifications
+	isPublic: integer("is_public", { mode: "boolean" }).notNull().default(false),
+	updatedBy: text("updated_by").references(() => user.id),
+	createdAt: text("created_at")
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: text("updated_at")
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+});
