@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { trpc } from "@/lib/api";
+import { trpc } from "@/lib/trpc-client";
 import {
 	Search,
 	Plus,
@@ -22,9 +22,23 @@ import {
 	AlertTriangle,
 	Calendar,
 	Pill,
+	Trash2,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Medication } from "@/lib/schema-types";
+import { useDeleteMedication } from "@/hooks/useMedications";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/medications/")({
 	loader: () => ({
@@ -53,6 +67,23 @@ export function InventoryManagement() {
 			limit: 10,
 		})
 	);
+
+	// Mutation for deleting medications
+	const { mutate: deleteMedication, isPending: isDeleting } =
+		useDeleteMedication({
+			onSuccess: () => {
+				toast.success("Medication deleted successfully");
+				refetch();
+			},
+			onError: (error: Error) => {
+				console.error("Failed to delete medication:", error);
+				toast.error("Failed to delete medication");
+			},
+		});
+
+	const handleDeleteMedication = (medicationId: number) => {
+		deleteMedication({ id: medicationId });
+	};
 
 	const getStockStatus = (medication: Medication) => {
 		if (medication.quantity === 0)
@@ -512,6 +543,54 @@ export function InventoryManagement() {
 															Adjust Stock
 														</Button>
 													</Link>
+													<AlertDialog>
+														<AlertDialogTrigger
+															asChild
+														>
+															<Button
+																variant="outline"
+																size="sm"
+																className="opacity-20 group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
+																disabled={
+																	isDeleting
+																}
+															>
+																<Trash2 className="h-4 w-4" />
+															</Button>
+														</AlertDialogTrigger>
+														<AlertDialogContent>
+															<AlertDialogHeader>
+																<AlertDialogTitle>
+																	Delete
+																	Medication
+																</AlertDialogTitle>
+																<AlertDialogDescription>
+																	Are you sure
+																	you want to
+																	delete this
+																	medication?
+																	This action
+																	cannot be
+																	undone.
+																</AlertDialogDescription>
+															</AlertDialogHeader>
+															<AlertDialogFooter>
+																<AlertDialogCancel>
+																	Cancel
+																</AlertDialogCancel>
+																<AlertDialogAction
+																	onClick={() =>
+																		handleDeleteMedication(
+																			medication.id
+																		)
+																	}
+																	className="bg-red-600 hover:bg-red-700"
+																>
+																	Delete
+																</AlertDialogAction>
+															</AlertDialogFooter>
+														</AlertDialogContent>
+													</AlertDialog>
 												</div>
 											</CardContent>
 										</Card>

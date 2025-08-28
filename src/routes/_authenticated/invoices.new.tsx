@@ -9,10 +9,11 @@ export const Route = createFileRoute("/_authenticated/invoices/new")({
 });
 
 function RouteComponent() {
+	const navigate = Route.useNavigate();
 	return (
 		<InvoiceForm
-			onSave={() => window.history.back()}
-			onCancel={() => window.history.back()}
+			onSave={() => navigate({ to: "/invoices" })}
+			onCancel={() => navigate({ to: "/invoices" })}
 		/>
 	);
 }

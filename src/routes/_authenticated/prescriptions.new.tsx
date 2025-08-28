@@ -9,10 +9,11 @@ export const Route = createFileRoute("/_authenticated/prescriptions/new")({
 });
 
 function RouteComponent() {
+	const navigate = Route.useNavigate();
 	return (
 		<PrescriptionForm
-			onSave={() => window.history.back()}
-			onCancel={() => window.history.back()}
+			onSave={() => navigate({ to: "/prescriptions" })}
+			onCancel={() => navigate({ to: "/prescriptions" })}
 		/>
 	);
 }

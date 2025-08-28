@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/api";
+import { trpc } from "@/lib/trpc-client";
 import type { AppRouter } from "lib/routers";
 import type { inferRouterOutputs } from "@trpc/server";
 

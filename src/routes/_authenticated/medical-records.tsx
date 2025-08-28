@@ -29,7 +29,20 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/date-picker";
-import { Plus, Search, User, Calendar, Activity } from "lucide-react";
+import { Plus, Search, User, Calendar, Activity, Trash2 } from "lucide-react";
+import { useMedicalRecords, useDeleteMedicalRecord } from "@/hooks/useMedicalRecords";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface MedicalRecord {
 	id: string;
@@ -52,76 +65,46 @@ interface MedicalRecord {
 }
 
 function MedicalRecordsPage() {
-	const [records, setRecords] = useState<MedicalRecord[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [isLoading, setIsLoading] = useState(true);
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 	const [newRecord, setNewRecord] = useState<Partial<MedicalRecord>>({
 		vitalSigns: {},
 	});
 
-	useEffect(() => {
-		fetchRecords();
-	}, []);
+	const { data: records = [], isLoading, refetch } = useMedicalRecords({
+		search: searchTerm || undefined,
+		page: 1,
+		limit: 100,
+	});
 
-	const fetchRecords = async () => {
-		try {
-			setIsLoading(true);
-			// Mock data - replace with actual API call
-			const mockRecords: MedicalRecord[] = [
-				{
-					id: "1",
-					patientName: "John Doe",
-					patientId: "1",
-					doctorName: "Dr. Smith",
-					date: "2024-03-15",
-					diagnosis: "Hypertension",
-					treatment: "Lifestyle changes, medication",
-					prescription: "Lisinopril 10mg daily",
-					notes: "Patient shows improvement in blood pressure control",
-					vitalSigns: {
-						bloodPressure: "140/90",
-						heartRate: "72",
-						temperature: "98.6",
-						weight: "180",
-						height: "5'10\"",
-					},
-					createdAt: "2024-03-15",
-				},
-				{
-					id: "2",
-					patientName: "Jane Smith",
-					patientId: "2",
-					doctorName: "Dr. Johnson",
-					date: "2024-03-14",
-					diagnosis: "Asthma exacerbation",
-					treatment: "Inhaler therapy, follow-up in 2 weeks",
-					prescription: "Albuterol inhaler as needed",
-					notes: "Patient experiencing seasonal allergies triggering asthma",
-					vitalSigns: {
-						bloodPressure: "120/80",
-						heartRate: "85",
-						temperature: "99.1",
-						weight: "135",
-						height: "5'6\"",
-					},
-					createdAt: "2024-03-14",
-				},
-			];
-			setRecords(mockRecords);
-		} catch (error) {
-			console.error("Failed to fetch medical records:", error);
-		} finally {
-			setIsLoading(false);
-		}
+	// Mutation for deleting medical records
+	const { mutate: deleteMedicalRecord, isPending: isDeleting } = useDeleteMedicalRecord({
+		onSuccess: () => {
+			toast.success("Medical record deleted successfully");
+			refetch();
+		},
+		onError: (error: Error) => {
+			console.error("Failed to delete medical record:", error);
+			toast.error("Failed to delete medical record");
+		},
+	});
+
+	const handleDeleteMedicalRecord = (recordId: number) => {
+		deleteMedicalRecord({ id: recordId });
 	};
 
 	const filteredRecords = records.filter(
 		(record) =>
-			record.patientName
+			record.patient?.firstName
 				.toLowerCase()
 				.includes(searchTerm.toLowerCase()) ||
-			record.doctorName
+			record.patient?.lastName
+				.toLowerCase()
+				.includes(searchTerm.toLowerCase()) ||
+			record.doctor?.firstName
+				.toLowerCase()
+				.includes(searchTerm.toLowerCase()) ||
+			record.doctor?.lastName
 				.toLowerCase()
 				.includes(searchTerm.toLowerCase()) ||
 			record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
@@ -129,13 +112,8 @@ function MedicalRecordsPage() {
 
 	const handleAddRecord = async () => {
 		try {
-			const record: MedicalRecord = {
-				...newRecord,
-				id: Date.now().toString(),
-				createdAt: new Date().toISOString().split("T")[0],
-			} as MedicalRecord;
-
-			setRecords([...records, record]);
+			// TODO: Implement create medical record functionality
+			console.log("Adding medical record:", newRecord);
 			setNewRecord({ vitalSigns: {} });
 			setIsAddDialogOpen(false);
 		} catch (error) {
@@ -403,6 +381,7 @@ function MedicalRecordsPage() {
 									<TableHead>Diagnosis</TableHead>
 									<TableHead>Vital Signs</TableHead>
 									<TableHead>Treatment</TableHead>
+									<TableHead>Actions</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -411,16 +390,16 @@ function MedicalRecordsPage() {
 										<TableCell>
 											<div className="flex items-center">
 												<User className="h-4 w-4 mr-2 text-gray-400" />
-												{record.patientName}
+												{record.patient?.firstName} {record.patient?.lastName}
 											</div>
 										</TableCell>
 										<TableCell>
-											{record.doctorName}
+											Dr. {record.doctor?.firstName} {record.doctor?.lastName}
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center text-sm">
 												<Calendar className="h-3 w-3 mr-1" />
-												{record.date}
+												{record.visitDate}
 											</div>
 										</TableCell>
 										<TableCell>
@@ -432,30 +411,65 @@ function MedicalRecordsPage() {
 											<div className="space-y-1 text-xs">
 												<div className="flex items-center">
 													<Activity className="h-3 w-3 mr-1" />
-													BP:{" "}
-													{
-														record.vitalSigns
-															.bloodPressure
-													}
+													BP: {record.vitalSigns?.bloodPressure || "N/A"}
 												</div>
 												<div>
-													HR:{" "}
-													{
-														record.vitalSigns
-															.heartRate
-													}
+													HR: {record.vitalSigns?.heartRate || "N/A"}
 												</div>
 												<div>
-													Temp:{" "}
-													{
-														record.vitalSigns
-															.temperature
-													}
+													Temp: {record.vitalSigns?.temperature || "N/A"}
 												</div>
 											</div>
 										</TableCell>
 										<TableCell className="max-w-xs truncate">
 											{record.treatment}
+										</TableCell>
+										<TableCell>
+											<AlertDialog>
+												<AlertDialogTrigger asChild>
+													<Button
+														variant="outline"
+														size="sm"
+														className="text-red-600 hover:text-red-700 hover:bg-red-50"
+														disabled={isDeleting}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</AlertDialogTrigger>
+												<AlertDialogContent>
+													<AlertDialogHeader>
+														<AlertDialogTitle>
+															Delete Medical Record
+														</AlertDialogTitle>
+														<AlertDialogDescription>
+															Are you sure you want to delete this medical record? This action cannot be undone.
+															<div className="mt-2 p-3 bg-muted rounded-md">
+																<p className="font-medium">
+																	{record.diagnosis}
+																</p>
+																<p className="text-sm text-muted-foreground">
+																	for {record.patient?.firstName} {record.patient?.lastName}
+																</p>
+															</div>
+														</AlertDialogDescription>
+													</AlertDialogHeader>
+													<AlertDialogFooter>
+														<AlertDialogCancel>
+															Cancel
+														</AlertDialogCancel>
+														<AlertDialogAction
+															onClick={() =>
+																handleDeleteMedicalRecord(
+																	record.id
+																)
+															}
+															className="bg-red-600 hover:bg-red-700"
+														>
+															Delete
+														</AlertDialogAction>
+													</AlertDialogFooter>
+												</AlertDialogContent>
+											</AlertDialog>
 										</TableCell>
 									</TableRow>
 								))}

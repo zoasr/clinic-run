@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PrescriptionDetail } from "@/components/prescription-detail";
 import { usePrescription } from "@/hooks/usePrescriptions";
 
-export const Route = createFileRoute("/_authenticated/prescriptions/$prescriptionId")({
+export const Route = createFileRoute(
+	"/_authenticated/prescriptions/$prescriptionId"
+)({
 	component: RouteComponent,
 	loader: ({ params }) => ({
 		crumb: `Prescription ${params.prescriptionId}`,
@@ -11,7 +13,10 @@ export const Route = createFileRoute("/_authenticated/prescriptions/$prescriptio
 
 function RouteComponent() {
 	const { prescriptionId } = Route.useParams();
-	const { data: prescription, isLoading } = usePrescription(parseInt(prescriptionId));
+	const { data: prescription, isLoading } = usePrescription(
+		parseInt(prescriptionId)
+	);
+	const navigate = Route.useNavigate();
 
 	if (isLoading) {
 		return <div>Loading...</div>;
@@ -24,10 +29,9 @@ function RouteComponent() {
 	return (
 		<PrescriptionDetail
 			prescription={prescription}
-			onBack={() => window.history.back()}
+			onBack={() => navigate({ to: "/prescriptions" })}
 			onEdit={(prescription) => {
-				// Navigate to edit mode - you might want to implement this differently
-				window.history.back();
+				navigate({ to: "/prescriptions" });
 			}}
 		/>
 	);

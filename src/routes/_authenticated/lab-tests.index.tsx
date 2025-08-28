@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { trpc } from "@/lib/api";
+import { trpc } from "@/lib/trpc-client";
 import {
 	Search,
 	Plus,
@@ -27,6 +27,20 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { LabTest } from "@/lib/schema-types";
+import { useDeleteLabTest } from "@/hooks/useLabTests";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/lab-tests/")({
 	loader: () => ({
@@ -52,6 +66,22 @@ export function LabTestManagement() {
 			limit: 10,
 		})
 	);
+
+	// Mutation for deleting lab tests
+	const { mutate: deleteLabTest, isPending: isDeleting } = useDeleteLabTest({
+		onSuccess: () => {
+			toast.success("Lab test deleted successfully");
+			refetch();
+		},
+		onError: (error: Error) => {
+			console.error("Failed to delete lab test:", error);
+			toast.error("Failed to delete lab test");
+		},
+	});
+
+	const handleDeleteLabTest = (labTestId: number) => {
+		deleteLabTest({ id: labTestId });
+	};
 
 	const getStatusInfo = (status: string) => {
 		switch (status) {
@@ -517,6 +547,72 @@ export function LabTestManagement() {
 															Edit Test
 														</Button>
 													</Link>
+													<AlertDialog>
+														<AlertDialogTrigger
+															asChild
+														>
+															<Button
+																variant="outline"
+																size="sm"
+																className="opacity-20 group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
+																disabled={
+																	isDeleting
+																}
+															>
+																<Trash2 className="h-4 w-4" />
+															</Button>
+														</AlertDialogTrigger>
+														<AlertDialogContent>
+															<AlertDialogHeader>
+																<AlertDialogTitle>
+																	Delete Lab
+																	Test
+																</AlertDialogTitle>
+																<AlertDialogDescription>
+																	Are you sure
+																	you want to
+																	delete this
+																	lab test
+																	&quot;
+																	{
+																		labTest.testName
+																	}
+																	&quot; for{" "}
+																	{
+																		labTest
+																			.patient
+																			?.firstName
+																	}{" "}
+																	{
+																		labTest
+																			.patient
+																			?.lastName
+																	}
+																	? This
+																	action
+																	cannot be
+																	undone.
+																</AlertDialogDescription>
+															</AlertDialogHeader>
+															<AlertDialogFooter>
+																<AlertDialogCancel>
+																	Cancel
+																</AlertDialogCancel>
+																<AlertDialogAction
+																	onClick={() =>
+																		handleDeleteLabTest(
+																			labTest.id
+																		)
+																	}
+																	asChild
+																>
+																	<Button variant="destructive">
+																		Delete
+																	</Button>
+																</AlertDialogAction>
+															</AlertDialogFooter>
+														</AlertDialogContent>
+													</AlertDialog>
 												</div>
 											</CardContent>
 										</Card>

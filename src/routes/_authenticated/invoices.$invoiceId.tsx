@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
 function RouteComponent() {
 	const { invoiceId } = Route.useParams();
 	const { data: invoice, isLoading } = useInvoice(parseInt(invoiceId));
+	const navigate = Route.useNavigate();
 
 	if (isLoading) {
 		return <div>Loading...</div>;
@@ -24,11 +25,8 @@ function RouteComponent() {
 	return (
 		<InvoiceDetail
 			invoice={invoice}
-			onBack={() => window.history.back()}
-			onEdit={(invoice) => {
-				// Navigate to edit mode - you might want to implement this differently
-				window.history.back();
-			}}
+			onBack={() => navigate({ to: "/invoices" })}
+			onEdit={(invoice) => {}}
 		/>
 	);
 }
