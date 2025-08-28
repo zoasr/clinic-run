@@ -207,6 +207,14 @@ export const usersRouter = router({
 			}
 
 			// Update password in database
+			const data = await auth.api.changePassword({
+				body: {
+					newPassword: input.newPassword, // required
+					currentPassword: input.currentPassword, // required
+					revokeOtherSessions: true,
+				},
+				headers: ctx.req.headers,
+			});
 			const updatedUser = await ctx.db
 				.update(authSchema.user)
 				.set({
@@ -219,6 +227,90 @@ export const usersRouter = router({
 				throw new Error("User not found");
 			}
 
+			return { user: data.user };
+		}),
+
+	updateProfile: protectedProcedure
+		.input(
+			z.object({
+				firstName: z.string().min(1, "First name is required"),
+				lastName: z.string().min(1, "Last name is required"),
+				email: z.string().email("Invalid email address"),
+				username: z
+					.string()
+					.min(3, "Username must be at least 3 characters"),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// Users can only update their own profile, or admins can update any profile
+			const userId = ctx.user.id;
+
+			const updatedUser = await ctx.db
+				.update(authSchema.user)
+				.set({
+					firstName: input.firstName,
+					lastName: input.lastName,
+					email: input.email,
+					username: input.username,
+					name: `${input.firstName} ${input.lastName}`,
+					updatedAt: new Date(),
+				})
+				.where(eq(authSchema.user.id, userId))
+				.returning();
+
+			if (updatedUser.length === 0) {
+				throw new Error("User not found");
+			}
+
+			return updatedUser[0];
+		}),
+
+	delete: adminProcedure
+		.input(
+			z.object({
+				id: z.string(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// Prevent deleting self
+			if (input.id === ctx.user.id) {
+				throw new Error("Cannot delete your own account");
+			}
+
+			// Delete the user (this will cascade delete sessions due to foreign key)
+			const deletedUser = await ctx.db
+				.delete(authSchema.user)
+				.where(eq(authSchema.user.id, input.id))
+				.returning();
+
+			if (deletedUser.length === 0) {
+				throw new Error("User not found");
+			}
+
 			return { success: true };
 		}),
+
+	getProfile: protectedProcedure.query(async ({ ctx }) => {
+		const user = await ctx.db
+			.select({
+				id: authSchema.user.id,
+				username: authSchema.user.username,
+				email: authSchema.user.email,
+				name: authSchema.user.name,
+				firstName: authSchema.user.firstName,
+				lastName: authSchema.user.lastName,
+				role: authSchema.user.role,
+				isActive: authSchema.user.isActive,
+				createdAt: authSchema.user.createdAt,
+			})
+			.from(authSchema.user)
+			.where(eq(authSchema.user.id, ctx.user.id))
+			.limit(1);
+
+		if (user.length === 0) {
+			throw new Error("User not found");
+		}
+
+		return user[0];
+	}),
 });

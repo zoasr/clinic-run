@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
+import { useState } from "react";
 
 import {
 	Table,
@@ -11,15 +12,32 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/doctors/")({
 	loader: () => ({
 		crumb: "Doctors",
 	}),
-	component: UsersComponent,
+	component: DoctorsComponent,
 });
 
-function UsersComponent() {
+function DoctorsComponent() {
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [doctorToDelete, setDoctorToDelete] = useState<any>(null);
+	const queryClient = useQueryClient();
+
 	const {
 		data: doctors,
 		isLoading,
@@ -30,6 +48,33 @@ function UsersComponent() {
 		})
 	);
 
+	const deleteDoctorMutation = useMutation(
+		trpc.users.delete.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: trpc.users.getByRole.queryKey({ role: "doctor" })
+				});
+				toast.success("Doctor deleted successfully");
+				setDeleteDialogOpen(false);
+				setDoctorToDelete(null);
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Failed to delete doctor");
+			},
+		})
+	);
+
+	const handleDeleteClick = (doctor: any) => {
+		setDoctorToDelete(doctor);
+		setDeleteDialogOpen(true);
+	};
+
+	const handleDeleteConfirm = () => {
+		if (doctorToDelete) {
+			deleteDoctorMutation.mutate({ id: doctorToDelete.id });
+		}
+	};
+
 	if (isLoading) return <div>Loading...</div>;
 	if (error) return <div>Error loading doctors</div>;
 
@@ -38,6 +83,7 @@ function UsersComponent() {
 			<div className="flex justify-between items-center mb-4">
 				<h1 className="text-2xl font-bold text-foreground">Doctors</h1>
 				<Button>
+					<UserPlus className="w-4 h-4 mr-2" />
 					<Link to="/doctors/add">Add Doctor</Link>
 				</Button>
 			</div>
@@ -47,26 +93,80 @@ function UsersComponent() {
 						<TableRow>
 							<TableHead>Name</TableHead>
 							<TableHead>Email</TableHead>
-							<TableHead>Role</TableHead>
+							<TableHead>Username</TableHead>
 							<TableHead>Status</TableHead>
+							<TableHead>Created</TableHead>
+							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{doctors?.map((doctor) => (
 							<TableRow key={doctor.id}>
-								<TableCell>
+								<TableCell className="font-medium">
 									{doctor.firstName} {doctor.lastName}
 								</TableCell>
 								<TableCell>{doctor.email}</TableCell>
-								<TableCell>{doctor.role}</TableCell>
+								<TableCell>{doctor.username}</TableCell>
 								<TableCell>
-									{doctor.isActive ? "Active" : "Inactive"}
+									<Badge variant={doctor.isActive ? "default" : "destructive"}>
+										{doctor.isActive ? "Active" : "Inactive"}
+									</Badge>
+								</TableCell>
+								<TableCell>
+									{new Date(doctor.createdAt).toLocaleDateString()}
+								</TableCell>
+								<TableCell className="text-right">
+									<div className="flex justify-end gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											asChild
+										>
+											<Link to={`/users/${doctor.id}/edit`}>
+												<Pencil className="w-4 h-4" />
+											</Link>
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => handleDeleteClick(doctor)}
+											className="text-red-600 hover:text-red-700 hover:bg-red-50"
+										>
+											<Trash2 className="w-4 h-4" />
+										</Button>
+									</div>
 								</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
 				</Table>
 			</div>
+
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete Doctor</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to delete{" "}
+							<strong>
+								{doctorToDelete?.firstName} {doctorToDelete?.lastName}
+							</strong>
+							? This action cannot be undone and will permanently remove the doctor
+							from the system.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleDeleteConfirm}
+							className="bg-red-600 hover:bg-red-700"
+						>
+							Delete Doctor
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
