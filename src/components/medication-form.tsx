@@ -457,7 +457,7 @@ export function MedicationForm({
 							</div>
 							<div className="space-y-2">
 								<Label htmlFor="unitPrice">
-									Unit Price ($) *
+									Unit Price (EGP) *
 								</Label>
 								{
 									<form.Field

@@ -12,11 +12,7 @@ export type MedicalRecord =
 	AppRouter["medicalRecords"]["getAll"]["_def"]["$types"]["output"];
 
 export function useMedicalRecords(params: MedicalRecordParams) {
-	return useQuery(
-		trpc.medicalRecords.getAll.queryOptions(params, {
-			enabled: !!params.patientId,
-		})
-	);
+	return useQuery(trpc.medicalRecords.getAll.queryOptions(params));
 }
 
 export function useCreateMedicalRecord() {
@@ -27,6 +23,6 @@ export function useUpdateMedicalRecord() {
 	return useMutation(trpc.medicalRecords.update.mutationOptions());
 }
 
-export function useDeleteMedicalRecord() {
-	return useMutation(trpc.medicalRecords.delete.mutationOptions());
+export function useDeleteMedicalRecord(options) {
+	return useMutation(trpc.medicalRecords.delete.mutationOptions(options));
 }

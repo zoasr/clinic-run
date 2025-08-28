@@ -23,6 +23,7 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPrescriptionsIndexRouteImport } from './routes/_authenticated/prescriptions.index'
 import { Route as AuthenticatedPatientsIndexRouteImport } from './routes/_authenticated/patients.index'
 import { Route as AuthenticatedMedicationsIndexRouteImport } from './routes/_authenticated/medications.index'
+import { Route as AuthenticatedMedicalRecordsIndexRouteImport } from './routes/_authenticated/medical-records.index'
 import { Route as AuthenticatedLabTestsIndexRouteImport } from './routes/_authenticated/lab-tests.index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices.index'
 import { Route as AuthenticatedDoctorsIndexRouteImport } from './routes/_authenticated/doctors/index'
@@ -34,6 +35,8 @@ import { Route as AuthenticatedPatientsNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPatientsPatientIdRouteImport } from './routes/_authenticated/patients.$patientId'
 import { Route as AuthenticatedMedicationsNewRouteImport } from './routes/_authenticated/medications.new'
 import { Route as AuthenticatedMedicationsMedicationIdRouteImport } from './routes/_authenticated/medications.$medicationId'
+import { Route as AuthenticatedMedicalRecordsNewRouteImport } from './routes/_authenticated/medical-records.new'
+import { Route as AuthenticatedMedicalRecordsMedicalRecordIdRouteImport } from './routes/_authenticated/medical-records.$medicalRecordId'
 import { Route as AuthenticatedLabTestsNewRouteImport } from './routes/_authenticated/lab-tests.new'
 import { Route as AuthenticatedLabTestsLabTestIdRouteImport } from './routes/_authenticated/lab-tests.$labTestId'
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices.new'
@@ -43,6 +46,7 @@ import { Route as AuthenticatedAppointmentsNewRouteImport } from './routes/_auth
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments.$appointmentId'
 import { Route as AuthenticatedPatientsEditPatientIdRouteImport } from './routes/_authenticated/patients.edit.$patientId'
 import { Route as AuthenticatedMedicationsStockMedicationIdRouteImport } from './routes/_authenticated/medications.stock.$medicationId'
+import { Route as AuthenticatedMedicalRecordsEditMedicalRecordIdRouteImport } from './routes/_authenticated/medical-records.edit.$medicalRecordId'
 import { Route as AuthenticatedLabTestsEditLabTestIdRouteImport } from './routes/_authenticated/lab-tests.edit.$labTestId'
 
 const LoginRoute = LoginRouteImport.update({
@@ -121,6 +125,12 @@ const AuthenticatedMedicationsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedMedicationsRoute,
   } as any)
+const AuthenticatedMedicalRecordsIndexRoute =
+  AuthenticatedMedicalRecordsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedMedicalRecordsRoute,
+  } as any)
 const AuthenticatedLabTestsIndexRoute =
   AuthenticatedLabTestsIndexRouteImport.update({
     id: '/',
@@ -186,6 +196,18 @@ const AuthenticatedMedicationsMedicationIdRoute =
     path: '/$medicationId',
     getParentRoute: () => AuthenticatedMedicationsRoute,
   } as any)
+const AuthenticatedMedicalRecordsNewRoute =
+  AuthenticatedMedicalRecordsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedMedicalRecordsRoute,
+  } as any)
+const AuthenticatedMedicalRecordsMedicalRecordIdRoute =
+  AuthenticatedMedicalRecordsMedicalRecordIdRouteImport.update({
+    id: '/$medicalRecordId',
+    path: '/$medicalRecordId',
+    getParentRoute: () => AuthenticatedMedicalRecordsRoute,
+  } as any)
 const AuthenticatedLabTestsNewRoute =
   AuthenticatedLabTestsNewRouteImport.update({
     id: '/new',
@@ -239,6 +261,12 @@ const AuthenticatedMedicationsStockMedicationIdRoute =
     path: '/stock/$medicationId',
     getParentRoute: () => AuthenticatedMedicationsRoute,
   } as any)
+const AuthenticatedMedicalRecordsEditMedicalRecordIdRoute =
+  AuthenticatedMedicalRecordsEditMedicalRecordIdRouteImport.update({
+    id: '/edit/$medicalRecordId',
+    path: '/edit/$medicalRecordId',
+    getParentRoute: () => AuthenticatedMedicalRecordsRoute,
+  } as any)
 const AuthenticatedLabTestsEditLabTestIdRoute =
   AuthenticatedLabTestsEditLabTestIdRouteImport.update({
     id: '/edit/$labTestId',
@@ -251,7 +279,7 @@ export interface FileRoutesByFullPath {
   '/appointments': typeof AuthenticatedAppointmentsRouteWithChildren
   '/invoices': typeof AuthenticatedInvoicesRouteWithChildren
   '/lab-tests': typeof AuthenticatedLabTestsRouteWithChildren
-  '/medical-records': typeof AuthenticatedMedicalRecordsRoute
+  '/medical-records': typeof AuthenticatedMedicalRecordsRouteWithChildren
   '/medications': typeof AuthenticatedMedicationsRouteWithChildren
   '/patients': typeof AuthenticatedPatientsRouteWithChildren
   '/prescriptions': typeof AuthenticatedPrescriptionsRouteWithChildren
@@ -263,6 +291,8 @@ export interface FileRoutesByFullPath {
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/lab-tests/$labTestId': typeof AuthenticatedLabTestsLabTestIdRoute
   '/lab-tests/new': typeof AuthenticatedLabTestsNewRoute
+  '/medical-records/$medicalRecordId': typeof AuthenticatedMedicalRecordsMedicalRecordIdRoute
+  '/medical-records/new': typeof AuthenticatedMedicalRecordsNewRoute
   '/medications/$medicationId': typeof AuthenticatedMedicationsMedicationIdRoute
   '/medications/new': typeof AuthenticatedMedicationsNewRoute
   '/patients/$patientId': typeof AuthenticatedPatientsPatientIdRoute
@@ -274,17 +304,18 @@ export interface FileRoutesByFullPath {
   '/doctors': typeof AuthenticatedDoctorsIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/lab-tests/': typeof AuthenticatedLabTestsIndexRoute
+  '/medical-records/': typeof AuthenticatedMedicalRecordsIndexRoute
   '/medications/': typeof AuthenticatedMedicationsIndexRoute
   '/patients/': typeof AuthenticatedPatientsIndexRoute
   '/prescriptions/': typeof AuthenticatedPrescriptionsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/lab-tests/edit/$labTestId': typeof AuthenticatedLabTestsEditLabTestIdRoute
+  '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/medical-records': typeof AuthenticatedMedicalRecordsRoute
   '/': typeof AuthenticatedIndexRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/appointments/new': typeof AuthenticatedAppointmentsNewRoute
@@ -293,6 +324,8 @@ export interface FileRoutesByTo {
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/lab-tests/$labTestId': typeof AuthenticatedLabTestsLabTestIdRoute
   '/lab-tests/new': typeof AuthenticatedLabTestsNewRoute
+  '/medical-records/$medicalRecordId': typeof AuthenticatedMedicalRecordsMedicalRecordIdRoute
+  '/medical-records/new': typeof AuthenticatedMedicalRecordsNewRoute
   '/medications/$medicationId': typeof AuthenticatedMedicationsMedicationIdRoute
   '/medications/new': typeof AuthenticatedMedicationsNewRoute
   '/patients/$patientId': typeof AuthenticatedPatientsPatientIdRoute
@@ -304,11 +337,13 @@ export interface FileRoutesByTo {
   '/doctors': typeof AuthenticatedDoctorsIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
   '/lab-tests': typeof AuthenticatedLabTestsIndexRoute
+  '/medical-records': typeof AuthenticatedMedicalRecordsIndexRoute
   '/medications': typeof AuthenticatedMedicationsIndexRoute
   '/patients': typeof AuthenticatedPatientsIndexRoute
   '/prescriptions': typeof AuthenticatedPrescriptionsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/lab-tests/edit/$labTestId': typeof AuthenticatedLabTestsEditLabTestIdRoute
+  '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
 }
@@ -319,7 +354,7 @@ export interface FileRoutesById {
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRouteWithChildren
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRouteWithChildren
   '/_authenticated/lab-tests': typeof AuthenticatedLabTestsRouteWithChildren
-  '/_authenticated/medical-records': typeof AuthenticatedMedicalRecordsRoute
+  '/_authenticated/medical-records': typeof AuthenticatedMedicalRecordsRouteWithChildren
   '/_authenticated/medications': typeof AuthenticatedMedicationsRouteWithChildren
   '/_authenticated/patients': typeof AuthenticatedPatientsRouteWithChildren
   '/_authenticated/prescriptions': typeof AuthenticatedPrescriptionsRouteWithChildren
@@ -331,6 +366,8 @@ export interface FileRoutesById {
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/_authenticated/lab-tests/$labTestId': typeof AuthenticatedLabTestsLabTestIdRoute
   '/_authenticated/lab-tests/new': typeof AuthenticatedLabTestsNewRoute
+  '/_authenticated/medical-records/$medicalRecordId': typeof AuthenticatedMedicalRecordsMedicalRecordIdRoute
+  '/_authenticated/medical-records/new': typeof AuthenticatedMedicalRecordsNewRoute
   '/_authenticated/medications/$medicationId': typeof AuthenticatedMedicationsMedicationIdRoute
   '/_authenticated/medications/new': typeof AuthenticatedMedicationsNewRoute
   '/_authenticated/patients/$patientId': typeof AuthenticatedPatientsPatientIdRoute
@@ -342,11 +379,13 @@ export interface FileRoutesById {
   '/_authenticated/doctors/': typeof AuthenticatedDoctorsIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/_authenticated/lab-tests/': typeof AuthenticatedLabTestsIndexRoute
+  '/_authenticated/medical-records/': typeof AuthenticatedMedicalRecordsIndexRoute
   '/_authenticated/medications/': typeof AuthenticatedMedicationsIndexRoute
   '/_authenticated/patients/': typeof AuthenticatedPatientsIndexRoute
   '/_authenticated/prescriptions/': typeof AuthenticatedPrescriptionsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/lab-tests/edit/$labTestId': typeof AuthenticatedLabTestsEditLabTestIdRoute
+  '/_authenticated/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/_authenticated/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/_authenticated/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
 }
@@ -369,6 +408,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/lab-tests/$labTestId'
     | '/lab-tests/new'
+    | '/medical-records/$medicalRecordId'
+    | '/medical-records/new'
     | '/medications/$medicationId'
     | '/medications/new'
     | '/patients/$patientId'
@@ -380,17 +421,18 @@ export interface FileRouteTypes {
     | '/doctors'
     | '/invoices/'
     | '/lab-tests/'
+    | '/medical-records/'
     | '/medications/'
     | '/patients/'
     | '/prescriptions/'
     | '/users'
     | '/lab-tests/edit/$labTestId'
+    | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
     | '/patients/edit/$patientId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
-    | '/medical-records'
     | '/'
     | '/appointments/$appointmentId'
     | '/appointments/new'
@@ -399,6 +441,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/lab-tests/$labTestId'
     | '/lab-tests/new'
+    | '/medical-records/$medicalRecordId'
+    | '/medical-records/new'
     | '/medications/$medicationId'
     | '/medications/new'
     | '/patients/$patientId'
@@ -410,11 +454,13 @@ export interface FileRouteTypes {
     | '/doctors'
     | '/invoices'
     | '/lab-tests'
+    | '/medical-records'
     | '/medications'
     | '/patients'
     | '/prescriptions'
     | '/users'
     | '/lab-tests/edit/$labTestId'
+    | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
     | '/patients/edit/$patientId'
   id:
@@ -436,6 +482,8 @@ export interface FileRouteTypes {
     | '/_authenticated/invoices/new'
     | '/_authenticated/lab-tests/$labTestId'
     | '/_authenticated/lab-tests/new'
+    | '/_authenticated/medical-records/$medicalRecordId'
+    | '/_authenticated/medical-records/new'
     | '/_authenticated/medications/$medicationId'
     | '/_authenticated/medications/new'
     | '/_authenticated/patients/$patientId'
@@ -447,11 +495,13 @@ export interface FileRouteTypes {
     | '/_authenticated/doctors/'
     | '/_authenticated/invoices/'
     | '/_authenticated/lab-tests/'
+    | '/_authenticated/medical-records/'
     | '/_authenticated/medications/'
     | '/_authenticated/patients/'
     | '/_authenticated/prescriptions/'
     | '/_authenticated/users/'
     | '/_authenticated/lab-tests/edit/$labTestId'
+    | '/_authenticated/medical-records/edit/$medicalRecordId'
     | '/_authenticated/medications/stock/$medicationId'
     | '/_authenticated/patients/edit/$patientId'
   fileRoutesById: FileRoutesById
@@ -561,6 +611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMedicationsIndexRouteImport
       parentRoute: typeof AuthenticatedMedicationsRoute
     }
+    '/_authenticated/medical-records/': {
+      id: '/_authenticated/medical-records/'
+      path: '/'
+      fullPath: '/medical-records/'
+      preLoaderRoute: typeof AuthenticatedMedicalRecordsIndexRouteImport
+      parentRoute: typeof AuthenticatedMedicalRecordsRoute
+    }
     '/_authenticated/lab-tests/': {
       id: '/_authenticated/lab-tests/'
       path: '/'
@@ -638,6 +695,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMedicationsMedicationIdRouteImport
       parentRoute: typeof AuthenticatedMedicationsRoute
     }
+    '/_authenticated/medical-records/new': {
+      id: '/_authenticated/medical-records/new'
+      path: '/new'
+      fullPath: '/medical-records/new'
+      preLoaderRoute: typeof AuthenticatedMedicalRecordsNewRouteImport
+      parentRoute: typeof AuthenticatedMedicalRecordsRoute
+    }
+    '/_authenticated/medical-records/$medicalRecordId': {
+      id: '/_authenticated/medical-records/$medicalRecordId'
+      path: '/$medicalRecordId'
+      fullPath: '/medical-records/$medicalRecordId'
+      preLoaderRoute: typeof AuthenticatedMedicalRecordsMedicalRecordIdRouteImport
+      parentRoute: typeof AuthenticatedMedicalRecordsRoute
+    }
     '/_authenticated/lab-tests/new': {
       id: '/_authenticated/lab-tests/new'
       path: '/new'
@@ -700,6 +771,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/medications/stock/$medicationId'
       preLoaderRoute: typeof AuthenticatedMedicationsStockMedicationIdRouteImport
       parentRoute: typeof AuthenticatedMedicationsRoute
+    }
+    '/_authenticated/medical-records/edit/$medicalRecordId': {
+      id: '/_authenticated/medical-records/edit/$medicalRecordId'
+      path: '/edit/$medicalRecordId'
+      fullPath: '/medical-records/edit/$medicalRecordId'
+      preLoaderRoute: typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRouteImport
+      parentRoute: typeof AuthenticatedMedicalRecordsRoute
     }
     '/_authenticated/lab-tests/edit/$labTestId': {
       id: '/_authenticated/lab-tests/edit/$labTestId'
@@ -767,6 +845,29 @@ const AuthenticatedLabTestsRouteWithChildren =
     AuthenticatedLabTestsRouteChildren,
   )
 
+interface AuthenticatedMedicalRecordsRouteChildren {
+  AuthenticatedMedicalRecordsMedicalRecordIdRoute: typeof AuthenticatedMedicalRecordsMedicalRecordIdRoute
+  AuthenticatedMedicalRecordsNewRoute: typeof AuthenticatedMedicalRecordsNewRoute
+  AuthenticatedMedicalRecordsIndexRoute: typeof AuthenticatedMedicalRecordsIndexRoute
+  AuthenticatedMedicalRecordsEditMedicalRecordIdRoute: typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
+}
+
+const AuthenticatedMedicalRecordsRouteChildren: AuthenticatedMedicalRecordsRouteChildren =
+  {
+    AuthenticatedMedicalRecordsMedicalRecordIdRoute:
+      AuthenticatedMedicalRecordsMedicalRecordIdRoute,
+    AuthenticatedMedicalRecordsNewRoute: AuthenticatedMedicalRecordsNewRoute,
+    AuthenticatedMedicalRecordsIndexRoute:
+      AuthenticatedMedicalRecordsIndexRoute,
+    AuthenticatedMedicalRecordsEditMedicalRecordIdRoute:
+      AuthenticatedMedicalRecordsEditMedicalRecordIdRoute,
+  }
+
+const AuthenticatedMedicalRecordsRouteWithChildren =
+  AuthenticatedMedicalRecordsRoute._addFileChildren(
+    AuthenticatedMedicalRecordsRouteChildren,
+  )
+
 interface AuthenticatedMedicationsRouteChildren {
   AuthenticatedMedicationsMedicationIdRoute: typeof AuthenticatedMedicationsMedicationIdRoute
   AuthenticatedMedicationsNewRoute: typeof AuthenticatedMedicationsNewRoute
@@ -832,7 +933,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRouteWithChildren
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRouteWithChildren
   AuthenticatedLabTestsRoute: typeof AuthenticatedLabTestsRouteWithChildren
-  AuthenticatedMedicalRecordsRoute: typeof AuthenticatedMedicalRecordsRoute
+  AuthenticatedMedicalRecordsRoute: typeof AuthenticatedMedicalRecordsRouteWithChildren
   AuthenticatedMedicationsRoute: typeof AuthenticatedMedicationsRouteWithChildren
   AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRouteWithChildren
   AuthenticatedPrescriptionsRoute: typeof AuthenticatedPrescriptionsRouteWithChildren
@@ -847,7 +948,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRouteWithChildren,
   AuthenticatedInvoicesRoute: AuthenticatedInvoicesRouteWithChildren,
   AuthenticatedLabTestsRoute: AuthenticatedLabTestsRouteWithChildren,
-  AuthenticatedMedicalRecordsRoute: AuthenticatedMedicalRecordsRoute,
+  AuthenticatedMedicalRecordsRoute:
+    AuthenticatedMedicalRecordsRouteWithChildren,
   AuthenticatedMedicationsRoute: AuthenticatedMedicationsRouteWithChildren,
   AuthenticatedPatientsRoute: AuthenticatedPatientsRouteWithChildren,
   AuthenticatedPrescriptionsRoute: AuthenticatedPrescriptionsRouteWithChildren,
