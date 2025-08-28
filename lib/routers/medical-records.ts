@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or, like } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -12,12 +12,13 @@ export const medicalRecordsRouter = router({
 		.input(
 			z.object({
 				patientId: z.number().optional(),
+				search: z.string().optional(),
 				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { patientId, page, limit } = input;
+			const { patientId, page, limit, search } = input;
 			const offset = (page - 1) * limit;
 
 			const whereConditions = [];
@@ -25,6 +26,16 @@ export const medicalRecordsRouter = router({
 			if (patientId) {
 				whereConditions.push(
 					eq(schema.medicalRecords.patientId, patientId)
+				);
+			}
+			if (search) {
+				whereConditions.push(
+					or(
+						like(schema.patients.firstName, `%${search}%`),
+						like(schema.patients.lastName, `%${search}%`),
+						like(schema.medicalRecords.diagnosis, `%${search}%`),
+						like(authSchema.user.name, `%${search}%`)
+					)
 				);
 			}
 
