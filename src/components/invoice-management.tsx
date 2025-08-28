@@ -16,7 +16,21 @@ import {
 	CheckCircle,
 	Clock,
 	AlertCircle,
+	Trash2,
 } from "lucide-react";
+import { useDeleteInvoice } from "@/hooks/useInvoices";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function InvoiceManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -26,9 +40,29 @@ export function InvoiceManagement() {
 	);
 	const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
-	const { data: invoices = [], isLoading } = useInvoices({
+	const {
+		data: invoices = [],
+		isLoading,
+		refetch,
+	} = useInvoices({
 		search: searchTerm || undefined,
 	});
+
+	// Mutation for deleting invoices
+	const { mutate: deleteInvoice, isPending: isDeleting } = useDeleteInvoice({
+		onSuccess: () => {
+			toast.success("Invoice deleted successfully");
+			refetch();
+		},
+		onError: (error: Error) => {
+			console.error("Failed to delete invoice:", error);
+			toast.error("Failed to delete invoice");
+		},
+	});
+
+	const handleDeleteInvoice = (invoiceId: number) => {
+		deleteInvoice({ id: invoiceId });
+	};
 
 	const handleInvoiceSaved = () => {
 		setShowForm(false);
@@ -341,6 +375,51 @@ export function InvoiceManagement() {
 										>
 											Edit Invoice
 										</Button>
+										<AlertDialog>
+											<AlertDialogTrigger asChild>
+												<Button
+													variant="outline"
+													size="sm"
+													className="opacity-20 group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
+													disabled={isDeleting}
+													onClick={(e) =>
+														e.stopPropagation()
+													}
+												>
+													<Trash2 className="h-4 w-4" />
+												</Button>
+											</AlertDialogTrigger>
+											<AlertDialogContent>
+												<AlertDialogHeader>
+													<AlertDialogTitle>
+														Delete Invoice
+													</AlertDialogTitle>
+													<AlertDialogDescription>
+														Are you sure you want to
+														delete this invoice?
+														This action cannot be
+														undone.
+													</AlertDialogDescription>
+												</AlertDialogHeader>
+												<AlertDialogFooter>
+													<AlertDialogCancel>
+														Cancel
+													</AlertDialogCancel>
+													<AlertDialogAction
+														onClick={() =>
+															handleDeleteInvoice(
+																invoice.id
+															)
+														}
+														asChild
+													>
+														<Button variant="destructive">
+															Delete
+														</Button>
+													</AlertDialogAction>
+												</AlertDialogFooter>
+											</AlertDialogContent>
+										</AlertDialog>
 									</div>
 								</CardContent>
 							</Card>
