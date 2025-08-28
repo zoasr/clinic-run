@@ -13,9 +13,25 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DatePicker } from "@/components/date-picker";
 import { AppointmentCalendar } from "@/components/appointment-calendar";
-import { Search, Plus, Calendar, Clock, User } from "lucide-react";
-import { useAppointments, useUpdateAppointment } from "@/hooks/useAppointments";
+import { Search, Plus, Calendar, Clock, User, Trash2 } from "lucide-react";
+import {
+	useAppointments,
+	useUpdateAppointment,
+	useDeleteAppointment,
+} from "@/hooks/useAppointments";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function AppointmentManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -54,6 +70,23 @@ export function AppointmentManagement() {
 			id: appointmentId,
 			data: { status: newStatus },
 		});
+	};
+
+	// Mutation for deleting appointments
+	const { mutate: deleteAppointment, isPending: isDeleting } =
+		useDeleteAppointment({
+			onSuccess: () => {
+				toast.success("Appointment deleted successfully");
+				refetch();
+			},
+			onError: (error: Error) => {
+				console.error("Failed to delete appointment:", error);
+				toast.error("Failed to delete appointment");
+			},
+		});
+
+	const handleDeleteAppointment = (appointmentId: number) => {
+		deleteAppointment({ id: appointmentId });
 	};
 
 	const getStatusColor = (status: string) => {
@@ -415,21 +448,73 @@ export function AppointmentManagement() {
 
 											{/* Actions */}
 											<div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50">
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => {
-														navigate({
-															to: `/appointments/$appointmentId`,
-															params: {
-																appointmentId: `${appointment.id}`,
-															},
-														});
-													}}
-													className="opacity-20 cursor-pointer group-hover:opacity-100 transition-all"
-												>
-													View Details
-												</Button>
+												<div className="flex items-center gap-2">
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => {
+															navigate({
+																to: `/appointments/$appointmentId`,
+																params: {
+																	appointmentId: `${appointment.id}`,
+																},
+															});
+														}}
+														className="opacity-20 cursor-pointer group-hover:opacity-100 transition-all"
+													>
+														View Details
+													</Button>
+													<AlertDialog>
+														<AlertDialogTrigger
+															asChild
+														>
+															<Button
+																variant="ghost"
+																size="sm"
+																className="opacity-20 cursor-pointer group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
+																disabled={
+																	isDeleting
+																}
+															>
+																<Trash2 className="h-4 w-4" />
+															</Button>
+														</AlertDialogTrigger>
+														<AlertDialogContent>
+															<AlertDialogHeader>
+																<AlertDialogTitle>
+																	Delete
+																	Appointment
+																</AlertDialogTitle>
+																<AlertDialogDescription>
+																	Are you sure
+																	you want to
+																	delete this
+																	appointment?
+																	This action
+																	cannot be
+																	undone.
+																</AlertDialogDescription>
+															</AlertDialogHeader>
+															<AlertDialogFooter>
+																<AlertDialogCancel>
+																	Cancel
+																</AlertDialogCancel>
+																<AlertDialogAction
+																	onClick={() =>
+																		handleDeleteAppointment(
+																			appointment.id
+																		)
+																	}
+																	asChild
+																>
+																	<Button variant="destructive">
+																		Delete
+																	</Button>
+																</AlertDialogAction>
+															</AlertDialogFooter>
+														</AlertDialogContent>
+													</AlertDialog>
+												</div>
 
 												{appointment.status ===
 													"scheduled" && (

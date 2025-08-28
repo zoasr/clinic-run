@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { trpc } from "@/lib/api";
+import { trpc } from "@/lib/trpc-client";
 import type { AppRouter } from "@/lib/trpc-client";
 
 export type MedicalRecordInput =
@@ -25,4 +25,8 @@ export function useCreateMedicalRecord() {
 
 export function useUpdateMedicalRecord() {
 	return useMutation(trpc.medicalRecords.update.mutationOptions());
+}
+
+export function useDeleteMedicalRecord() {
+	return useMutation(trpc.medicalRecords.delete.mutationOptions());
 }

@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/api";
+import { trpc } from "@/lib/trpc-client";
 import type { AppRouter } from "@/lib/trpc-client";
 
 // Infer types from tRPC
@@ -23,6 +23,10 @@ export function useCreateAppointment(options) {
 }
 export function useUpdateAppointment(options) {
 	return useMutation(trpc.appointments.update.mutationOptions(options));
+}
+
+export function useDeleteAppointment(options) {
+	return useMutation(trpc.appointments.delete.mutationOptions(options));
 }
 
 export function usePatientAppointments(patientId: number) {

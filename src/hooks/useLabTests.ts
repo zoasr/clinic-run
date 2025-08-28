@@ -48,8 +48,8 @@ export function useUpdateLabTest() {
 	return useMutation(trpc.labTests.update.mutationOptions());
 }
 
-export function useDeleteLabTest() {
-	return useMutation(trpc.labTests.delete.mutationOptions());
+export function useDeleteLabTest(options) {
+	return useMutation(trpc.labTests.delete.mutationOptions(options));
 }
 
 export function useUpdateLabTestStatus() {

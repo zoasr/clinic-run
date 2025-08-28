@@ -1,13 +1,7 @@
 import { authClient, User, type Session } from "@/lib/auth";
 import { redirect } from "@tanstack/react-router";
 import type React from "react";
-import {
-	createContext,
-	useContext,
-	useState,
-	useEffect,
-	type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 export interface AuthContextType {
 	isAuthenticated: boolean;
@@ -21,6 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
+	const [session, setSession] = useState<Session | null>(null);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
@@ -69,14 +64,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			email: username,
 			password,
 		});
-		console.log(response);
+		const session = await authClient.getSession();
+
 		if (response.error) {
 			console.error("Login error:", response.error);
 			return false;
 		}
-		if (response.data.user) {
+		if (response.data.user && session.data?.user) {
 			//  @ts-ignore
 			setUser(response.data.user);
+			//  @ts-ignore
+			setSession(session.data.user);
 			setIsAuthenticated(true);
 			// Store token for persistence
 			localStorage.setItem("auth-token", response.data.token);
@@ -93,7 +91,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+		<AuthContext.Provider
+			value={{ isAuthenticated, user, session, login, logout }}
+		>
 			{children}
 		</AuthContext.Provider>
 	);

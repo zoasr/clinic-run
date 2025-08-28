@@ -24,8 +24,21 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DatePicker } from "@/components/date-picker";
 import { queryKeys, trpc } from "@/lib/trpc-client";
-import { ArrowLeft, Search, User } from "lucide-react";
+import { ArrowLeft, Search, User, Trash2 } from "lucide-react";
 import { Appointment } from "@/lib/schema-types";
+import { useDeleteAppointment } from "@/hooks/useAppointments";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface AppointmentFormProps {
 	appointment?: Appointment | null;
@@ -124,6 +137,24 @@ export function AppointmentForm({
 			},
 		})
 	);
+
+	const { mutate: deleteAppointment, isPending: isDeleting } =
+		useDeleteAppointment({
+			onSuccess: () => {
+				toast.success("Appointment deleted successfully");
+				onSave();
+			},
+			onError: (error: Error) => {
+				console.error("Failed to delete appointment:", error);
+				toast.error("Failed to delete appointment");
+			},
+		});
+
+	const handleDeleteAppointment = () => {
+		if (appointment?.id) {
+			deleteAppointment({ id: appointment.id });
+		}
+	};
 
 	useEffect(() => {
 		if (appointment) {
@@ -537,20 +568,69 @@ export function AppointmentForm({
 				</Card>
 
 				{/* Actions */}
-				<div className="flex justify-end gap-4">
-					<Button type="button" variant="outline" onClick={onCancel}>
-						Cancel
-					</Button>
-					<Button
-						type="submit"
-						disabled={isSaving || !selectedPatient}
-					>
-						{isSaving
-							? "Saving..."
-							: appointment
-								? "Update"
-								: "Schedule"}
-					</Button>
+				<div className="flex justify-between gap-4">
+					<div>
+						{appointment && (
+							<AlertDialog>
+								<AlertDialogTrigger asChild>
+									<Button
+										type="button"
+										variant="destructive"
+										disabled={isDeleting}
+									>
+										<Trash2 className="h-4 w-4 mr-2" />
+										{isDeleting
+											? "Deleting..."
+											: "Delete Appointment"}
+									</Button>
+								</AlertDialogTrigger>
+								<AlertDialogContent>
+									<AlertDialogHeader>
+										<AlertDialogTitle>
+											Delete Appointment
+										</AlertDialogTitle>
+										<AlertDialogDescription>
+											Are you sure you want to delete this
+											appointment? This action cannot be
+											undone.
+										</AlertDialogDescription>
+									</AlertDialogHeader>
+									<AlertDialogFooter>
+										<AlertDialogCancel>
+											Cancel
+										</AlertDialogCancel>
+										<AlertDialogAction
+											onClick={handleDeleteAppointment}
+											asChild
+										>
+											<Button variant="destructive">
+												Delete
+											</Button>
+										</AlertDialogAction>
+									</AlertDialogFooter>
+								</AlertDialogContent>
+							</AlertDialog>
+						)}
+					</div>
+					<div className="flex gap-4">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={onCancel}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							disabled={isSaving || !selectedPatient}
+						>
+							{isSaving
+								? "Saving..."
+								: appointment
+									? "Update"
+									: "Schedule"}
+						</Button>
+					</div>
 				</div>
 
 				{mutationError && (

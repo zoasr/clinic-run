@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DatePicker } from "@/components/date-picker";
-import { trpc } from "@/lib/api";
+import { trpc } from "@/lib/trpc-client";
 import { ArrowLeft } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

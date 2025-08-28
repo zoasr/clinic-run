@@ -33,8 +33,8 @@ export function useUpdatePatient() {
 	return useMutation(trpc.patients.update.mutationOptions());
 }
 
-export function useDeletePatient() {
-	return useMutation(trpc.patients.delete.mutationOptions());
+export function useDeletePatient(options) {
+	return useMutation(trpc.patients.delete.mutationOptions(options));
 }
 
 // Export the Patient type for use in other components

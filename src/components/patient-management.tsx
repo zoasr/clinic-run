@@ -6,7 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { PatientForm } from "@/components/patient-form";
 import { PatientDetail } from "@/components/patient-detail";
 import { usePatients, type Patient } from "@/hooks/usePatients";
-import { Search, Plus, User, Phone, Mail } from "lucide-react";
+import { Search, Plus, User, Phone, Mail, Trash2 } from "lucide-react";
+import { useDeletePatient } from "@/hooks/usePatients";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function PatientManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +32,21 @@ export function PatientManagement() {
 	const { data: patients = [], isLoading } = usePatients({
 		search: searchTerm || undefined,
 	});
+
+	// Mutation for deleting patients
+	const { mutate: deletePatient, isPending: isDeleting } = useDeletePatient({
+		onSuccess: () => {
+			toast.success("Patient deleted successfully");
+		},
+		onError: (error: Error) => {
+			console.error("Failed to delete patient:", error);
+			toast.error("Failed to delete patient");
+		},
+	});
+
+	const handleDeletePatient = (patientId: number) => {
+		deletePatient({ id: patientId });
+	};
 
 	const handlePatientSaved = () => {
 		setShowForm(false);
@@ -195,17 +223,65 @@ export function PatientManagement() {
 										)}
 									</div>
 
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={(e) => {
-											e.stopPropagation();
-											setEditingPatient(patient);
-											setShowForm(true);
-										}}
-									>
-										Edit
-									</Button>
+									<div className="flex items-center gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={(e) => {
+												e.stopPropagation();
+												setEditingPatient(patient);
+												setShowForm(true);
+											}}
+										>
+											Edit
+										</Button>
+										<AlertDialog>
+											<AlertDialogTrigger asChild>
+												<Button
+													variant="outline"
+													size="sm"
+													className="text-red-600 hover:text-red-700 hover:bg-red-50"
+													disabled={isDeleting}
+													onClick={(e) => e.stopPropagation()}
+												>
+													<Trash2 className="h-4 w-4" />
+												</Button>
+											</AlertDialogTrigger>
+											<AlertDialogContent>
+												<AlertDialogHeader>
+													<AlertDialogTitle>
+														Delete Patient
+													</AlertDialogTitle>
+													<AlertDialogDescription>
+														Are you sure you want to delete this patient? This action cannot be undone.
+														<div className="mt-2 p-3 bg-muted rounded-md">
+															<p className="font-medium">
+																{patient.firstName} {patient.lastName}
+															</p>
+															<p className="text-sm text-muted-foreground">
+																ID: {patient.patientId}
+															</p>
+														</div>
+													</AlertDialogDescription>
+												</AlertDialogHeader>
+												<AlertDialogFooter>
+													<AlertDialogCancel>
+														Cancel
+													</AlertDialogCancel>
+													<AlertDialogAction
+														onClick={() =>
+															handleDeletePatient(
+																patient.id
+															)
+														}
+														className="bg-red-600 hover:bg-red-700"
+													>
+														Delete
+													</AlertDialogAction>
+												</AlertDialogFooter>
+											</AlertDialogContent>
+										</AlertDialog>
+									</div>
 								</div>
 							</CardContent>
 						</Card>

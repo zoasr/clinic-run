@@ -47,8 +47,8 @@ export function useUpdateInvoice() {
 	return useMutation(trpc.invoices.update.mutationOptions());
 }
 
-export function useDeleteInvoice() {
-	return useMutation(trpc.invoices.delete.mutationOptions());
+export function useDeleteInvoice(options) {
+	return useMutation(trpc.invoices.delete.mutationOptions(options));
 }
 
 export function useMarkInvoiceAsPaid() {
