@@ -68,7 +68,11 @@ export const usersRouter = router({
 	getByRole: adminProcedure
 		.input(
 			z.object({
-				role: z.enum(["staff", "doctor"]),
+				role: z.union([
+					z.literal("staff"),
+					z.literal("doctor"),
+					z.literal("admin"),
+				]),
 			})
 		)
 		.query(async ({ input, ctx }) => {
@@ -86,7 +90,6 @@ export const usersRouter = router({
 				})
 				.from(authSchema.user)
 				.where(eq(authSchema.user.role, input.role));
-			console.log(users);
 
 			return users;
 		}),
