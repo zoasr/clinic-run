@@ -9,6 +9,7 @@ import { invoicesRouter } from "./invoices.js";
 import { labTestsRouter } from "./lab-tests.js";
 import { dashboardRouter } from "./dashboard.js";
 import { usersRouter } from "./users.js";
+import { systemSettingsRouter } from "./system-settings.js";
 
 export const appRouter = router({
 	auth: authRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
 	labTests: labTestsRouter,
 	dashboard: dashboardRouter,
 	users: usersRouter,
+	systemSettings: systemSettingsRouter,
 });
 
 export type AppRouter = typeof appRouter;
