@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -7,6 +6,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePatientAppointments } from "@/hooks/useAppointments";
 import { useMedicalRecords } from "@/hooks/useMedicalRecords";
@@ -20,8 +20,22 @@ import {
 	MapPin,
 	AlertTriangle,
 	Heart,
+	Trash2,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useDeletePatient } from "@/hooks/usePatients";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface PatientDetailProps {
 	patient: Patient;
@@ -37,6 +51,22 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 			patientId: patient.id,
 			limit: 10,
 		});
+
+	// Mutation for deleting patient
+	const { mutate: deletePatient, isPending: isDeleting } = useDeletePatient({
+		onSuccess: () => {
+			toast.success("Patient deleted successfully");
+			onBack(); // Navigate back after successful deletion
+		},
+		onError: (error: Error) => {
+			console.error("Failed to delete patient:", error);
+			toast.error("Failed to delete patient");
+		},
+	});
+
+	const handleDeletePatient = () => {
+		deletePatient({ id: patient.id });
+	};
 
 	const calculateAge = (dateOfBirth: string) => {
 		const today = new Date();
@@ -84,15 +114,52 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 						</p>
 					</div>
 				</div>
-				<Link
-					to="/patients/edit/$patientId"
-					params={{ patientId: patient.id.toString() }}
-				>
-					<Button>
-						<Edit className="h-4 w-4 mr-2" />
-						Edit Patient
-					</Button>
-				</Link>
+				<div className="flex items-center gap-2">
+					<Link
+						to="/patients/edit/$patientId"
+						params={{ patientId: patient.id.toString() }}
+					>
+						<Button variant="outline">
+							<Edit className="h-4 w-4 mr-2" />
+							Edit Patient
+						</Button>
+					</Link>
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button
+								variant="outline"
+								className="text-red-600 hover:text-red-700 hover:bg-red-50"
+								disabled={isDeleting}
+							>
+								<Trash2 className="h-4 w-4 mr-2" />
+								{isDeleting ? "Deleting..." : "Delete Patient"}
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>
+									Delete Patient
+								</AlertDialogTitle>
+								<AlertDialogDescription>
+									Are you sure you want to delete this patient
+									&quot;{patient.firstName} {patient.lastName}
+									&quot;? This action cannot be undone.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>Cancel</AlertDialogCancel>
+								<AlertDialogAction
+									onClick={handleDeletePatient}
+									asChild
+								>
+									<Button variant="destructive">
+										Delete
+									</Button>
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+				</div>
 			</div>
 
 			{/* Patient Overview */}
