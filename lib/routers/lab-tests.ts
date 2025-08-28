@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, desc, like } from "drizzle-orm";
+import { eq, and, desc, like, or } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -27,16 +27,19 @@ export const labTestsRouter = router({
 
 			if (search) {
 				whereConditions.push(
-					like(schema.labTests.testName, `%${search}%`)
+					or(
+						like(schema.labTests.testName, `%${search}%`),
+						like(schema.patients.firstName, `%${search}%`),
+						like(schema.patients.lastName, `%${search}%`),
+						like(authSchema.user.name, `%${search}%`)
+					)
 				);
 			}
 			if (status) {
 				whereConditions.push(eq(schema.labTests.status, status));
 			}
 			if (patientId) {
-				whereConditions.push(
-					eq(schema.labTests.patientId, patientId)
-				);
+				whereConditions.push(eq(schema.labTests.patientId, patientId));
 			}
 			if (testType) {
 				whereConditions.push(eq(schema.labTests.testType, testType));
@@ -156,9 +159,7 @@ export const labTestsRouter = router({
 			const { patientId, status, page, limit } = input;
 			const offset = (page - 1) * limit;
 
-			const whereConditions = [
-				eq(schema.labTests.patientId, patientId),
-			];
+			const whereConditions = [eq(schema.labTests.patientId, patientId)];
 
 			if (status) {
 				whereConditions.push(eq(schema.labTests.status, status));
@@ -274,7 +275,9 @@ export const labTestsRouter = router({
 			if (input.status === "completed" && input.completedDate) {
 				updateData.completedDate = input.completedDate;
 			} else if (input.status === "completed") {
-				updateData.completedDate = new Date().toISOString().split("T")[0];
+				updateData.completedDate = new Date()
+					.toISOString()
+					.split("T")[0];
 			}
 
 			const updatedLabTest = await ctx.db
