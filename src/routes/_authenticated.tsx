@@ -18,6 +18,7 @@ import { Fragment } from "react/jsx-runtime";
 import { useMatches } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import NotFound from "@/components/not-found";
+import ErrorComponent from "@/components/error";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ context, location }) => {
@@ -33,6 +34,9 @@ export const Route = createFileRoute("/_authenticated")({
 	},
 	notFoundComponent: () => {
 		return <NotFound />;
+	},
+	errorComponent: ({ error }) => {
+		return <ErrorComponent error={error} />;
 	},
 
 	component: () => {

@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { AuthContextType, AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { TRPCProviderWrapper } from "./lib/trpc-provider";
 import "./index.css";
 
@@ -14,6 +15,7 @@ const router = createRouter({
 		auth: {
 			isAuthenticated: false,
 			user: null,
+			session: null,
 			login: async (username: string, password: string) => {
 				return false;
 			},
@@ -37,9 +39,11 @@ const MainApp = () => {
 	return (
 		<React.StrictMode>
 			<TRPCProviderWrapper>
-				<AuthProvider>
-					<Router />
-				</AuthProvider>
+				<ThemeProvider>
+					<AuthProvider>
+						<Router />
+					</AuthProvider>
+				</ThemeProvider>
 			</TRPCProviderWrapper>
 		</React.StrictMode>
 	);
