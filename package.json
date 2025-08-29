@@ -9,9 +9,16 @@
     "start": "vite preview",
     "server": "bun run --watch server.ts",
     "dev:all": "bun run scripts/dev.ts",
+    "dev:test:all": "NODE_ENV=test bun run scripts/dev.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "bun run lib/db/seed.ts"
+    "db:seed": "bun run lib/db/seed.ts",
+    "test:setup": "bun run scripts/test-setup.ts",
+    "test:db:generate": "NODE_ENV=test drizzle-kit generate --config drizzle.config.test.ts",
+    "test:db:migrate": "NODE_ENV=test drizzle-kit migrate --config drizzle.config.test.ts",
+    "test:db:seed": "NODE_ENV=test bun run lib/db/seed-performance.ts",
+    "test:db:reset": "rm -f clinic-test.db && NODE_ENV=test bun run test:db:migrate && NODE_ENV=test bun run test:db:seed",
+    "test:perf": "NODE_ENV=test bun run test:db:reset"
   },
   "workspaces": [
     "lib"
@@ -66,6 +73,7 @@
   },
   "devDependencies": {
     "@better-auth/cli": "^1.3.7",
+    "@faker-js/faker": "^10.0.0",
     "@tanstack/react-router-devtools": "^1.131.28",
     "@tanstack/router-plugin": "^1.131.27",
     "@types/bun": "^1.2.21",
