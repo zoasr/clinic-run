@@ -26,27 +26,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	// Refresh authentication state
 	const refreshAuth = async () => {
 		try {
-			console.log("🔄 Refreshing authentication state...");
 			const response = await authClient.getSession();
 
 			if (response?.data?.user && response?.data?.session) {
-				console.log(
-					"✅ Auth refreshed - User:",
-					response.data.user.name,
-					"Role:",
-					response.data.user.role
-				);
 				setUser(response.data.user);
 				setSession(response.data);
 				setIsAuthenticated(true);
 			} else {
-				console.log("❌ No valid session found");
 				setUser(null);
 				setSession(null);
 				setIsAuthenticated(false);
 			}
 		} catch (error) {
-			console.error("💥 Failed to refresh auth:", error);
+			console.error("Failed to refresh auth:", error);
 			setUser(null);
 			setSession(null);
 			setIsAuthenticated(false);
@@ -102,25 +94,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			});
 
 			if (response.error) {
-				console.error("❌ Login error:", response.error);
+				console.error("Login error:", response.error);
 				return false;
 			}
-
-			console.log("✅ Login successful, getting session...");
 
 			// Get fresh session data
 			const sessionResponse = await authClient.getSession();
 
 			if (response.data?.user && sessionResponse.data?.user) {
-				const userData = response.data.user;
 				const sessionData = sessionResponse.data;
-
-				console.log(
-					"👤 User authenticated:",
-					userData.name,
-					"Role:",
-					sessionData.user.role
-				);
 
 				// Update state
 				setUser(sessionData.user);
@@ -129,13 +111,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 				// Clear all cached queries to ensure fresh data
 				queryClient.clear();
-				console.log("🧹 Cleared query cache");
 				refreshAuth();
 
 				return true;
 			}
 
-			console.error("❌ Login failed - no user data in response");
+			console.error("Login failed - no user data in response");
 			return false;
 		} catch (error) {
 			console.error("💥 Login failed with exception:", error);
@@ -145,21 +126,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	const logout = async () => {
 		try {
-			console.log("🚪 Starting logout process");
-
 			// Clear local state first
 			setUser(null);
 			setSession(null);
 			setIsAuthenticated(false);
-			console.log("🧹 Cleared local auth state");
 
 			// Clear all cached queries to ensure fresh state
 			queryClient.clear();
-			console.log("🗑️ Cleared query cache");
 
 			// Sign out from auth service
 			await authClient.signOut();
-			console.log("👋 Signed out from auth service");
 			refreshAuth();
 
 			// Navigate to login page
@@ -168,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				search: { redirect: window.location.pathname },
 			});
 		} catch (error) {
-			console.error("💥 Logout error:", error);
+			console.error("Logout error:", error);
 			// Even if logout fails, clear local state
 			setUser(null);
 			setSession(null);

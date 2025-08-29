@@ -49,8 +49,6 @@ export const Route = createFileRoute("/_authenticated/medications/")({
 });
 
 export function InventoryManagement() {
-	// const [medications, setMedications] = useState<Medication[]>([]);
-	// const [loading, setLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [stockFilter, setStockFilter] = useState("all");
 	const [activeTab, setActiveTab] = useState("inventory");
@@ -628,7 +626,7 @@ export function InventoryManagement() {
 											.map((medication) => (
 												<div
 													key={medication.id}
-													className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg"
+													className="flex items-center justify-between p-3 rounded-lg border bg-warning/10 "
 												>
 													<div>
 														<p className="font-medium">
@@ -645,19 +643,17 @@ export function InventoryManagement() {
 															}
 														</p>
 													</div>
-													<Button
-														size="sm"
-														onClick={() => {
-															// setSelectedMedication(
-															// 	medication
-															// );
-															// setShowStockAdjustment(
-															// 	true
-															// );
+													<Link
+														to="/medications/stock/$medicationId"
+														params={{
+															medicationId:
+																medication.id.toString(),
 														}}
 													>
-														Restock
-													</Button>
+														<Button size="sm">
+															Restock
+														</Button>
+													</Link>
 												</div>
 											))}
 									</div>

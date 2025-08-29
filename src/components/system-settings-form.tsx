@@ -165,7 +165,6 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 				}}
 				className="space-y-6"
 			>
-				{/* Clinic Settings */}
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
@@ -295,7 +294,6 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					</CardContent>
 				</Card>
 
-				{/* Security Settings */}
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
@@ -388,7 +386,6 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					</CardContent>
 				</Card>
 
-				{/* Notifications */}
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
@@ -447,7 +444,6 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					</CardContent>
 				</Card>
 
-				{/* Appearance Settings */}
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
@@ -550,7 +546,6 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					</CardContent>
 				</Card>
 
-				{/* Form Actions */}
 				<div className="flex justify-end gap-4">
 					<Button
 						type="button"

@@ -133,17 +133,6 @@ export const usersRouter = router({
 					},
 				},
 			});
-			// auth.api.signUpEmail({
-			// 	body: {
-			// 		name: input.firstName + " " + input.lastName,
-			// 		email: input.email,
-			// 		password: input.password,
-			// 		username: input.username,
-			// 		firstName: input.firstName,
-			// 		lastName: input.lastName,
-			// 		role: input.role,
-			// 	},
-			// });
 
 			return newUser.user;
 		}),

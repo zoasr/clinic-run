@@ -31,8 +31,8 @@ export function useUpdateMedication() {
 	return useMutation(trpc.medications.update.mutationOptions());
 }
 
-export function useDeleteMedication() {
-	return useMutation(trpc.medications.delete.mutationOptions());
+export function useDeleteMedication(options) {
+	return useMutation(trpc.medications.delete.mutationOptions(options));
 }
 
 // Export the Medication type for use in other components
