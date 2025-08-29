@@ -1,13 +1,18 @@
+/** @jsx jsx */
+/** @jsxImportSource hono/jsx */
+
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serveStatic } from "hono/bun";
 import { auth } from "./lib/auth.js";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "./lib/routers/index.js";
+import { appRouter } from "./lib/index.js";
 import { createContext } from "./lib/trpc.js";
 
 const app = new Hono();
 const PORT = process.env.BACKEND_PORT || 3031;
+
+console.log(process.env.DB_FILE_NAME, process.env.DATABASE_AUTH_TOKEN);
 
 // Enhanced CORS configuration
 app.use(
@@ -68,7 +73,7 @@ app.use("/static/*", serveStatic({ root: "./dist" }));
 app.use(
 	"/*",
 	serveStatic({
-		root: "./dist",
+		root: process.env.NODE_ENV === "production" ? "." : "./dist",
 		rewriteRequestPath: (path) => (path === "/" ? "/index.html" : path),
 	})
 );
@@ -79,7 +84,7 @@ async function startServer() {
 		// await seedDatabase();
 		console.log("Database ready");
 	} catch (error) {
-		console.error("Failed to initialize database:", error);
+		console.error("❌ Failed to initialize database:", error);
 		process.exit(1);
 	}
 }
@@ -87,16 +92,6 @@ async function startServer() {
 // Health check route
 app.get("/api/health", (c) => {
 	return c.json({ status: "OK", timestamp: new Date().toISOString() });
-});
-
-// Fallback for SPA routing
-app.get("/", (c) => {
-	if (c.req.path.startsWith("/api")) {
-		return c.json({ error: "API endpoint not found" }, 404);
-	}
-	return c.html(
-		`<!DOCTYPE html><html><head><title>Clinic System</title></head><body><div id="root"></div></body></html>`
-	);
 });
 
 // Start server
