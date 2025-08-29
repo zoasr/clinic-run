@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { router, protectedProcedure, adminProcedure } from "../trpc.js";
+import {
+	router,
+	protectedProcedure,
+	adminProcedure,
+	publicProcedure,
+} from "../trpc.js";
 import { eq } from "drizzle-orm";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { auth } from "../auth.js";
@@ -93,6 +98,24 @@ export const usersRouter = router({
 
 			return users;
 		}),
+	getDoctors: publicProcedure.query(async ({ ctx }) => {
+		const users = await ctx.db
+			.select({
+				id: authSchema.user.id,
+				username: authSchema.user.username,
+				email: authSchema.user.email,
+				name: authSchema.user.name,
+				firstName: authSchema.user.firstName,
+				lastName: authSchema.user.lastName,
+				role: authSchema.user.role,
+				isActive: authSchema.user.isActive,
+				createdAt: authSchema.user.createdAt,
+			})
+			.from(authSchema.user)
+			.where(eq(authSchema.user.role, "doctor"));
+
+		return users;
+	}),
 
 	create: adminProcedure
 		.input(userInputSchema)

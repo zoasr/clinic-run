@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute(
 	"/_authenticated/medical-records/$medicalRecordId"
@@ -33,7 +34,7 @@ function RouteComponent() {
 	);
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <PageLoading text="Loading medical record..." />;
 	}
 	if (error) {
 		return <div>Error: {error.message}</div>;

@@ -46,18 +46,24 @@ export function LoginForm() {
 	});
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+		<div className="min-h-screen flex items-center justify-center p-4">
 			<Card className="w-full max-w-md">
 				<CardHeader className="text-center">
 					<CardTitle className="text-2xl font-serif font-bold text-primary">
-						Clinic Management System
+						Clinic Run
 					</CardTitle>
 					<CardDescription>
 						Sign in to access your clinic dashboard
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={form.handleSubmit} className="space-y-4">
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							form.handleSubmit();
+						}}
+						className="space-y-4"
+					>
 						<form.Field
 							name="email"
 							validators={{

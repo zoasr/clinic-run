@@ -23,6 +23,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
 import { cn } from "@/lib/utils";
+import { CardLoading, TableLoading } from "@/components/ui/loading";
 
 export function DashboardPage() {
 	const {
@@ -52,14 +53,10 @@ export function DashboardPage() {
 					</p>
 				</div>
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-					{[...Array(4)].map((_, i) => (
+					{[...Array(5)].map((_, i) => (
 						<Card key={i}>
 							<CardContent className="p-6">
-								<div className="animate-pulse">
-									<div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-									<div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
-									<div className="h-3 bg-muted rounded w-full"></div>
-								</div>
+								<CardLoading />
 							</CardContent>
 						</Card>
 					))}
@@ -378,14 +375,7 @@ export function DashboardPage() {
 						</CardHeader>
 						<CardContent>
 							{activityLoading ? (
-								<div className="space-y-3">
-									{[...Array(3)].map((_, i) => (
-										<div key={i} className="animate-pulse">
-											<div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-											<div className="h-3 bg-muted rounded w-1/2"></div>
-										</div>
-									))}
-								</div>
+								<TableLoading rows={3} />
 							) : recentActivity ? (
 								<div className="space-y-4">
 									{/* Recent Appointments */}
@@ -529,14 +519,7 @@ export function DashboardPage() {
 						</CardHeader>
 						<CardContent>
 							{appointmentsLoading ? (
-								<div className="space-y-2">
-									{[...Array(2)].map((_, i) => (
-										<div key={i} className="animate-pulse">
-											<div className="h-4 bg-muted rounded w-3/4 mb-1"></div>
-											<div className="h-3 bg-muted rounded w-1/2"></div>
-										</div>
-									))}
-								</div>
+								<TableLoading rows={2} />
 							) : upcomingAppointments &&
 							  upcomingAppointments.length > 0 ? (
 								<div className="space-y-3">

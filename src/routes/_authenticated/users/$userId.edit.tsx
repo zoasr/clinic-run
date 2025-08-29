@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { PageLoading } from "@/components/ui/loading";
 
 const userFormSchema = z.object({
 	username: z.string().min(3, "Username must be at least 3 characters"),
@@ -41,6 +42,9 @@ export const Route = createFileRoute("/_authenticated/users/$userId/edit")({
 			user: userData,
 			crumb: `Edit User ${params.userId}`,
 		};
+	},
+	pendingComponent: () => {
+		return <PageLoading text="Loading user data..." />;
 	},
 	component: EditUserComponent,
 });

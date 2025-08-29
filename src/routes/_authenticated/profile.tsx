@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
 import { ProfileForm } from "@/components/profile-form";
+import { PageLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/_authenticated/profile")({
 	loader: () => ({
@@ -17,7 +18,7 @@ function ProfileComponent() {
 		error,
 	} = useQuery(trpc.users.getProfile.queryOptions());
 
-	if (isLoading) return <div>Loading...</div>;
+	if (isLoading) return <PageLoading text="Loading profile..." />;
 	if (error) return <div>Error loading profile</div>;
 
 	return (

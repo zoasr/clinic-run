@@ -12,6 +12,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { PageLoading } from "@/components/ui/loading";
+import { LoginForm } from "@/components/login-form";
 
 function LoginPage() {
 	const { auth } = Route.useRouteContext();
@@ -106,5 +108,8 @@ export const Route = createFileRoute("/login")({
 			throw redirect({ to: search.redirect });
 		}
 	},
-	component: LoginPage,
+	pendingComponent: () => {
+		return <PageLoading text="Checking authentication..." />;
+	},
+	component: LoginForm,
 });

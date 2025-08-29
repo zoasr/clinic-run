@@ -28,6 +28,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Medication } from "@/lib/schema-types";
 import { useDeleteMedication } from "@/hooks/useMedications";
 import { toast } from "sonner";
+import { TableLoading } from "@/components/ui/loading";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -283,9 +284,7 @@ export function InventoryManagement() {
 				<TabsContent value="inventory" className="space-y-4">
 					{/* Medication List */}
 					{loading ? (
-						<div className="flex items-center justify-center py-8">
-							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-						</div>
+						<TableLoading rows={6} />
 					) : filteredMedications?.length === 0 ? (
 						<Card>
 							<CardContent className="flex flex-col items-center justify-center py-8">

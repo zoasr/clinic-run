@@ -2,6 +2,7 @@ import { LabTestDetail } from "@/components/lab-test-detail";
 import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { PageLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/_authenticated/lab-tests/$labTestId")({
 	loader: ({ params }) => {
@@ -27,7 +28,7 @@ function RouteComponent() {
 	);
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <PageLoading text="Loading lab test details..." />;
 	}
 
 	if (error) {

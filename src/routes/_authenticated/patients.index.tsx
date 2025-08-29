@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { usePatients, type Patient } from "@/hooks/usePatients";
 import { Search, Plus, User, Phone, Mail } from "lucide-react";
+import { TableLoading } from "@/components/ui/loading";
 
 function PatientManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -68,7 +69,11 @@ function PatientManagement() {
 
 			{/* Patient List */}
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{!isLoading && patients.length === 0 ? (
+				{isLoading ? (
+					<div className="col-span-full">
+						<TableLoading rows={6} />
+					</div>
+				) : patients.length === 0 ? (
 					<div className="col-span-full">
 						<Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
 							<CardContent className="flex flex-col items-center justify-center py-12">

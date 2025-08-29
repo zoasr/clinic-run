@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { InvoiceDetail } from "@/components/invoice-detail";
 import { useInvoice } from "@/hooks/useInvoices";
+import { PageLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
 	component: RouteComponent,
@@ -15,7 +16,7 @@ function RouteComponent() {
 	const navigate = Route.useNavigate();
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <PageLoading text="Loading invoice details..." />;
 	}
 
 	if (!invoice) {

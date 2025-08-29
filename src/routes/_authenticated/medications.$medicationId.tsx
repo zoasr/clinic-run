@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MedicationForm } from "@/components/medication-form";
 import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
+import { PageLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute(
 	"/_authenticated/medications/$medicationId"
@@ -15,11 +16,28 @@ export const Route = createFileRoute(
 function RouteComponent() {
 	const { medicationId } = Route.useParams();
 	const navigate = Route.useNavigate();
-	const { data: medication } = useQuery(
+	const {
+		data: medication,
+		isLoading,
+		error,
+	} = useQuery(
 		trpc.medications.getById.queryOptions({
 			id: Number(medicationId),
 		})
 	);
+
+	if (isLoading) {
+		return <PageLoading text="Loading medication details..." />;
+	}
+
+	if (error) {
+		return <div>Error: {error.message}</div>;
+	}
+
+	if (!medication) {
+		return <div>Medication with id {medicationId} not found</div>;
+	}
+
 	return (
 		<MedicationForm
 			medication={medication}

@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import ErrorComponent from "@/components/error";
+import { TableLoading } from "@/components/ui/loading";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type User = RouterOutput["users"]["getAll"][number];
@@ -77,7 +78,7 @@ function UsersComponent() {
 		}
 	};
 
-	if (isLoading) return <div>Loading...</div>;
+	if (isLoading) return <TableLoading rows={8} />;
 	if (error) return <ErrorComponent error={error} />;
 
 	return (
@@ -142,7 +143,10 @@ function UsersComponent() {
 											size="sm"
 											asChild
 										>
-											<Link to={`/users/${user.id}/edit`}>
+											<Link
+												to={`/users/$userId/edit`}
+												params={{ userId: user.id }}
+											>
 												<Pencil className="w-4 h-4" />
 											</Link>
 										</Button>

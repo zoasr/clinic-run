@@ -19,6 +19,9 @@ import { useMatches } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import NotFound from "@/components/not-found";
 import ErrorComponent from "@/components/error";
+import { PageLoading } from "@/components/ui/loading";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ context, location }) => {
@@ -32,6 +35,9 @@ export const Route = createFileRoute("/_authenticated")({
 			});
 		}
 	},
+	pendingComponent: () => {
+		return <PageLoading text="Verifying authentication..." />;
+	},
 	notFoundComponent: () => {
 		return <NotFound />;
 	},
@@ -40,7 +46,13 @@ export const Route = createFileRoute("/_authenticated")({
 	},
 
 	component: () => {
+		const { refreshAuth } = useAuth();
 		const matches = useMatches();
+
+		// Refresh auth state when component mounts to ensure reactivity
+		useEffect(() => {
+			refreshAuth();
+		}, [refreshAuth]);
 
 		const breadcrumbItems = matches
 			.filter((match) => match.loaderData?.crumb)

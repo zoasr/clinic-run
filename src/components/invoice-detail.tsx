@@ -79,9 +79,9 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 	};
 
 	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('en-US', {
+		return new Intl.NumberFormat('ar-EG', {
 			style: 'currency',
-			currency: 'USD',
+			currency: 'EGP',
 		}).format(amount);
 	};
 

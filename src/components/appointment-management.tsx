@@ -32,6 +32,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { TableLoading } from "@/components/ui/loading";
 
 export function AppointmentManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -234,9 +235,7 @@ export function AppointmentManagement() {
 				<TabsContent value="list" className="space-y-4">
 					{/* Appointment List */}
 					{isLoading ? (
-						<div className="flex items-center justify-center py-8">
-							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-						</div>
+						<TableLoading rows={5} />
 					) : filteredAppointments.length === 0 ? (
 						<Card>
 							<CardContent className="flex flex-col items-center justify-center py-8">

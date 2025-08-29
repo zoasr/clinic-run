@@ -25,6 +25,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import ErrorComponent from "@/components/error";
+import { TableLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/_authenticated/doctors/")({
 	loader: () => ({
@@ -37,22 +40,19 @@ function DoctorsComponent() {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [doctorToDelete, setDoctorToDelete] = useState<any>(null);
 	const queryClient = useQueryClient();
+	const { user } = useAuth();
 
 	const {
 		data: doctors,
 		isLoading,
 		error,
-	} = useQuery(
-		trpc.users.getByRole.queryOptions({
-			role: "doctor",
-		})
-	);
+	} = useQuery(trpc.users.getDoctors.queryOptions());
 
 	const deleteDoctorMutation = useMutation(
 		trpc.users.delete.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
-					queryKey: trpc.users.getByRole.queryKey({ role: "doctor" })
+					queryKey: trpc.users.getDoctors.queryKey(),
 				});
 				toast.success("Doctor deleted successfully");
 				setDeleteDialogOpen(false);
@@ -63,6 +63,7 @@ function DoctorsComponent() {
 			},
 		})
 	);
+	const isAdmin = user?.role === "admin";
 
 	const handleDeleteClick = (doctor: any) => {
 		setDoctorToDelete(doctor);
@@ -75,17 +76,19 @@ function DoctorsComponent() {
 		}
 	};
 
-	if (isLoading) return <div>Loading...</div>;
-	if (error) return <div>Error loading doctors</div>;
+	if (isLoading) return <TableLoading rows={8} />;
+	if (error) return <ErrorComponent error={error} />;
 
 	return (
 		<div className="p-4 text-foreground">
 			<div className="flex justify-between items-center mb-4">
 				<h1 className="text-2xl font-bold text-foreground">Doctors</h1>
-				<Button>
-					<UserPlus className="w-4 h-4 mr-2" />
-					<Link to="/doctors/add">Add Doctor</Link>
-				</Button>
+				{isAdmin && (
+					<Button>
+						<UserPlus className="w-4 h-4 mr-2" />
+						Add Doctor
+					</Button>
+				)}
 			</div>
 			<div className="overflow-x-auto">
 				<Table className="border rounded-lg">
@@ -96,7 +99,11 @@ function DoctorsComponent() {
 							<TableHead>Username</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead>Created</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
+							{isAdmin && (
+								<TableHead className="text-right">
+									Actions
+								</TableHead>
+							)}
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -108,34 +115,53 @@ function DoctorsComponent() {
 								<TableCell>{doctor.email}</TableCell>
 								<TableCell>{doctor.username}</TableCell>
 								<TableCell>
-									<Badge variant={doctor.isActive ? "default" : "destructive"}>
-										{doctor.isActive ? "Active" : "Inactive"}
+									<Badge
+										variant={
+											doctor.isActive
+												? "default"
+												: "destructive"
+										}
+									>
+										{doctor.isActive
+											? "Active"
+											: "Inactive"}
 									</Badge>
 								</TableCell>
 								<TableCell>
-									{new Date(doctor.createdAt).toLocaleDateString()}
+									{new Date(
+										doctor.createdAt
+									).toLocaleDateString()}
 								</TableCell>
-								<TableCell className="text-right">
-									<div className="flex justify-end gap-2">
-										<Button
-											variant="outline"
-											size="sm"
-											asChild
-										>
-											<Link to={`/users/${doctor.id}/edit`}>
-												<Pencil className="w-4 h-4" />
-											</Link>
-										</Button>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={() => handleDeleteClick(doctor)}
-											className="text-red-600 hover:text-red-700 hover:bg-red-50"
-										>
-											<Trash2 className="w-4 h-4" />
-										</Button>
-									</div>
-								</TableCell>
+								{isAdmin && (
+									<TableCell className="text-right">
+										<div className="flex justify-end gap-2">
+											<Button
+												variant="outline"
+												size="sm"
+												asChild
+											>
+												<Link
+													to={`/users/$userId/edit`}
+													params={{
+														userId: doctor.id,
+													}}
+												>
+													<Pencil className="w-4 h-4" />
+												</Link>
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() =>
+													handleDeleteClick(doctor)
+												}
+												className="text-red-600 hover:text-red-700 hover:bg-red-50"
+											>
+												<Trash2 className="w-4 h-4" />
+											</Button>
+										</div>
+									</TableCell>
+								)}
 							</TableRow>
 						))}
 					</TableBody>
@@ -143,17 +169,21 @@ function DoctorsComponent() {
 			</div>
 
 			{/* Delete Confirmation Dialog */}
-			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+			<AlertDialog
+				open={deleteDialogOpen}
+				onOpenChange={setDeleteDialogOpen}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Doctor</AlertDialogTitle>
 						<AlertDialogDescription>
 							Are you sure you want to delete{" "}
 							<strong>
-								{doctorToDelete?.firstName} {doctorToDelete?.lastName}
+								{doctorToDelete?.firstName}{" "}
+								{doctorToDelete?.lastName}
 							</strong>
-							? This action cannot be undone and will permanently remove the doctor
-							from the system.
+							? This action cannot be undone and will permanently
+							remove the doctor from the system.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

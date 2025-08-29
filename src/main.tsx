@@ -10,18 +10,6 @@ import "./index.css";
 // Create a new router instance
 const router = createRouter({
 	routeTree,
-	context: {
-		// auth will be passed down from App component
-		auth: {
-			isAuthenticated: false,
-			user: null,
-			session: null,
-			login: async (username: string, password: string) => {
-				return false;
-			},
-			logout: () => {},
-		},
-	},
 });
 
 // Register the router instance for type safety
@@ -30,7 +18,8 @@ declare module "@tanstack/react-router" {
 		router: typeof router;
 	}
 }
-const Router = () => {
+
+const RouterWithAuth = () => {
 	const auth = useAuth();
 	return <RouterProvider router={router} context={{ auth }} />;
 };
@@ -41,7 +30,7 @@ const MainApp = () => {
 			<TRPCProviderWrapper>
 				<ThemeProvider>
 					<AuthProvider>
-						<Router />
+						<RouterWithAuth />
 					</AuthProvider>
 				</ThemeProvider>
 			</TRPCProviderWrapper>

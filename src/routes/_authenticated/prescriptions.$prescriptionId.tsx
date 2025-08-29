@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PrescriptionDetail } from "@/components/prescription-detail";
 import { usePrescription } from "@/hooks/usePrescriptions";
+import { PageLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute(
 	"/_authenticated/prescriptions/$prescriptionId"
@@ -19,7 +20,7 @@ function RouteComponent() {
 	const navigate = Route.useNavigate();
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <PageLoading text="Loading prescription details..." />;
 	}
 
 	if (!prescription) {

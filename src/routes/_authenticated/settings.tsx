@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
 import { SystemSettingsForm } from "@/components/system-settings-form";
 import ErrorComponent from "@/components/error";
+import { PageLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/_authenticated/settings")({
 	loader: () => ({
@@ -36,7 +37,7 @@ function SettingsComponent() {
 
 	console.log(error);
 
-	if (isLoading) return <div>Loading...</div>;
+	if (isLoading) return <PageLoading text="Loading settings..." />;
 	if (error) return <ErrorComponent error={error} />;
 
 	return (
