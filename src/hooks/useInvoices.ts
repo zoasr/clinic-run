@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 
 // Infer types from tRPC
 type Invoice = AppRouter["invoices"]["getById"]["_def"]["$types"]["output"];
@@ -22,7 +22,7 @@ export function useInvoice(invoiceId: number) {
 	return useQuery(
 		trpc.invoices.getById.queryOptions(
 			{ id: invoiceId },
-			{ enabled: !!invoiceId }
+			{ enabled: !!invoiceId, retry: false }
 		)
 	);
 }

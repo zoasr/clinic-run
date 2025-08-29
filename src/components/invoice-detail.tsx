@@ -3,15 +3,33 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Receipt, User, Calendar, DollarSign, CheckCircle, Clock, AlertCircle, Edit, CreditCard } from "lucide-react";
+import {
+	ArrowLeft,
+	Receipt,
+	User,
+	Calendar,
+	DollarSign,
+	CheckCircle,
+	Clock,
+	AlertCircle,
+	Edit,
+	CreditCard,
+} from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 import type { Invoice } from "@/hooks/useInvoices";
+import ErrorComponent from "./error";
 
 interface InvoiceDetailProps {
 	invoice: Invoice;
@@ -27,7 +45,9 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 		trpc.invoices.markAsPaid.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
-					queryKey: ["invoices"],
+					queryKey: trpc.invoices.getById.queryKey({
+						id: invoice?.id,
+					}),
 					refetchType: "active",
 				});
 				toast.success("Payment recorded successfully");
@@ -46,8 +66,12 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 			return;
 		}
 
+		if (!invoice?.id) {
+			toast.error("Invoice ID is missing");
+			return;
+		}
 		markAsPaidMutation.mutate({
-			id: invoice.id,
+			id: invoice?.id,
 			paidAmount: amount,
 		});
 	};
@@ -79,14 +103,18 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 	};
 
 	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('ar-EG', {
-			style: 'currency',
-			currency: 'EGP',
+		return new Intl.NumberFormat("ar-EG", {
+			style: "currency",
+			currency: "EGP",
 		}).format(amount);
 	};
 
-	const StatusIcon = getStatusIcon(invoice.status);
-	const outstandingAmount = invoice.totalAmount - invoice.paidAmount;
+	if (!invoice) {
+		return <ErrorComponent error={new Error("Invoice not found")} />;
+	}
+
+	const StatusIcon = getStatusIcon(invoice?.status || "pending");
+	const outstandingAmount = invoice?.totalAmount - invoice?.paidAmount || 0;
 
 	return (
 		<div className="space-y-6 p-6">
@@ -102,7 +130,8 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 							Invoice {invoice.invoiceNumber}
 						</h1>
 						<p className="text-muted-foreground">
-							Invoice for {invoice.patient?.firstName} {invoice.patient?.lastName}
+							Invoice for {invoice.patient?.firstName}{" "}
+							{invoice.patient?.lastName}
 						</p>
 					</div>
 				</div>
@@ -131,11 +160,14 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 									{invoice.status === "paid"
 										? "This invoice has been fully paid"
 										: invoice.status === "overdue"
-										? "This invoice is past its due date"
-										: "This invoice is pending payment"}
+											? "This invoice is past its due date"
+											: "This invoice is pending payment"}
 								</p>
 							</div>
-							<Badge variant={getStatusColor(invoice.status)} className="ml-4">
+							<Badge
+								variant={getStatusColor(invoice.status)}
+								className="ml-4"
+							>
 								{invoice.status}
 							</Badge>
 						</div>
@@ -144,7 +176,9 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 							<p className="text-2xl font-bold text-primary">
 								{formatCurrency(invoice.totalAmount)}
 							</p>
-							<p className="text-sm text-muted-foreground">Total Amount</p>
+							<p className="text-sm text-muted-foreground">
+								Total Amount
+							</p>
 						</div>
 					</div>
 				</CardContent>
@@ -166,13 +200,17 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 						<div className="space-y-4">
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 								<div>
-									<p className="text-sm text-muted-foreground">Outstanding Amount</p>
+									<p className="text-sm text-muted-foreground">
+										Outstanding Amount
+									</p>
 									<p className="text-lg font-semibold text-orange-600">
 										{formatCurrency(outstandingAmount)}
 									</p>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="paymentAmount">Payment Amount</Label>
+									<Label htmlFor="paymentAmount">
+										Payment Amount
+									</Label>
 									<Input
 										id="paymentAmount"
 										type="number"
@@ -180,17 +218,24 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 										min="0"
 										max={outstandingAmount}
 										value={paymentAmount}
-										onChange={(e) => setPaymentAmount(e.target.value)}
+										onChange={(e) =>
+											setPaymentAmount(e.target.value)
+										}
 										placeholder="Enter payment amount"
 									/>
 								</div>
 								<div className="flex items-end">
 									<Button
 										onClick={handlePayment}
-										disabled={markAsPaidMutation.isPending || !paymentAmount}
+										disabled={
+											markAsPaidMutation.isPending ||
+											!paymentAmount
+										}
 										className="w-full"
 									>
-										{markAsPaidMutation.isPending ? "Recording..." : "Record Payment"}
+										{markAsPaidMutation.isPending
+											? "Recording..."
+											: "Record Payment"}
 									</Button>
 								</div>
 							</div>
@@ -211,11 +256,16 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 					</CardHeader>
 					<CardContent className="space-y-3">
 						<div>
-							<p className="text-sm text-muted-foreground">Name</p>
-							<p className="font-medium">
-								{invoice.patient?.firstName} {invoice.patient?.lastName}
+							<p className="text-sm text-muted-foreground">
+								Name
 							</p>
-							<p className="text-sm text-muted-foreground">ID: {invoice.patient?.patientId}</p>
+							<p className="font-medium">
+								{invoice.patient?.firstName}{" "}
+								{invoice.patient?.lastName}
+							</p>
+							<p className="text-sm text-muted-foreground">
+								ID: {invoice.patient?.patientId}
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -230,13 +280,23 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 					</CardHeader>
 					<CardContent className="space-y-3">
 						<div>
-							<p className="text-sm text-muted-foreground">Invoice Number</p>
-							<p className="font-medium font-mono">{invoice.invoiceNumber}</p>
+							<p className="text-sm text-muted-foreground">
+								Invoice Number
+							</p>
+							<p className="font-medium font-mono">
+								{invoice.invoiceNumber}
+							</p>
 						</div>
 						<div>
-							<p className="text-sm text-muted-foreground">Due Date</p>
+							<p className="text-sm text-muted-foreground">
+								Due Date
+							</p>
 							<p className="font-medium">
-								{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "N/A"}
+								{invoice.dueDate
+									? new Date(
+											invoice.dueDate
+										).toLocaleDateString()
+									: "N/A"}
 							</p>
 						</div>
 					</CardContent>
@@ -257,19 +317,32 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 				<CardContent>
 					{invoice.items ? (
 						<div className="space-y-3">
-							{JSON.parse(invoice.items).map((item: any, index: number) => (
-								<div key={index} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
-									<span className="text-sm">{item.description || "Service"}</span>
-									<span className="font-medium">{formatCurrency(item.amount || 0)}</span>
-								</div>
-							))}
+							{JSON.parse(invoice.items).map(
+								(item: any, index: number) => (
+									<div
+										key={index}
+										className="flex justify-between items-center py-2 border-b border-border/50 last:border-0"
+									>
+										<span className="text-sm">
+											{item.description || "Service"}
+										</span>
+										<span className="font-medium">
+											{formatCurrency(item.amount || 0)}
+										</span>
+									</div>
+								)
+							)}
 							<div className="flex justify-between items-center pt-3 border-t border-border font-semibold">
 								<span>Total</span>
-								<span>{formatCurrency(invoice.totalAmount)}</span>
+								<span>
+									{formatCurrency(invoice.totalAmount)}
+								</span>
 							</div>
 						</div>
 					) : (
-						<p className="text-muted-foreground">No items details available</p>
+						<p className="text-muted-foreground">
+							No items details available
+						</p>
 					)}
 				</CardContent>
 			</Card>
@@ -285,19 +358,25 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 				<CardContent>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<div className="text-center p-4 bg-muted/50 rounded-lg">
-							<p className="text-sm text-muted-foreground">Total Amount</p>
+							<p className="text-sm text-muted-foreground">
+								Total Amount
+							</p>
 							<p className="text-2xl font-bold text-foreground">
 								{formatCurrency(invoice.totalAmount)}
 							</p>
 						</div>
 						<div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-							<p className="text-sm text-muted-foreground">Amount Paid</p>
+							<p className="text-sm text-muted-foreground">
+								Amount Paid
+							</p>
 							<p className="text-2xl font-bold text-green-600">
 								{formatCurrency(invoice.paidAmount)}
 							</p>
 						</div>
 						<div className="text-center p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
-							<p className="text-sm text-muted-foreground">Outstanding</p>
+							<p className="text-sm text-muted-foreground">
+								Outstanding
+							</p>
 							<p className="text-2xl font-bold text-orange-600">
 								{formatCurrency(outstandingAmount)}
 							</p>
@@ -317,17 +396,31 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 				<CardContent>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div>
-							<p className="text-sm text-muted-foreground">Created</p>
+							<p className="text-sm text-muted-foreground">
+								Created
+							</p>
 							<p className="font-medium">
-								{new Date(invoice.createdAt).toLocaleDateString()} at{" "}
-								{new Date(invoice.createdAt).toLocaleTimeString()}
+								{new Date(
+									invoice.createdAt
+								).toLocaleDateString()}{" "}
+								at{" "}
+								{new Date(
+									invoice.createdAt
+								).toLocaleTimeString()}
 							</p>
 						</div>
 						<div>
-							<p className="text-sm text-muted-foreground">Last Updated</p>
+							<p className="text-sm text-muted-foreground">
+								Last Updated
+							</p>
 							<p className="font-medium">
-								{new Date(invoice.updatedAt).toLocaleDateString()} at{" "}
-								{new Date(invoice.updatedAt).toLocaleTimeString()}
+								{new Date(
+									invoice.updatedAt
+								).toLocaleDateString()}{" "}
+								at{" "}
+								{new Date(
+									invoice.updatedAt
+								).toLocaleTimeString()}
 							</p>
 						</div>
 					</div>
@@ -336,7 +429,9 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 
 			{markAsPaidMutation.error && (
 				<Alert variant="destructive">
-					<AlertDescription>{markAsPaidMutation.error.message}</AlertDescription>
+					<AlertDescription>
+						{markAsPaidMutation.error.message}
+					</AlertDescription>
 				</Alert>
 			)}
 		</div>

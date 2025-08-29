@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { InvoiceDetail } from "@/components/invoice-detail";
 import { useInvoice } from "@/hooks/useInvoices";
 import { PageLoading } from "@/components/ui/loading";
+import ErrorComponent from "@/components/error";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
 	component: RouteComponent,
@@ -20,14 +21,19 @@ function RouteComponent() {
 	}
 
 	if (!invoice) {
-		return <div>Invoice not found</div>;
+		return <ErrorComponent error={new Error("Invoice not found")} />;
 	}
 
 	return (
 		<InvoiceDetail
 			invoice={invoice}
 			onBack={() => navigate({ to: "/invoices" })}
-			onEdit={(invoice) => {}}
+			onEdit={(invoice) => {
+				navigate({
+					to: `/invoices/edit/$invoiceId`,
+					params: { invoiceId: invoice?.id?.toString() || "" },
+				});
+			}}
 		/>
 	);
 }

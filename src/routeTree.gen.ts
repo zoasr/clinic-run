@@ -51,6 +51,7 @@ import { Route as AuthenticatedPatientsEditPatientIdRouteImport } from './routes
 import { Route as AuthenticatedMedicationsStockMedicationIdRouteImport } from './routes/_authenticated/medications.stock.$medicationId'
 import { Route as AuthenticatedMedicalRecordsEditMedicalRecordIdRouteImport } from './routes/_authenticated/medical-records.edit.$medicalRecordId'
 import { Route as AuthenticatedLabTestsEditLabTestIdRouteImport } from './routes/_authenticated/lab-tests.edit.$labTestId'
+import { Route as AuthenticatedInvoicesEditInvoiceIdRouteImport } from './routes/_authenticated/invoices.edit.$invoiceId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -292,6 +293,12 @@ const AuthenticatedLabTestsEditLabTestIdRoute =
     path: '/edit/$labTestId',
     getParentRoute: () => AuthenticatedLabTestsRoute,
   } as any)
+const AuthenticatedInvoicesEditInvoiceIdRoute =
+  AuthenticatedInvoicesEditInvoiceIdRouteImport.update({
+    id: '/edit/$invoiceId',
+    path: '/edit/$invoiceId',
+    getParentRoute: () => AuthenticatedInvoicesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
@@ -330,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/patients/': typeof AuthenticatedPatientsIndexRoute
   '/prescriptions/': typeof AuthenticatedPrescriptionsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/invoices/edit/$invoiceId': typeof AuthenticatedInvoicesEditInvoiceIdRoute
   '/lab-tests/edit/$labTestId': typeof AuthenticatedLabTestsEditLabTestIdRoute
   '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
@@ -366,6 +374,7 @@ export interface FileRoutesByTo {
   '/patients': typeof AuthenticatedPatientsIndexRoute
   '/prescriptions': typeof AuthenticatedPrescriptionsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/invoices/edit/$invoiceId': typeof AuthenticatedInvoicesEditInvoiceIdRoute
   '/lab-tests/edit/$labTestId': typeof AuthenticatedLabTestsEditLabTestIdRoute
   '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
@@ -411,6 +420,7 @@ export interface FileRoutesById {
   '/_authenticated/patients/': typeof AuthenticatedPatientsIndexRoute
   '/_authenticated/prescriptions/': typeof AuthenticatedPrescriptionsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/invoices/edit/$invoiceId': typeof AuthenticatedInvoicesEditInvoiceIdRoute
   '/_authenticated/lab-tests/edit/$labTestId': typeof AuthenticatedLabTestsEditLabTestIdRoute
   '/_authenticated/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/_authenticated/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
@@ -456,6 +466,7 @@ export interface FileRouteTypes {
     | '/patients/'
     | '/prescriptions/'
     | '/users'
+    | '/invoices/edit/$invoiceId'
     | '/lab-tests/edit/$labTestId'
     | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
@@ -492,6 +503,7 @@ export interface FileRouteTypes {
     | '/patients'
     | '/prescriptions'
     | '/users'
+    | '/invoices/edit/$invoiceId'
     | '/lab-tests/edit/$labTestId'
     | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
@@ -536,6 +548,7 @@ export interface FileRouteTypes {
     | '/_authenticated/patients/'
     | '/_authenticated/prescriptions/'
     | '/_authenticated/users/'
+    | '/_authenticated/invoices/edit/$invoiceId'
     | '/_authenticated/lab-tests/edit/$labTestId'
     | '/_authenticated/medical-records/edit/$medicalRecordId'
     | '/_authenticated/medications/stock/$medicationId'
@@ -844,6 +857,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLabTestsEditLabTestIdRouteImport
       parentRoute: typeof AuthenticatedLabTestsRoute
     }
+    '/_authenticated/invoices/edit/$invoiceId': {
+      id: '/_authenticated/invoices/edit/$invoiceId'
+      path: '/edit/$invoiceId'
+      fullPath: '/invoices/edit/$invoiceId'
+      preLoaderRoute: typeof AuthenticatedInvoicesEditInvoiceIdRouteImport
+      parentRoute: typeof AuthenticatedInvoicesRoute
+    }
   }
 }
 
@@ -870,12 +890,15 @@ interface AuthenticatedInvoicesRouteChildren {
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
+  AuthenticatedInvoicesEditInvoiceIdRoute: typeof AuthenticatedInvoicesEditInvoiceIdRoute
 }
 
 const AuthenticatedInvoicesRouteChildren: AuthenticatedInvoicesRouteChildren = {
   AuthenticatedInvoicesInvoiceIdRoute: AuthenticatedInvoicesInvoiceIdRoute,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
   AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
+  AuthenticatedInvoicesEditInvoiceIdRoute:
+    AuthenticatedInvoicesEditInvoiceIdRoute,
 }
 
 const AuthenticatedInvoicesRouteWithChildren =
