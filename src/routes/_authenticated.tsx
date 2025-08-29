@@ -46,13 +46,7 @@ export const Route = createFileRoute("/_authenticated")({
 	},
 
 	component: () => {
-		const { refreshAuth } = useAuth();
 		const matches = useMatches();
-
-		// Refresh auth state when component mounts to ensure reactivity
-		useEffect(() => {
-			refreshAuth();
-		}, [refreshAuth]);
 
 		const breadcrumbItems = matches
 			.filter((match) => match.loaderData?.crumb)

@@ -81,27 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		initAuth();
 	}, []);
 
-	// Listen for storage changes (login/logout in other tabs)
-	useEffect(() => {
-		const handleStorageChange = (e: StorageEvent) => {
-			if (e.key === "auth-token") {
-				if (e.newValue) {
-					// Token was added, refresh auth
-					refreshAuth();
-				} else {
-					// Token was removed, clear auth
-					setUser(null);
-					setSession(null);
-					setIsAuthenticated(false);
-					queryClient.clear();
-				}
-			}
-		};
-
-		window.addEventListener("storage", handleStorageChange);
-		return () => window.removeEventListener("storage", handleStorageChange);
-	}, [refreshAuth]);
-
 	// Show loading state while checking auth
 	if (isLoading) {
 		return <PageLoading text="Authenticating..." />;
@@ -148,14 +127,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				setSession(sessionData);
 				setIsAuthenticated(true);
 
-				// Store token for persistence
-				if (response.data.token) {
-					localStorage.setItem("auth-token", response.data.token);
-				}
-
 				// Clear all cached queries to ensure fresh data
 				queryClient.clear();
 				console.log("🧹 Cleared query cache");
+				refreshAuth();
 
 				return true;
 			}
@@ -182,13 +157,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			queryClient.clear();
 			console.log("🗑️ Cleared query cache");
 
-			// Remove stored token
-			localStorage.removeItem("auth-token");
-			console.log("🗝️ Removed auth token from storage");
-
 			// Sign out from auth service
 			await authClient.signOut();
 			console.log("👋 Signed out from auth service");
+			refreshAuth();
 
 			// Navigate to login page
 			throw redirect({
@@ -201,7 +173,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			setUser(null);
 			setSession(null);
 			setIsAuthenticated(false);
-			localStorage.removeItem("auth-token");
 			queryClient.clear();
 			throw redirect({
 				to: "/login",
