@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Appointment } from "@/hooks/useAppointments";
 
 interface AppointmentCalendarProps {
-	appointments: any[];
-	onAppointmentClick: (appointment: any) => void;
+	appointments: Appointment[];
+	onAppointmentClick: (appointment: Appointment) => void;
 	onDateClick: (date: string) => void;
 }
 
@@ -26,11 +27,9 @@ export function AppointmentCalendar({
 	};
 
 	const getAppointmentsForDate = (date: string) => {
-		return appointments.filter((apt) => apt.appointmentDate === date);
-	};
-
-	const formatDate = (year: number, month: number, day: number) => {
-		return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+		return appointments.filter((apt) =>
+			apt.appointmentDate ? apt.appointmentDate === date : false
+		);
 	};
 
 	const navigateMonth = (direction: "prev" | "next") => {
@@ -135,11 +134,11 @@ export function AppointmentCalendar({
 					{/* Days of the month */}
 					{Array.from({ length: daysInMonth }, (_, i) => {
 						const day = i + 1;
-						const dateString = formatDate(
+						const dateString = new Date(
 							currentDate.getFullYear(),
 							currentDate.getMonth(),
 							day
-						);
+						).toLocaleDateString();
 						const dayAppointments =
 							getAppointmentsForDate(dateString);
 
@@ -175,7 +174,7 @@ export function AppointmentCalendar({
 										.map((appointment) => (
 											<div
 												key={appointment.id}
-												className="text-xs p-1 rounded cursor-pointer hover:opacity-80"
+												className="text-xs p-1 rounded cursor-pointer hover:opacity-80 border bg-accent"
 												style={{
 													backgroundColor: `${getStatusColor(appointment.status)}20`,
 												}}
@@ -196,7 +195,7 @@ export function AppointmentCalendar({
 														}{" "}
 														{
 															appointment.patient
-																.firstName
+																?.firstName
 														}
 													</span>
 												</div>

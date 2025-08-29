@@ -5,9 +5,13 @@ import * as schema from "../db/schema/schema.js";
 
 export const dashboardRouter = router({
 	getStats: protectedProcedure.query(async ({ ctx }) => {
-		const today = new Date().toISOString().split("T")[0];
-		const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-		const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+		const today = new Date().toLocaleDateString() as string;
+		const yesterday = new Date(
+			Date.now() - 24 * 60 * 60 * 1000
+		).toLocaleDateString() as string;
+		const weekAgo = new Date(
+			Date.now() - 7 * 24 * 60 * 60 * 1000
+		).toLocaleDateString() as string;
 
 		const [
 			totalPatients,
@@ -51,9 +55,7 @@ export const dashboardRouter = router({
 		const lowStock = allMedications.filter(
 			(med) => med.quantity <= med.minStockLevel && med.quantity > 0
 		);
-		const outOfStock = allMedications.filter(
-			(med) => med.quantity === 0
-		);
+		const outOfStock = allMedications.filter((med) => med.quantity === 0);
 		const healthyStock = allMedications.filter(
 			(med) => med.quantity > med.minStockLevel
 		);
@@ -61,9 +63,12 @@ export const dashboardRouter = router({
 		// Calculate appointment trends
 		const todayCount = todayAppointments.length;
 		const yesterdayCount = yesterdayAppointments.length;
-		const appointmentChange = yesterdayCount > 0
-			? ((todayCount - yesterdayCount) / yesterdayCount) * 100
-			: todayCount > 0 ? 100 : 0;
+		const appointmentChange =
+			yesterdayCount > 0
+				? ((todayCount - yesterdayCount) / yesterdayCount) * 100
+				: todayCount > 0
+					? 100
+					: 0;
 
 		// Get upcoming appointments (next 7 days)
 		const upcomingAppointments = await ctx.db
@@ -71,7 +76,7 @@ export const dashboardRouter = router({
 			.from(schema.appointments)
 			.where(eq(schema.appointments.status, "scheduled"));
 
-		const nextWeekAppointments = upcomingAppointments.filter(apt => {
+		const nextWeekAppointments = upcomingAppointments.filter((apt) => {
 			const aptDate = new Date(apt.appointmentDate);
 			const todayDate = new Date(today);
 			const diffTime = aptDate.getTime() - todayDate.getTime();
@@ -159,10 +164,10 @@ export const dashboardRouter = router({
 		)
 		.query(async ({ input, ctx }) => {
 			const { days } = input;
-			const startDate = new Date().toISOString().split("T")[0];
-			const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-				.toISOString()
-				.split("T")[0];
+			const startDate = new Date().toLocaleDateString();
+			const endDate = new Date(
+				Date.now() + days * 24 * 60 * 60 * 1000
+			).toLocaleDateString();
 
 			const upcomingAppointments = await ctx.db
 				.select({

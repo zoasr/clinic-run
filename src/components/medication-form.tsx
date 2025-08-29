@@ -346,7 +346,7 @@ export function MedicationForm({
 												onSelect={(date) => {
 													field.handleChange(
 														date
-															? date.toISOString()
+															? date.toLocaleDateString()
 															: ""
 													);
 												}}

@@ -55,7 +55,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 		testName: labTest?.testName ?? "",
 		testType: labTest?.testType ?? "",
 		status: labTest?.status ?? "ordered",
-		orderDate: labTest?.orderDate ?? new Date().toISOString().split("T")[0],
+		orderDate: labTest?.orderDate ?? new Date().toLocaleDateString(),
 		completedDate: labTest?.completedDate ?? "",
 		results: labTest?.results ?? "",
 		normalRange: labTest?.normalRange ?? "",
@@ -152,7 +152,8 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					<CardHeader>
 						<CardTitle>Patient & Doctor Information</CardTitle>
 						<CardDescription>
-							Select the patient and ordering doctor for this lab test
+							Select the patient and ordering doctor for this lab
+							test
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -172,7 +173,9 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 										<Select
 											value={field.state.value?.toString()}
 											onValueChange={(value) =>
-												field.handleChange(parseInt(value))
+												field.handleChange(
+													parseInt(value)
+												)
 											}
 										>
 											<SelectTrigger>
@@ -184,7 +187,9 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 														key={patient.id}
 														value={patient.id.toString()}
 													>
-														{patient.firstName} {patient.lastName} (ID: {patient.patientId})
+														{patient.firstName}{" "}
+														{patient.lastName} (ID:{" "}
+														{patient.patientId})
 													</SelectItem>
 												))}
 											</SelectContent>
@@ -194,7 +199,9 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="doctorId">Ordering Doctor *</Label>
+								<Label htmlFor="doctorId">
+									Ordering Doctor *
+								</Label>
 								<form.Field
 									name="doctorId"
 									validators={{
@@ -220,7 +227,8 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 														key={doctor.id}
 														value={doctor.id}
 													>
-														Dr. {doctor.firstName} {doctor.lastName}
+														Dr. {doctor.firstName}{" "}
+														{doctor.lastName}
 													</SelectItem>
 												))}
 											</SelectContent>
@@ -258,7 +266,9 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 											id="testName"
 											value={field.state.value}
 											onChange={(e) =>
-												field.handleChange(e.target.value)
+												field.handleChange(
+													e.target.value
+												)
 											}
 											placeholder="e.g., Complete Blood Count, Lipid Panel"
 											required
@@ -273,7 +283,9 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 									name="testType"
 									validators={{
 										onChange: ({ value }) =>
-											!value ? "Test type is required" : undefined,
+											!value
+												? "Test type is required"
+												: undefined,
 									}}
 								>
 									{(field: any) => (
@@ -287,13 +299,27 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 												<SelectValue placeholder="Select test type" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="blood">Blood Test</SelectItem>
-												<SelectItem value="urine">Urine Test</SelectItem>
-												<SelectItem value="stool">Stool Test</SelectItem>
-												<SelectItem value="imaging">Imaging</SelectItem>
-												<SelectItem value="biopsy">Biopsy</SelectItem>
-												<SelectItem value="microbiology">Microbiology</SelectItem>
-												<SelectItem value="other">Other</SelectItem>
+												<SelectItem value="blood">
+													Blood Test
+												</SelectItem>
+												<SelectItem value="urine">
+													Urine Test
+												</SelectItem>
+												<SelectItem value="stool">
+													Stool Test
+												</SelectItem>
+												<SelectItem value="imaging">
+													Imaging
+												</SelectItem>
+												<SelectItem value="biopsy">
+													Biopsy
+												</SelectItem>
+												<SelectItem value="microbiology">
+													Microbiology
+												</SelectItem>
+												<SelectItem value="other">
+													Other
+												</SelectItem>
 											</SelectContent>
 										</Select>
 									)}
@@ -308,7 +334,9 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 									name="orderDate"
 									validators={{
 										onChange: ({ value }) =>
-											!value ? "Order date is required" : undefined,
+											!value
+												? "Order date is required"
+												: undefined,
 									}}
 								>
 									{(field: any) => (
@@ -317,12 +345,16 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 											captionLayout="dropdown"
 											selected={
 												field.state.value
-													? new Date(field.state.value)
+													? new Date(
+															field.state.value
+														)
 													: undefined
 											}
-											onSelect={(value: Date | undefined) => {
+											onSelect={(
+												value: Date | undefined
+											) => {
 												field.handleChange(
-													value ? value.toISOString().split("T")[0] : ""
+													value ? value : ""
 												);
 											}}
 											required
@@ -337,7 +369,9 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 									name="status"
 									validators={{
 										onChange: ({ value }) =>
-											!value ? "Status is required" : undefined,
+											!value
+												? "Status is required"
+												: undefined,
 									}}
 								>
 									{(field: any) => (
@@ -351,9 +385,15 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 												<SelectValue placeholder="Select status" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="ordered">Ordered</SelectItem>
-												<SelectItem value="in-progress">In Progress</SelectItem>
-												<SelectItem value="completed">Completed</SelectItem>
+												<SelectItem value="ordered">
+													Ordered
+												</SelectItem>
+												<SelectItem value="in-progress">
+													In Progress
+												</SelectItem>
+												<SelectItem value="completed">
+													Completed
+												</SelectItem>
 											</SelectContent>
 										</Select>
 									)}
@@ -368,13 +408,16 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					<CardHeader>
 						<CardTitle>Test Results</CardTitle>
 						<CardDescription>
-							Results and findings (available when test is completed)
+							Results and findings (available when test is
+							completed)
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="completedDate">Completed Date</Label>
+								<Label htmlFor="completedDate">
+									Completed Date
+								</Label>
 								<form.Field name="completedDate">
 									{(field: any) => (
 										<DatePicker
@@ -382,12 +425,16 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 											captionLayout="dropdown"
 											selected={
 												field.state.value
-													? new Date(field.state.value)
+													? new Date(
+															field.state.value
+														)
 													: undefined
 											}
-											onSelect={(value: Date | undefined) => {
+											onSelect={(
+												value: Date | undefined
+											) => {
 												field.handleChange(
-													value ? value.toISOString().split("T")[0] : ""
+													value ? value : ""
 												);
 											}}
 										/>
@@ -396,14 +443,18 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="normalRange">Normal Range</Label>
+								<Label htmlFor="normalRange">
+									Normal Range
+								</Label>
 								<form.Field name="normalRange">
 									{(field: any) => (
 										<Input
 											id="normalRange"
 											value={field.state.value || ""}
 											onChange={(e) =>
-												field.handleChange(e.target.value)
+												field.handleChange(
+													e.target.value
+												)
 											}
 											placeholder="e.g., 70-99 mg/dL, Negative"
 										/>

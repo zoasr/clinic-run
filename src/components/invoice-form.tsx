@@ -400,7 +400,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 											) => {
 												field.handleChange(
 													value
-														? value.toISOString()
+														? value.toLocaleDateString()
 														: ""
 												);
 											}}

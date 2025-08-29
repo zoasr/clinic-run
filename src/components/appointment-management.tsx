@@ -140,10 +140,6 @@ export function AppointmentManagement() {
 		}
 	);
 
-	if (isLoading) {
-		return <div className="p-6 w-full">Loading appointments...</div>;
-	}
-
 	if (error) {
 		return <div>Error loading appointments: {error.message}</div>;
 	}
@@ -210,7 +206,9 @@ export function AppointmentManagement() {
 								dateFilter ? new Date(dateFilter) : undefined
 							}
 							onSelect={(date) => {
-								setDateFilter(date ? date.toISOString() : "");
+								setDateFilter(
+									date ? date.toLocaleDateString() : ""
+								);
 							}}
 							mode="single"
 							captionLayout="dropdown"

@@ -275,9 +275,7 @@ export const labTestsRouter = router({
 			if (input.status === "completed" && input.completedDate) {
 				updateData.completedDate = input.completedDate;
 			} else if (input.status === "completed") {
-				updateData.completedDate = new Date()
-					.toISOString()
-					.split("T")[0];
+				updateData.completedDate = new Date().toLocaleDateString();
 			}
 
 			const updatedLabTest = await ctx.db

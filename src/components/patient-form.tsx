@@ -248,7 +248,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 												) => {
 													field.handleChange(
 														value
-															? value.toISOString()
+															? value.toLocaleDateString()
 															: ""
 													);
 												}}

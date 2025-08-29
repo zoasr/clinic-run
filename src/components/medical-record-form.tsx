@@ -26,7 +26,7 @@ import { MedicalRecord, Patient } from "@/lib/schema-types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TRPCClientErrorLike } from "@trpc/client";
-import { AppRouter } from "lib/routers";
+import { AppRouter } from "lib";
 import z from "zod";
 
 interface MedicalRecordFormProps {
@@ -97,7 +97,7 @@ export function MedicalRecordForm({
 			patientId: record?.patientId || 0,
 			doctorId: record?.doctorId || 0,
 			visitDate:
-				record?.visitDate || new Date().toISOString().split("T")[0],
+				record?.visitDate || new Date().toLocaleDateString(),
 			chiefComplaint: record?.chiefComplaint || "",
 			diagnosis: record?.diagnosis || "",
 			treatment: record?.treatment || "",
@@ -312,7 +312,7 @@ export function MedicalRecordForm({
 											onSelect={(date) => {
 												field.handleChange(
 													date
-														? date.toISOString()
+														? date.toLocaleDateString()
 														: ""
 												);
 											}}

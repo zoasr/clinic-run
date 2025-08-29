@@ -6,7 +6,7 @@ import type { AppRouter } from "@/lib/trpc-client";
 export type AppointmentListParams =
 	AppRouter["appointments"]["getAll"]["_def"]["$types"]["input"];
 export type Appointment =
-	AppRouter["appointments"]["getByPatientId"]["_def"]["$types"]["output"];
+	AppRouter["appointments"]["getByPatientId"]["_def"]["$types"]["output"][number];
 
 export function useAppointments(params: AppointmentListParams) {
 	return useQuery(

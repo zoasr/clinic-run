@@ -71,7 +71,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 		if (newStatus === "completed") {
 			updateData.results = results;
 			updateData.completedDate =
-				completedDate || new Date().toISOString().split("T")[0];
+				completedDate || new Date().toLocaleDateString();
 		}
 
 		updateStatusMutation.mutate(updateData);
