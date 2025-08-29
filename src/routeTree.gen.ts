@@ -47,6 +47,7 @@ import { Route as AuthenticatedDoctorsAddRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAppointmentsNewRouteImport } from './routes/_authenticated/appointments.new'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments.$appointmentId'
 import { Route as AuthenticatedUsersUserIdEditRouteImport } from './routes/_authenticated/users/$userId.edit'
+import { Route as AuthenticatedPrescriptionsEditPrescriptionIdRouteImport } from './routes/_authenticated/prescriptions.edit.$prescriptionId'
 import { Route as AuthenticatedPatientsEditPatientIdRouteImport } from './routes/_authenticated/patients.edit.$patientId'
 import { Route as AuthenticatedMedicationsStockMedicationIdRouteImport } from './routes/_authenticated/medications.stock.$medicationId'
 import { Route as AuthenticatedMedicalRecordsEditMedicalRecordIdRouteImport } from './routes/_authenticated/medical-records.edit.$medicalRecordId'
@@ -269,6 +270,12 @@ const AuthenticatedUsersUserIdEditRoute =
     path: '/users/$userId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPrescriptionsEditPrescriptionIdRoute =
+  AuthenticatedPrescriptionsEditPrescriptionIdRouteImport.update({
+    id: '/edit/$prescriptionId',
+    path: '/edit/$prescriptionId',
+    getParentRoute: () => AuthenticatedPrescriptionsRoute,
+  } as any)
 const AuthenticatedPatientsEditPatientIdRoute =
   AuthenticatedPatientsEditPatientIdRouteImport.update({
     id: '/edit/$patientId',
@@ -342,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
+  '/prescriptions/edit/$prescriptionId': typeof AuthenticatedPrescriptionsEditPrescriptionIdRoute
   '/users/$userId/edit': typeof AuthenticatedUsersUserIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -379,6 +387,7 @@ export interface FileRoutesByTo {
   '/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
+  '/prescriptions/edit/$prescriptionId': typeof AuthenticatedPrescriptionsEditPrescriptionIdRoute
   '/users/$userId/edit': typeof AuthenticatedUsersUserIdEditRoute
 }
 export interface FileRoutesById {
@@ -425,6 +434,7 @@ export interface FileRoutesById {
   '/_authenticated/medical-records/edit/$medicalRecordId': typeof AuthenticatedMedicalRecordsEditMedicalRecordIdRoute
   '/_authenticated/medications/stock/$medicationId': typeof AuthenticatedMedicationsStockMedicationIdRoute
   '/_authenticated/patients/edit/$patientId': typeof AuthenticatedPatientsEditPatientIdRoute
+  '/_authenticated/prescriptions/edit/$prescriptionId': typeof AuthenticatedPrescriptionsEditPrescriptionIdRoute
   '/_authenticated/users/$userId/edit': typeof AuthenticatedUsersUserIdEditRoute
 }
 export interface FileRouteTypes {
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
     | '/patients/edit/$patientId'
+    | '/prescriptions/edit/$prescriptionId'
     | '/users/$userId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -508,6 +519,7 @@ export interface FileRouteTypes {
     | '/medical-records/edit/$medicalRecordId'
     | '/medications/stock/$medicationId'
     | '/patients/edit/$patientId'
+    | '/prescriptions/edit/$prescriptionId'
     | '/users/$userId/edit'
   id:
     | '__root__'
@@ -553,6 +565,7 @@ export interface FileRouteTypes {
     | '/_authenticated/medical-records/edit/$medicalRecordId'
     | '/_authenticated/medications/stock/$medicationId'
     | '/_authenticated/patients/edit/$patientId'
+    | '/_authenticated/prescriptions/edit/$prescriptionId'
     | '/_authenticated/users/$userId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -829,6 +842,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersUserIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/prescriptions/edit/$prescriptionId': {
+      id: '/_authenticated/prescriptions/edit/$prescriptionId'
+      path: '/edit/$prescriptionId'
+      fullPath: '/prescriptions/edit/$prescriptionId'
+      preLoaderRoute: typeof AuthenticatedPrescriptionsEditPrescriptionIdRouteImport
+      parentRoute: typeof AuthenticatedPrescriptionsRoute
+    }
     '/_authenticated/patients/edit/$patientId': {
       id: '/_authenticated/patients/edit/$patientId'
       path: '/edit/$patientId'
@@ -995,6 +1015,7 @@ interface AuthenticatedPrescriptionsRouteChildren {
   AuthenticatedPrescriptionsPrescriptionIdRoute: typeof AuthenticatedPrescriptionsPrescriptionIdRoute
   AuthenticatedPrescriptionsNewRoute: typeof AuthenticatedPrescriptionsNewRoute
   AuthenticatedPrescriptionsIndexRoute: typeof AuthenticatedPrescriptionsIndexRoute
+  AuthenticatedPrescriptionsEditPrescriptionIdRoute: typeof AuthenticatedPrescriptionsEditPrescriptionIdRoute
 }
 
 const AuthenticatedPrescriptionsRouteChildren: AuthenticatedPrescriptionsRouteChildren =
@@ -1003,6 +1024,8 @@ const AuthenticatedPrescriptionsRouteChildren: AuthenticatedPrescriptionsRouteCh
       AuthenticatedPrescriptionsPrescriptionIdRoute,
     AuthenticatedPrescriptionsNewRoute: AuthenticatedPrescriptionsNewRoute,
     AuthenticatedPrescriptionsIndexRoute: AuthenticatedPrescriptionsIndexRoute,
+    AuthenticatedPrescriptionsEditPrescriptionIdRoute:
+      AuthenticatedPrescriptionsEditPrescriptionIdRoute,
   }
 
 const AuthenticatedPrescriptionsRouteWithChildren =

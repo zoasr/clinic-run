@@ -20,25 +20,12 @@ import {
 	useDeletePrescription,
 	type Prescription,
 } from "@/hooks/usePrescriptions";
-import {
-	Search,
-	Plus,
-	Pill,
-	User,
-	Calendar,
-	CheckCircle,
-	Clock,
-	Trash2,
-} from "lucide-react";
+import { Search, Plus, Pill, CheckCircle, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 
 export function PrescriptionManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
-	const [showForm, setShowForm] = useState(false);
-	const [selectedPrescription, setSelectedPrescription] =
-		useState<Prescription | null>(null);
-	const [editingPrescription, setEditingPrescription] =
-		useState<Prescription | null>(null);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [prescriptionToDelete, setPrescriptionToDelete] =
 		useState<Prescription | null>(null);
@@ -49,10 +36,12 @@ export function PrescriptionManagement() {
 
 	const deleteMutation = useDeletePrescription();
 
-	const handlePrescriptionSaved = () => {
-		setShowForm(false);
-		setEditingPrescription(null);
-	};
+	// Calculate prescription statistics
+	const totalPrescriptions = prescriptions?.length || 0;
+	const pendingPrescriptions =
+		prescriptions?.filter((p) => !p.isDispensed).length || 0;
+	const dispensedPrescriptions =
+		prescriptions?.filter((p) => p.isDispensed).length || 0;
 
 	const handleDeletePrescription = (prescription: Prescription) => {
 		setPrescriptionToDelete(prescription);
@@ -87,33 +76,6 @@ export function PrescriptionManagement() {
 		return isDispensed ? CheckCircle : Clock;
 	};
 
-	if (selectedPrescription) {
-		return (
-			<PrescriptionDetail
-				prescription={selectedPrescription}
-				onBack={() => setSelectedPrescription(null)}
-				onEdit={(prescription) => {
-					setEditingPrescription(prescription);
-					setSelectedPrescription(null);
-					setShowForm(true);
-				}}
-			/>
-		);
-	}
-
-	if (showForm) {
-		return (
-			<PrescriptionForm
-				prescription={editingPrescription}
-				onSave={handlePrescriptionSaved}
-				onCancel={() => {
-					setShowForm(false);
-					setEditingPrescription(null);
-				}}
-			/>
-		);
-	}
-
 	return (
 		<div className="space-y-6 p-6">
 			{/* Header */}
@@ -126,13 +88,12 @@ export function PrescriptionManagement() {
 						Manage patient prescriptions and medication orders
 					</p>
 				</div>
-				<Button
-					onClick={() => setShowForm(true)}
-					className="flex items-center gap-2"
-				>
-					<Plus className="h-4 w-4" />
-					Add New Prescription
-				</Button>
+				<Link to="/prescriptions/new">
+					<Button className="flex items-center gap-2">
+						<Plus className="h-4 w-4" />
+						Add New Prescription
+					</Button>
+				</Link>
 			</div>
 
 			{/* Search */}
@@ -151,162 +112,255 @@ export function PrescriptionManagement() {
 			</Card>
 
 			{/* Prescription List */}
-			<div className="grid gap-4">
-				{!isLoading && prescriptions.length === 0 ? (
-					<Card>
-						<CardContent className="flex flex-col items-center justify-center py-8">
-							<Pill className="h-12 w-12 text-muted-foreground mb-4" />
-							<h3 className="text-lg font-medium text-foreground mb-2">
-								No prescriptions found
-							</h3>
-							<p className="text-muted-foreground text-center mb-4">
-								{searchTerm
-									? "No prescriptions match your search criteria."
-									: "Get started by adding your first prescription."}
-							</p>
-							<Button onClick={() => setShowForm(true)}>
+			{isLoading ? (
+				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+					{[...Array(6)].map((_, i) => (
+						<Card key={i} className="animate-pulse">
+							<CardContent className="p-6">
+								<div className="flex items-center gap-3 mb-4">
+									<div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+									<div className="flex-1">
+										<div className="h-4 bg-gray-200 rounded mb-2"></div>
+										<div className="h-3 bg-gray-200 rounded w-3/4"></div>
+									</div>
+								</div>
+								<div className="space-y-2">
+									<div className="h-3 bg-gray-200 rounded"></div>
+									<div className="h-3 bg-gray-200 rounded w-5/6"></div>
+								</div>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			) : prescriptions.length === 0 ? (
+				<Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
+					<CardContent className="flex flex-col items-center justify-center py-12">
+						<div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+							<Pill className="h-8 w-8 text-primary" />
+						</div>
+						<h3 className="text-xl font-semibold text-foreground mb-2">
+							No prescriptions found
+						</h3>
+						<p className="text-muted-foreground text-center mb-6 max-w-md">
+							{searchTerm
+								? "No prescriptions match your search criteria. Try adjusting your search terms."
+								: "Get started by adding your first prescription to the system."}
+						</p>
+						<Link to="/prescriptions/new">
+							<Button size="lg" className="shadow-sm">
 								<Plus className="h-4 w-4 mr-2" />
-								Add Prescription
+								Add First Prescription
 							</Button>
-						</CardContent>
-					</Card>
-				) : (
-					prescriptions?.map((prescription: Prescription) => {
+						</Link>
+					</CardContent>
+				</Card>
+			) : (
+				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+					{prescriptions?.map((prescription: Prescription) => {
 						const StatusIcon = getStatusIcon(
 							prescription.isDispensed
 						);
+						const isPending = !prescription.isDispensed;
+						const isDispensed = prescription.isDispensed;
+
 						return (
 							<Card
 								key={prescription.id}
-								className="hover:shadow-md transition-shadow cursor-pointer"
+								className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-border/50 hover:border-primary/20 ${
+									isPending
+										? "bg-orange-50/30 dark:bg-orange-950/10"
+										: "bg-green-50/30 dark:bg-green-950/10"
+								}`}
 							>
 								<CardContent className="p-6">
-									<div className="flex items-start justify-between">
-										<div
-											className="flex-1"
-											onClick={() =>
-												setSelectedPrescription(
-													prescription
-												)
-											}
+									{/* Header */}
+									<div className="flex items-start justify-between mb-4">
+										<Link
+											to="/prescriptions/$prescriptionId"
+											params={{
+												prescriptionId: prescription.id,
+											}}
+											className="flex items-center gap-3 flex-1"
 										>
-											<div className="flex items-center gap-3 mb-2">
-												<div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
-													<Pill className="h-5 w-5 text-secondary" />
+											<div className="relative">
+												<div
+													className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+														isPending
+															? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+															: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 group-hover:bg-primary/30"
+													}`}
+												>
+													<Pill className="h-6 w-6" />
 												</div>
-												<div>
-													<h3 className="font-semibold text-foreground">
-														{prescription.medication
-															?.name ||
-															"Unknown Medication"}
-													</h3>
-													<p className="text-sm text-muted-foreground">
-														{
-															prescription.patient
-																?.firstName
-														}{" "}
-														{
-															prescription.patient
-																?.lastName
-														}
-													</p>
-												</div>
+												{isPending && (
+													<div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+														<span className="text-xs text-white font-bold">
+															!
+														</span>
+													</div>
+												)}
 											</div>
-
-											<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-												<div className="flex items-center gap-2 text-sm">
-													<Pill className="h-4 w-4 text-muted-foreground" />
-													<span>
-														Dosage:{" "}
-														{prescription.dosage}
-													</span>
-												</div>
-
-												<div className="flex items-center gap-2 text-sm">
-													<Calendar className="h-4 w-4 text-muted-foreground" />
-													<span>
-														{prescription.frequency}
-													</span>
-												</div>
-
-												<div className="flex items-center gap-2 text-sm">
-													<User className="h-4 w-4 text-muted-foreground" />
-													<span>
-														Dr.{" "}
-														{
-															prescription.doctor
-																?.firstName
-														}{" "}
-														{
-															prescription.doctor
-																?.lastName
-														}
-													</span>
-												</div>
-
-												<div className="flex items-center gap-2">
-													<StatusIcon className="h-4 w-4 text-muted-foreground" />
-													<Badge
-														variant={getStatusColor(
-															prescription.isDispensed
-														)}
-													>
-														{prescription.isDispensed
-															? "Dispensed"
-															: "Pending"}
-													</Badge>
-												</div>
+											<div className="flex-1 min-w-0">
+												<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+													{prescription.medication
+														?.name ||
+														"Unknown Medication"}
+												</h3>
+												<p className="text-sm text-muted-foreground truncate">
+													{
+														prescription.patient
+															?.firstName
+													}{" "}
+													{
+														prescription.patient
+															?.lastName
+													}
+												</p>
 											</div>
+										</Link>
+										<div className="flex flex-col gap-1">
+											<Badge
+												className={`${
+													isPending
+														? "bg-orange-100 text-orange-800 border-orange-200"
+														: "bg-green-100 text-green-800 border-green-200"
+												} border-0 text-xs`}
+											>
+												{isDispensed
+													? "Dispensed"
+													: "Pending"}
+											</Badge>
+										</div>
+									</div>
 
-											{prescription.instructions && (
-												<div className="mt-3 p-3 bg-muted/50 rounded-md">
-													<p className="text-sm text-muted-foreground">
-														<strong>
-															Instructions:
-														</strong>{" "}
-														{
-															prescription.instructions
-														}
-													</p>
-												</div>
-											)}
+									{/* Key Information Grid */}
+									<div className="grid grid-cols-2 gap-4 mb-4">
+										{/* Dosage & Form */}
+										<div className="space-y-1">
+											<p className="text-xs text-muted-foreground">
+												Dosage
+											</p>
+											<p className="text-sm font-medium">
+												{prescription.dosage}{" "}
+												{prescription.medication
+													?.form || ""}
+											</p>
 										</div>
 
-										<div className="flex items-center gap-2">
+										{/* Frequency */}
+										<div className="space-y-1">
+											<p className="text-xs text-muted-foreground">
+												Frequency
+											</p>
+											<p className="text-sm font-medium">
+												{prescription.frequency}
+											</p>
+										</div>
+
+										{/* Quantity */}
+										<div className="space-y-1">
+											<p className="text-xs text-muted-foreground">
+												Quantity
+											</p>
+											<p className="text-sm font-medium">
+												{prescription.quantity} units
+											</p>
+										</div>
+
+										{/* Doctor */}
+										<div className="space-y-1">
+											<p className="text-xs text-muted-foreground">
+												Prescribing Doctor
+											</p>
+											<p className="text-sm font-medium truncate">
+												Dr.{" "}
+												{prescription.doctor?.firstName}{" "}
+												{prescription.doctor?.lastName}
+											</p>
+										</div>
+									</div>
+
+									{/* Instructions */}
+									{prescription.instructions && (
+										<div className="mb-4 p-3 bg-muted/50 rounded-md">
+											<p className="text-xs text-muted-foreground mb-1">
+												Instructions
+											</p>
+											<p className="text-sm">
+												{prescription.instructions}
+											</p>
+										</div>
+									)}
+
+									{/* Metadata */}
+									<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
+										<span>
+											Prescribed{" "}
+											{new Date(
+												prescription.createdAt
+											).toLocaleDateString()}
+										</span>
+										{isDispensed && (
+											<span className="text-green-600">
+												Dispensed{" "}
+												{new Date(
+													prescription.updatedAt
+												).toLocaleDateString()}
+											</span>
+										)}
+									</div>
+
+									{/* Actions */}
+									<div className="flex items-center gap-2 pt-4 mt-4 border-t border-border/50">
+										<Link
+											to="/prescriptions/$prescriptionId"
+											params={{
+												prescriptionId: prescription.id,
+											}}
+										>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="flex-1 opacity-20 group-hover:opacity-100 transition-all"
+											>
+												View Details
+											</Button>
+										</Link>
+										<Link
+											to="/prescriptions/edit/$prescriptionId"
+											params={{
+												prescriptionId: prescription.id,
+											}}
+										>
 											<Button
 												variant="outline"
 												size="sm"
-												onClick={(e) => {
-													e.stopPropagation();
-													setEditingPrescription(
-														prescription
-													);
-													setShowForm(true);
-												}}
+												className="opacity-20 group-hover:opacity-100 transition-all"
 											>
 												Edit
 											</Button>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={(e) => {
-													e.stopPropagation();
-													handleDeletePrescription(
-														prescription
-													);
-												}}
-												className="text-destructive hover:text-destructive"
-											>
-												<Trash2 className="h-4 w-4" />
-											</Button>
-										</div>
+										</Link>
+										<Button
+											variant="outline"
+											size="sm"
+											className="opacity-20 group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
+											onClick={(e) => {
+												e.stopPropagation();
+												handleDeletePrescription(
+													prescription
+												);
+											}}
+											disabled={deleteMutation.isPending}
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
 									</div>
 								</CardContent>
 							</Card>
 						);
-					})
-				)}
-			</div>
+					})}
+				</div>
+			)}
 
 			{/* Delete Confirmation Dialog */}
 			<AlertDialog
@@ -354,419 +408,3 @@ export function PrescriptionManagement() {
 		</div>
 	);
 }
-
-// 	if (selectedPrescription) {
-// 		return (
-// 			<PrescriptionDetail
-// 				prescription={selectedPrescription}
-// 				onBack={() => setSelectedPrescription(null)}
-// 				onEdit={(prescription) => {
-// 					setEditingPrescription(prescription);
-// 					setSelectedPrescription(null);
-// 					setShowForm(true);
-// 				}}
-// 			/>
-// 		);
-// 	}
-
-// 	if (showForm) {
-// 		return (
-// 			<PrescriptionForm
-// 				prescription={editingPrescription}
-// 				onSave={handlePrescriptionSaved}
-// 				onCancel={() => {
-// 					setShowForm(false);
-// 					setEditingPrescription(null);
-// 				}}
-// 			/>
-// 		);
-// 	}
-
-// 	return (
-// 		<div className="space-y-6 p-6">
-// 			{/* Header */}
-// 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-// 				<div>
-// 					<h1 className="text-2xl font-display font-bold text-foreground">
-// 						Prescription Management
-// 					</h1>
-// 					<p className="text-muted-foreground">
-// 						Manage patient prescriptions and medication orders
-// 					</p>
-// 				</div>
-// 				<Button
-// 					onClick={() => setShowForm(true)}
-// 					className="flex items-center gap-2"
-// 				>
-// 					<Plus className="h-4 w-4" />
-// 					Add New Prescription
-// 				</Button>
-// 			</div>
-
-// 			{/* Search */}
-// 			<Card>
-// 				<CardContent className="pt-6">
-// 					<div className="relative">
-// 						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-// 						<Input
-// 							placeholder="Search prescriptions by medication or patient..."
-// 							value={searchTerm}
-// 							onChange={(e) => setSearchTerm(e.target.value)}
-// 							className="pl-10"
-// 						/>
-// 					</div>
-// 				</CardContent>
-// 			</Card>
-
-// 			{/* Prescription List */}
-// 			<div className="grid gap-4">
-// 				{!isLoading && prescriptions.length === 0 ? (
-// 					<Card>
-// 						<CardContent className="flex flex-col items-center justify-center py-8">
-// 							<Pill className="h-12 w-12 text-muted-foreground mb-4" />
-// 							<h3 className="text-lg font-medium text-foreground mb-2">
-// 								No prescriptions found
-// 							</h3>
-// 							<p className="text-muted-foreground text-center mb-4">
-// 								{searchTerm
-// 									? "No prescriptions match your search criteria."
-// 									: "Get started by adding your first prescription."}
-// 							</p>
-// 							<Button onClick={() => setShowForm(true)}>
-// 								<Plus className="h-4 w-4 mr-2" />
-// 								Add Prescription
-// 							</Button>
-// 						</CardContent>
-// 					</Card>
-// 				) : (
-// 					prescriptions?.map((prescription: Prescription) => {
-// 						const StatusIcon = getStatusIcon(prescription.isDispensed);
-// 						return (
-// 							<Card
-// 								key={prescription.id}
-// 								className="hover:shadow-md transition-shadow cursor-pointer"
-// 							>
-// 								<CardContent className="p-6">
-// 									<div className="flex items-start justify-between">
-// 										<div
-// 											className="flex-1"
-// 											onClick={() =>
-// 												setSelectedPrescription(prescription)
-// 											}
-// 										>
-// 											<div className="flex items-center gap-3 mb-2">
-// 												<div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
-// 													<Pill className="h-5 w-5 text-secondary" />
-// 												</div>
-// 												<div>
-// 													<h3 className="font-semibold text-foreground">
-// 														{prescription.medication?.name || "Unknown Medication"}
-// 													</h3>
-// 													<p className="text-sm text-muted-foreground">
-// 														{prescription.patient?.firstName} {prescription.patient?.lastName}
-// 													</p>
-// 												</div>
-// 											</div>
-
-// 											<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-// 												<div className="flex items-center gap-2 text-sm">
-// 													<Pill className="h-4 w-4 text-muted-foreground" />
-// 													<span>Dosage: {prescription.dosage}</span>
-// 												</div>
-
-// 												<div className="flex items-center gap-2 text-sm">
-// 													<Calendar className="h-4 w-4 text-muted-foreground" />
-// 													<span>{prescription.frequency}</span>
-// 												</div>
-
-// 												<div className="flex items-center gap-2 text-sm">
-// 													<User className="h-4 w-4 text-muted-foreground" />
-// 													<span>Dr. {prescription.doctor?.firstName} {prescription.doctor?.lastName}</span>
-// 												</div>
-
-// 												<div className="flex items-center gap-2">
-// 													<StatusIcon className="h-4 w-4 text-muted-foreground" />
-// 													<Badge variant={getStatusColor(prescription.isDispensed)}>
-// 														{prescription.isDispensed ? "Dispensed" : "Pending"}
-// 													</Badge>
-// 												</div>
-// 											</div>
-
-// 											{prescription.instructions && (
-// 												<div className="mt-3 p-3 bg-muted/50 rounded-md">
-// 													<p className="text-sm text-muted-foreground">
-// 														<strong>Instructions:</strong> {prescription.instructions}
-// 													</p>
-// 												</div>
-// 											)}
-// 										</div>
-
-// 										<div className="flex items-center gap-2">
-// 											<Button
-// 												variant="outline"
-// 												size="sm"
-// 												onClick={(e) => {
-// 													e.stopPropagation();
-// 													setEditingPrescription(prescription);
-// 													setShowForm(true);
-// 												}}
-// 											>
-// 												Edit
-// 											</Button>
-// 											<Button
-// 												variant="outline"
-// 												size="sm"
-// 												onClick={(e) => {
-// 													e.stopPropagation();
-// 													handleDeletePrescription(prescription);
-// 												}}
-// 												className="text-destructive hover:text-destructive"
-// 											>
-// 												<Trash2 className="h-4 w-4" />
-// 											</Button>
-// 										</div>
-// 									</div>
-// 								</CardContent>
-// 							</Card>
-// 						);
-// 					})
-// 				)}
-// 			</div>
-
-// 			{/* Delete Confirmation Dialog */}
-// 			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-// 				<AlertDialogContent>
-// 					<AlertDialogHeader>
-// 						<AlertDialogTitle>Delete Prescription</AlertDialogTitle>
-// 						<AlertDialogDescription>
-// 							Are you sure you want to delete this prescription? This action cannot be undone.
-// 							{prescriptionToDelete && (
-// 								<div className="mt-2 p-3 bg-muted rounded-md">
-// 									<p className="font-medium">
-// 										{prescriptionToDelete.medication?.name || "Unknown Medication"}
-// 									</p>
-// 									<p className="text-sm text-muted-foreground">
-// 										for {prescriptionToDelete.patient?.firstName} {prescriptionToDelete.patient?.lastName}
-// 									</p>
-// 								</div>
-// 							)}
-// 						</AlertDialogDescription>
-// 					</AlertDialogHeader>
-// 					<AlertDialogFooter>
-// 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-// 						<AlertDialogAction
-// 							onClick={confirmDelete}
-// 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-// 							disabled={deleteMutation.isPending}
-// 						>
-// 							{deleteMutation.isPending ? "Deleting..." : "Delete"}
-// 						</AlertDialogAction>
-// 					</AlertDialogFooter>
-// 				</AlertDialogContent>
-// 			</AlertDialog>
-// 		</div>
-// 	);
-// }
-
-// 	const handleDeletePrescription = (prescription: Prescription) => {
-// 		setPrescriptionToDelete(prescription);
-// 		setDeleteDialogOpen(true);
-// 	};
-
-// 	const confirmDelete = () => {
-// 		if (prescriptionToDelete) {
-// 			deleteMutation.mutate(
-// 				{ id: prescriptionToDelete.id },
-// 				{
-// 					onSuccess: () => {
-// 						toast.success("Prescription deleted successfully");
-// 						setDeleteDialogOpen(false);
-// 						setPrescriptionToDelete(null);
-// 					},
-// 					onError: (error) => {
-// 						toast.error(error.message || "Failed to delete prescription");
-// 					},
-// 				}
-// 			);
-// 		}
-// 	};
-
-// 	const getStatusColor = (isDispensed: boolean) => {
-// 		return isDispensed ? "default" : "secondary";
-// 	};
-
-// 	const getStatusIcon = (isDispensed: boolean) => {
-// 		return isDispensed ? CheckCircle : Clock;
-// 	};
-
-// 	const getStatusIcon = (isDispensed: boolean) => {
-// 		return isDispensed ? CheckCircle : Clock;
-// 	};
-
-// 	if (selectedPrescription) {
-// 		return (
-// 			<PrescriptionDetail
-// 				prescription={selectedPrescription}
-// 				onBack={() => setSelectedPrescription(null)}
-// 				onEdit={(prescription) => {
-// 					setEditingPrescription(prescription);
-// 					setSelectedPrescription(null);
-// 					setShowForm(true);
-// 				}}
-// 			/>
-// 		);
-// 	}
-
-// 	if (showForm) {
-// 		return (
-// 			<PrescriptionForm
-// 				prescription={editingPrescription}
-// 				onSave={handlePrescriptionSaved}
-// 				onCancel={() => {
-// 					setShowForm(false);
-// 					setEditingPrescription(null);
-// 				}}
-// 			/>
-// 		);
-// 	}
-
-// 	return (
-// 		<div className="space-y-6 p-6">
-// 			{/* Header */}
-// 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-// 				<div>
-// 					<h1 className="text-2xl font-display font-bold text-foreground">
-// 						Prescription Management
-// 					</h1>
-// 					<p className="text-muted-foreground">
-// 						Manage patient prescriptions and medication orders
-// 					</p>
-// 				</div>
-// 				<Button
-// 					onClick={() => setShowForm(true)}
-// 					className="flex items-center gap-2"
-// 				>
-// 					<Plus className="h-4 w-4" />
-// 					Add New Prescription
-// 				</Button>
-// 			</div>
-
-// 			{/* Search */}
-// 			<Card>
-// 				<CardContent className="pt-6">
-// 					<div className="relative">
-// 						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-// 						<Input
-// 							placeholder="Search prescriptions by medication or patient..."
-// 							value={searchTerm}
-// 							onChange={(e) => setSearchTerm(e.target.value)}
-// 							className="pl-10"
-// 						/>
-// 					</div>
-// 				</CardContent>
-// 			</Card>
-
-// 			{/* Prescription List */}
-// 			<div className="grid gap-4">
-// 				{!isLoading && prescriptions.length === 0 ? (
-// 					<Card>
-// 						<CardContent className="flex flex-col items-center justify-center py-8">
-// 							<Pill className="h-12 w-12 text-muted-foreground mb-4" />
-// 							<h3 className="text-lg font-medium text-foreground mb-2">
-// 								No prescriptions found
-// 							</h3>
-// 							<p className="text-muted-foreground text-center mb-4">
-// 								{searchTerm
-// 									? "No prescriptions match your search criteria."
-// 									: "Get started by adding your first prescription."}
-// 							</p>
-// 							<Button onClick={() => setShowForm(true)}>
-// 								<Plus className="h-4 w-4 mr-2" />
-// 								Add Prescription
-// 							</Button>
-// 						</CardContent>
-// 					</Card>
-// 				) : (
-// 					prescriptions?.map((prescription: Prescription) => {
-// 						const StatusIcon = getStatusIcon(prescription.isDispensed);
-// 						return (
-// 							<Card
-// 								key={prescription.id}
-// 								className="hover:shadow-md transition-shadow cursor-pointer"
-// 							>
-// 								<CardContent className="p-6">
-// 									<div className="flex items-start justify-between">
-// 										<div
-// 											className="flex-1"
-// 											onClick={() =>
-// 												setSelectedPrescription(prescription)
-// 											}
-// 										>
-// 											<div className="flex items-center gap-3 mb-2">
-// 												<div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
-// 													<Pill className="h-5 w-5 text-secondary" />
-// 												</div>
-// 												<div>
-// 													<h3 className="font-semibold text-foreground">
-// 														{prescription.medication?.name || "Unknown Medication"}
-// 													</h3>
-// 													<p className="text-sm text-muted-foreground">
-// 														{prescription.patient?.firstName} {prescription.patient?.lastName}
-// 													</p>
-// 												</div>
-// 											</div>
-
-// 											<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-// 												<div className="flex items-center gap-2 text-sm">
-// 													<Pill className="h-4 w-4 text-muted-foreground" />
-// 													<span>Dosage: {prescription.dosage}</span>
-// 												</div>
-
-// 												<div className="flex items-center gap-2 text-sm">
-// 													<Calendar className="h-4 w-4 text-muted-foreground" />
-// 													<span>{prescription.frequency}</span>
-// 												</div>
-
-// 												<div className="flex items-center gap-2 text-sm">
-// 													<User className="h-4 w-4 text-muted-foreground" />
-// 													<span>Dr. {prescription.doctor?.firstName} {prescription.doctor?.lastName}</span>
-// 												</div>
-
-// 												<div className="flex items-center gap-2">
-// 													<StatusIcon className="h-4 w-4 text-muted-foreground" />
-// 													<Badge variant={getStatusColor(prescription.isDispensed)}>
-// 														{prescription.isDispensed ? "Dispensed" : "Pending"}
-// 													</Badge>
-// 												</div>
-// 											</div>
-
-// 											{prescription.instructions && (
-// 												<div className="mt-3 p-3 bg-muted/50 rounded-md">
-// 													<p className="text-sm text-muted-foreground">
-// 														<strong>Instructions:</strong> {prescription.instructions}
-// 													</p>
-// 												</div>
-// 											)}
-// 										</div>
-
-// 										<Button
-// 											variant="outline"
-// 											size="sm"
-// 											onClick={(e) => {
-// 												e.stopPropagation();
-// 												setEditingPrescription(prescription);
-// 												setShowForm(true);
-// 											}}
-// 										>
-// 											Edit
-// 										</Button>
-// 									</div>
-// 								</CardContent>
-// 							</Card>
-// 						);
-// 					})
-// 				)}
-// 			</div>
-// 		</div>
-// 	);
-// }

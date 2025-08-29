@@ -1,37 +1,54 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { PrescriptionDetail } from "@/components/prescription-detail";
-import { usePrescription } from "@/hooks/usePrescriptions";
+import { trpc } from "@/lib/trpc-client";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 import { PageLoading } from "@/components/ui/loading";
 
-export const Route = createFileRoute(
-	"/_authenticated/prescriptions/$prescriptionId"
-)({
+export const Route = createFileRoute("/_authenticated/prescriptions/$prescriptionId")({
+	loader: ({ params }) => {
+		return {
+			crumb: "Prescription Details",
+			params,
+		};
+	},
 	component: RouteComponent,
-	loader: ({ params }) => ({
-		crumb: `Prescription ${params.prescriptionId}`,
-	}),
 });
 
 function RouteComponent() {
-	const { prescriptionId } = Route.useParams();
-	const { data: prescription, isLoading } = usePrescription(
-		parseInt(prescriptionId)
-	);
+	const { params } = Route.useLoaderData();
 	const navigate = Route.useNavigate();
+	const {
+		data: prescription,
+		isLoading,
+		error,
+	} = useQuery(
+		trpc.prescriptions.getById.queryOptions({
+			id: Number(params.prescriptionId),
+		})
+	);
 
 	if (isLoading) {
 		return <PageLoading text="Loading prescription details..." />;
 	}
 
+	if (error) {
+		return <div>Error: {error.message}</div>;
+	}
+
 	if (!prescription) {
-		return <div>Prescription not found</div>;
+		return <div>Prescription with id {params.prescriptionId} not found</div>;
 	}
 
 	return (
 		<PrescriptionDetail
 			prescription={prescription}
-			onBack={() => navigate({ to: "/prescriptions" })}
-			onEdit={(prescription) => {
+			onEdit={() => {
+				navigate({
+					to: "/prescriptions/edit/$prescriptionId",
+					params: { prescriptionId: params.prescriptionId }
+				});
+			}}
+			onBack={() => {
 				navigate({ to: "/prescriptions" });
 			}}
 		/>

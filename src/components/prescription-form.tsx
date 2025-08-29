@@ -24,12 +24,15 @@ import { toast } from "sonner";
 import { usePatients } from "@/hooks/usePatients";
 import { useMedications } from "@/hooks/useMedications";
 import { trpc } from "@/lib/trpc-client";
+import { useQuery } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 
 // Infer types from tRPC
-type PrescriptionInput = AppRouter["prescriptions"]["create"]["_def"]["$types"]["input"];
-type Prescription = AppRouter["prescriptions"]["getById"]["_def"]["$types"]["output"];
+type PrescriptionInput =
+	AppRouter["prescriptions"]["create"]["_def"]["$types"]["input"];
+type Prescription =
+	AppRouter["prescriptions"]["getById"]["_def"]["$types"]["output"];
 
 type PrescriptionFormValues = PrescriptionInput;
 
@@ -39,12 +42,17 @@ interface PrescriptionFormProps {
 	onCancel: () => void;
 }
 
-export function PrescriptionForm({ prescription, onSave, onCancel }: PrescriptionFormProps) {
+export function PrescriptionForm({
+	prescription,
+	onSave,
+	onCancel,
+}: PrescriptionFormProps) {
 	const queryClient = useQueryClient();
 
-	// Fetch patients and medications for dropdowns
+	// Fetch patients, medications, and doctors for dropdowns
 	const { data: patients = [] } = usePatients();
 	const { data: medications = [] } = useMedications();
+	const { data: doctors = [] } = useQuery(trpc.users.getDoctors.queryOptions());
 
 	const defaultValues: PrescriptionFormValues = {
 		patientId: prescription?.patientId ?? 0,
@@ -90,7 +98,9 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 		})
 	);
 
-	const { isPending, error } = prescription?.id ? updateMutation : createMutation;
+	const { isPending, error } = prescription?.id
+		? updateMutation
+		: createMutation;
 
 	const form = useForm({
 		defaultValues,
@@ -125,7 +135,9 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 				</Button>
 				<div>
 					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{prescription ? "Edit Prescription" : "Add New Prescription"}
+						{prescription
+							? "Edit Prescription"
+							: "Add New Prescription"}
 					</h1>
 					<p className="text-muted-foreground">
 						{prescription
@@ -142,16 +154,17 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 				}}
 				className="space-y-6"
 			>
-				{/* Patient and Medication Selection */}
+				{/* Patient, Doctor and Medication Selection */}
 				<Card>
 					<CardHeader>
-						<CardTitle>Patient & Medication</CardTitle>
+						<CardTitle>Patient, Doctor & Medication</CardTitle>
 						<CardDescription>
-							Select the patient and medication for this prescription
+							Select the patient, prescribing doctor, and medication for this
+							prescription
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="patientId">Patient *</Label>
 								<form.Field
@@ -167,7 +180,9 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 										<Select
 											value={field.state.value?.toString()}
 											onValueChange={(value) =>
-												field.handleChange(parseInt(value))
+												field.handleChange(
+													parseInt(value)
+												)
 											}
 										>
 											<SelectTrigger>
@@ -179,7 +194,9 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 														key={patient.id}
 														value={patient.id.toString()}
 													>
-														{patient.firstName} {patient.lastName} (ID: {patient.patientId})
+														{patient.firstName}{" "}
+														{patient.lastName} (ID:{" "}
+														{patient.patientId})
 													</SelectItem>
 												))}
 											</SelectContent>
@@ -189,7 +206,46 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="medicationId">Medication *</Label>
+								<Label htmlFor="doctorId">Doctor *</Label>
+								<form.Field
+									name="doctorId"
+									validators={{
+										onChange: ({ value }) =>
+											!value?.trim()
+												? "Doctor is required"
+												: undefined,
+									}}
+								>
+									{(field: any) => (
+										<Select
+											value={field.state.value?.toString()}
+											onValueChange={(value) =>
+												field.handleChange(value)
+											}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="Select doctor" />
+											</SelectTrigger>
+											<SelectContent>
+												{doctors.map((doctor) => (
+													<SelectItem
+														key={doctor.id}
+														value={doctor.id.toString()}
+													>
+														Dr. {doctor.firstName}{" "}
+														{doctor.lastName}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								</form.Field>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="medicationId">
+									Medication *
+								</Label>
 								<form.Field
 									name="medicationId"
 									validators={{
@@ -203,21 +259,26 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 										<Select
 											value={field.state.value?.toString()}
 											onValueChange={(value) =>
-												field.handleChange(parseInt(value))
+												field.handleChange(
+													parseInt(value)
+												)
 											}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select medication" />
 											</SelectTrigger>
 											<SelectContent>
-												{medications.map((medication) => (
-													<SelectItem
-														key={medication.id}
-														value={medication.id.toString()}
-													>
-														{medication.name} - {medication.dosage}
-													</SelectItem>
-												))}
+												{medications.map(
+													(medication) => (
+														<SelectItem
+															key={medication.id}
+															value={medication.id.toString()}
+														>
+															{medication.name} -{" "}
+															{medication.dosage}
+														</SelectItem>
+													)
+												)}
 											</SelectContent>
 										</Select>
 									)}
@@ -253,7 +314,9 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 											id="dosage"
 											value={field.state.value}
 											onChange={(e) =>
-												field.handleChange(e.target.value)
+												field.handleChange(
+													e.target.value
+												)
 											}
 											placeholder="e.g., 500mg, 2 tablets"
 											required
@@ -278,7 +341,9 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 											id="frequency"
 											value={field.state.value}
 											onChange={(e) =>
-												field.handleChange(e.target.value)
+												field.handleChange(
+													e.target.value
+												)
 											}
 											placeholder="e.g., Twice daily, Every 8 hours"
 											required
@@ -305,7 +370,10 @@ export function PrescriptionForm({ prescription, onSave, onCancel }: Prescriptio
 											min="1"
 											value={field.state.value}
 											onChange={(e) =>
-												field.handleChange(parseInt(e.target.value) || 1)
+												field.handleChange(
+													parseInt(e.target.value) ||
+														1
+												)
 											}
 											required
 										/>

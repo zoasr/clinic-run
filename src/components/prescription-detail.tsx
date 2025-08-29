@@ -1,13 +1,27 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Pill, User, Calendar, CheckCircle, Clock, Edit } from "lucide-react";
+import {
+	ArrowLeft,
+	Pill,
+	User,
+	Calendar,
+	CheckCircle,
+	Clock,
+	Edit,
+} from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 import type { Prescription } from "@/hooks/usePrescriptions";
 
 interface PrescriptionDetailProps {
@@ -16,7 +30,11 @@ interface PrescriptionDetailProps {
 	onEdit: (prescription: Prescription) => void;
 }
 
-export function PrescriptionDetail({ prescription, onBack, onEdit }: PrescriptionDetailProps) {
+export function PrescriptionDetail({
+	prescription,
+	onBack,
+	onEdit,
+}: PrescriptionDetailProps) {
 	const queryClient = useQueryClient();
 
 	const dispenseMutation = useMutation(
@@ -64,7 +82,8 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 							Prescription Details
 						</h1>
 						<p className="text-muted-foreground">
-							Prescription for {prescription.patient?.firstName} {prescription.patient?.lastName}
+							Prescription for {prescription.patient?.firstName}{" "}
+							{prescription.patient?.lastName}
 						</p>
 					</div>
 				</div>
@@ -86,7 +105,9 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 							className="flex items-center gap-2"
 						>
 							<CheckCircle className="h-4 w-4" />
-							{dispenseMutation.isPending ? "Dispensing..." : "Mark as Dispensed"}
+							{dispenseMutation.isPending
+								? "Dispensing..."
+								: "Mark as Dispensed"}
 						</Button>
 					)}
 				</div>
@@ -99,7 +120,10 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 						<StatusIcon className="h-6 w-6 text-muted-foreground" />
 						<div>
 							<h3 className="font-semibold text-foreground">
-								Status: {prescription.isDispensed ? "Dispensed" : "Pending"}
+								Status:{" "}
+								{prescription.isDispensed
+									? "Dispensed"
+									: "Pending"}
 							</h3>
 							<p className="text-sm text-muted-foreground">
 								{prescription.isDispensed
@@ -107,7 +131,10 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 									: "This prescription is pending and ready for dispensing"}
 							</p>
 						</div>
-						<Badge variant={getStatusColor(prescription.isDispensed)} className="ml-auto">
+						<Badge
+							variant={getStatusColor(prescription.isDispensed)}
+							className="ml-auto"
+						>
 							{prescription.isDispensed ? "Dispensed" : "Pending"}
 						</Badge>
 					</div>
@@ -126,11 +153,16 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 					</CardHeader>
 					<CardContent className="space-y-3">
 						<div>
-							<p className="text-sm text-muted-foreground">Name</p>
-							<p className="font-medium">
-								{prescription.patient?.firstName} {prescription.patient?.lastName}
+							<p className="text-sm text-muted-foreground">
+								Name
 							</p>
-							<p className="text-sm text-muted-foreground">ID: {prescription.patient?.patientId}</p>
+							<p className="font-medium">
+								{prescription.patient?.firstName}{" "}
+								{prescription.patient?.lastName}
+							</p>
+							<p className="text-sm text-muted-foreground">
+								ID: {prescription.patient?.patientId}
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -145,9 +177,12 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 					</CardHeader>
 					<CardContent className="space-y-3">
 						<div>
-							<p className="text-sm text-muted-foreground">Name</p>
+							<p className="text-sm text-muted-foreground">
+								Name
+							</p>
 							<p className="font-medium">
-								Dr. {prescription.doctor?.firstName} {prescription.doctor?.lastName}
+								Dr. {prescription.doctor?.firstName}{" "}
+								{prescription.doctor?.lastName}
 							</p>
 						</div>
 					</CardContent>
@@ -169,40 +204,68 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="space-y-3">
 							<div>
-								<p className="text-sm text-muted-foreground">Medication</p>
-								<p className="font-medium">{prescription.medication?.name || "Unknown"}</p>
+								<p className="text-sm text-muted-foreground">
+									Medication
+								</p>
+								<p className="font-medium">
+									{prescription.medication?.name || "Unknown"}
+								</p>
 							</div>
 							<div>
-								<p className="text-sm text-muted-foreground">Dosage</p>
-								<p className="font-medium">{prescription.dosage}</p>
+								<p className="text-sm text-muted-foreground">
+									Dosage
+								</p>
+								<p className="font-medium">
+									{prescription.dosage}
+								</p>
 							</div>
 							<div>
-								<p className="text-sm text-muted-foreground">Form</p>
-								<p className="font-medium">{prescription.medication?.form || "N/A"}</p>
+								<p className="text-sm text-muted-foreground">
+									Form
+								</p>
+								<p className="font-medium">
+									{prescription.medication?.form || "N/A"}
+								</p>
 							</div>
 						</div>
 
 						<div className="space-y-3">
 							<div>
-								<p className="text-sm text-muted-foreground">Frequency</p>
-								<p className="font-medium">{prescription.frequency}</p>
+								<p className="text-sm text-muted-foreground">
+									Frequency
+								</p>
+								<p className="font-medium">
+									{prescription.frequency}
+								</p>
 							</div>
 							<div>
-								<p className="text-sm text-muted-foreground">Duration</p>
-								<p className="font-medium">{prescription.duration}</p>
+								<p className="text-sm text-muted-foreground">
+									Duration
+								</p>
+								<p className="font-medium">
+									{prescription.duration}
+								</p>
 							</div>
 							<div>
-								<p className="text-sm text-muted-foreground">Quantity</p>
-								<p className="font-medium">{prescription.quantity} units</p>
+								<p className="text-sm text-muted-foreground">
+									Quantity
+								</p>
+								<p className="font-medium">
+									{prescription.quantity} units
+								</p>
 							</div>
 						</div>
 					</div>
 
 					{prescription.instructions && (
 						<div className="pt-4 border-t">
-							<p className="text-sm text-muted-foreground mb-2">Instructions</p>
+							<p className="text-sm text-muted-foreground mb-2">
+								Instructions
+							</p>
 							<div className="p-3 bg-muted/50 rounded-md">
-								<p className="text-sm">{prescription.instructions}</p>
+								<p className="text-sm">
+									{prescription.instructions}
+								</p>
 							</div>
 						</div>
 					)}
@@ -220,17 +283,31 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 				<CardContent>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div>
-							<p className="text-sm text-muted-foreground">Created</p>
+							<p className="text-sm text-muted-foreground">
+								Created
+							</p>
 							<p className="font-medium">
-								{new Date(prescription.createdAt).toLocaleDateString()} at{" "}
-								{new Date(prescription.createdAt).toLocaleTimeString()}
+								{new Date(
+									prescription.createdAt
+								).toLocaleDateString()}{" "}
+								at{" "}
+								{new Date(
+									prescription.createdAt
+								).toLocaleTimeString()}
 							</p>
 						</div>
 						<div>
-							<p className="text-sm text-muted-foreground">Last Updated</p>
+							<p className="text-sm text-muted-foreground">
+								Last Updated
+							</p>
 							<p className="font-medium">
-								{new Date(prescription.updatedAt).toLocaleDateString()} at{" "}
-								{new Date(prescription.updatedAt).toLocaleTimeString()}
+								{new Date(
+									prescription.updatedAt
+								).toLocaleDateString()}{" "}
+								at{" "}
+								{new Date(
+									prescription.updatedAt
+								).toLocaleTimeString()}
 							</p>
 						</div>
 					</div>
@@ -239,7 +316,9 @@ export function PrescriptionDetail({ prescription, onBack, onEdit }: Prescriptio
 
 			{dispenseMutation.error && (
 				<Alert variant="destructive">
-					<AlertDescription>{dispenseMutation.error.message}</AlertDescription>
+					<AlertDescription>
+						{dispenseMutation.error.message}
+					</AlertDescription>
 				</Alert>
 			)}
 		</div>
