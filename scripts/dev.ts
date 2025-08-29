@@ -1,5 +1,6 @@
 /*
   Bun dev orchestrator: runs Vite frontend and Bun backend together.
+  - Spawns `bun run --cwd=./lib run dev`
   - Spawns `vite` on port 3030
   - Spawns `bun run --watch server.ts` on port 3031
   - Pipes output with prefixes
@@ -74,7 +75,8 @@ process.on("SIGTERM", shutdown);
 console.log("[orchestrator] starting Vite and server...");
 
 await Promise.all([
-	start("vite", ["bunx", "vite"], process.cwd()),
+	start("trpc", ["bun", "--cwd=./lib", "run", "dev"], process.cwd()),
+	start("vite", ["bun", "vite"], process.cwd()),
 	start("server", ["bun", "run", "--watch", "server.ts"], process.cwd()),
 ]);
 

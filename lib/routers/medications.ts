@@ -133,17 +133,19 @@ export const medicationsRouter = router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const medication = await ctx.db
+			const medicationData = await ctx.db
 				.select()
 				.from(schema.medications)
 				.where(eq(schema.medications.id, input.id))
 				.limit(1);
 
-			if (medication.length === 0) {
+			const medication = medicationData[0];
+
+			if (!medication) {
 				throw new Error("Medication not found");
 			}
 
-			const newQuantity = medication[0].quantity + input.quantity;
+			const newQuantity = medication.quantity + input.quantity;
 
 			if (newQuantity < 0) {
 				throw new Error("Insufficient stock");

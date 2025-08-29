@@ -102,7 +102,7 @@ export const usersRouter = router({
 					name: input.firstName + " " + input.lastName,
 					email: input.email,
 					password: input.password,
-					role: input.role,
+					role: input.role || "staff",
 					data: {
 						username: input.username,
 						firstName: input.firstName,

@@ -9,9 +9,9 @@ export const dashboardRouter = router({
 		const yesterday = new Date(
 			Date.now() - 24 * 60 * 60 * 1000
 		).toLocaleDateString() as string;
-		const weekAgo = new Date(
-			Date.now() - 7 * 24 * 60 * 60 * 1000
-		).toLocaleDateString() as string;
+		// const weekAgo = new Date(
+		// 	Date.now() - 7 * 24 * 60 * 60 * 1000
+		// ).toLocaleDateString() as string;
 
 		const [
 			totalPatients,

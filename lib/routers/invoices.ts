@@ -240,26 +240,26 @@ export const invoicesRouter = router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const invoice = await ctx.db
+			const invoiceData = await ctx.db
 				.select()
 				.from(schema.invoices)
 				.where(eq(schema.invoices.id, input.id))
 				.limit(1);
 
-			if (invoice.length === 0) {
+			const invoice = invoiceData[0];
+
+			if (!invoice) {
 				throw new Error("Invoice not found");
 			}
 
-			const paidAmount = input.paidAmount || invoice[0].totalAmount;
+			const paidAmount = input.paidAmount || invoice.totalAmount;
 
 			const updatedInvoice = await ctx.db
 				.update(schema.invoices)
 				.set({
 					paidAmount,
 					status:
-						paidAmount >= invoice[0].totalAmount
-							? "paid"
-							: "pending",
+						paidAmount >= invoice.totalAmount ? "paid" : "pending",
 					updatedAt: new Date().toISOString(),
 				})
 				.where(eq(schema.invoices.id, input.id))

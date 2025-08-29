@@ -36,7 +36,7 @@ export const authRouter = router({
 
 	signOut: protectedProcedure.mutation(async ({ ctx }) => {
 		return auth.api.signOut({
-			body: {},
+			headers: ctx.req.headers,
 		});
 	}),
 

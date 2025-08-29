@@ -1,7 +1,7 @@
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { QueryClient } from "@tanstack/react-query";
-import type { AppRouter } from "../../lib/routers/index.js";
+import type { AppRouter } from "./trpc";
 
 const baseURL = import.meta.env.VITE_SERVER_URL || "http://localhost:3031";
 
@@ -25,8 +25,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
 	client: trpcClient,
 	queryClient,
 });
-
-export type { AppRouter } from "../../lib/routers/index.js";
 
 // Query keys for invalidation
 export const queryKeys = {

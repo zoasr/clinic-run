@@ -28,7 +28,7 @@ export const auth = betterAuth({
 			verification: authSchema.verification,
 		},
 	}),
-	trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:3030"],
+	trustedOrigins: [process.env["FRONTEND_URL"] || "http://localhost:3030"],
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: false, // Disabled for offline clinic system
