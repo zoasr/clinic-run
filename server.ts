@@ -10,9 +10,9 @@ import { appRouter } from "./lib/index.js";
 import { createContext } from "./lib/trpc.js";
 
 const app = new Hono();
-const PORT = process.env.BACKEND_PORT || 3031;
+const PORT = Number(process.env.BACKEND_PORT) || 3031;
 
-console.log(process.env.DB_FILE_NAME, process.env.DATABASE_AUTH_TOKEN);
+console.log(process.env.DB_FILE_NAME, process.env.BETTER_AUTH_SECRET);
 
 // Enhanced CORS configuration
 app.use(
@@ -94,9 +94,53 @@ app.get("/api/health", (c) => {
 	return c.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
+// System tray and GUI functionality for desktop app
+async function setupSystemTray() {
+	try {
+		// Only setup system tray in production (desktop app)
+		if (process.env.NODE_ENV === "production") {
+			console.log("Setting up system tray...");
+
+			// Import system tray functionality (will be available in desktop build)
+			const { setupTray } = await import("./lib/system-tray.js");
+			await setupTray(PORT);
+		}
+	} catch (error) {
+		console.log("System tray not available, running in server mode");
+	}
+}
+
+// Auto-open browser in development
+async function openBrowser() {
+	if (process.env.NODE_ENV !== "production") {
+		try {
+			// Use Bun.spawn instead of child_process.exec
+			const browserProcess = Bun.spawn(
+				["cmd", "/c", `start http://localhost:${PORT}`],
+				{
+					stdout: "pipe",
+					stderr: "pipe",
+				}
+			);
+			await browserProcess.exited;
+			console.log(
+				`Clinic System opened in browser at http://localhost:${PORT}`
+			);
+		} catch (error) {
+			console.log(`Server running at http://localhost:${PORT}`);
+		}
+	}
+}
+
 // Start server
-startServer().then(() => {
+startServer().then(async () => {
 	console.log(`Clinic server running on http://localhost:${PORT}`);
+
+	// Setup system tray for desktop app
+	await setupSystemTray();
+
+	// Auto-open browser in development
+	await openBrowser();
 });
 
 export default {

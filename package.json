@@ -18,7 +18,8 @@
     "test:db:migrate": "NODE_ENV=test drizzle-kit migrate --config drizzle.config.test.ts",
     "test:db:seed": "NODE_ENV=test bun run lib/db/seed-performance.ts",
     "test:db:reset": "rm -f clinic-test.db && NODE_ENV=test bun run test:db:migrate && NODE_ENV=test bun run test:db:seed",
-    "test:perf": "NODE_ENV=test bun run test:db:reset"
+    "test:perf": "NODE_ENV=test bun run test:db:reset",
+    "create-installer": "powershell -ExecutionPolicy Bypass -File scripts/create-installer.ps1"
   },
   "workspaces": [
     "lib"
