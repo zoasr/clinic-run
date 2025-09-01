@@ -1,10 +1,5 @@
 import { z } from "zod";
-import {
-	router,
-	protectedProcedure,
-	adminProcedure,
-	publicProcedure,
-} from "../trpc.js";
+import { router, protectedProcedure, adminProcedure } from "../trpc.js";
 import { eq } from "drizzle-orm";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { auth } from "../auth.js";
