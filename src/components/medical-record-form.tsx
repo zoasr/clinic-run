@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,13 +21,16 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DatePicker } from "@/components/date-picker";
 import { trpc } from "@/lib/trpc-client";
-import { ArrowLeft, Search, User } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 import { MedicalRecord, Patient } from "@/lib/schema-types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TRPCClientErrorLike } from "@trpc/client";
-import { AppRouter } from "lib";
-import z from "zod";
+import { AppRouter } from "@/lib/trpc";
+import { usePatient } from "@/hooks/usePatients";
+import SearchPatientsDialog from "./search-patients-dialog";
+import DoctorsDialog from "./search-doctors-dialog";
+import { PageLoading } from "./ui/loading";
 
 interface MedicalRecordFormProps {
 	record?: MedicalRecord | null;
@@ -40,20 +43,7 @@ export function MedicalRecordForm({
 	onSave,
 	onCancel,
 }: MedicalRecordFormProps) {
-	const { data: doctors, isLoading: doctorsLoading } = useQuery(
-		trpc.users.getByRole.queryOptions({ role: "doctor" })
-	);
-
-	const { data: patients, isLoading: patientsLoading } = useQuery(
-		trpc.patients.getAll.queryOptions({ limit: 100 })
-	);
-	const [patientSearch, setPatientSearch] = useState("");
-	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
-		record?.patientId
-			? (patients?.find((p) => p.id === record?.patientId) ?? null)
-			: null
-	);
-	const loading = doctorsLoading || patientsLoading;
+	const { data: patient, isLoading } = usePatient(record?.patientId || 0);
 	const [error, setError] = useState("");
 
 	const parseVitalSigns = (vitalSigns?: string) => {
@@ -68,7 +58,7 @@ export function MedicalRecordForm({
 	const vitalSigns =
 		record?.vitalSigns && parseVitalSigns(record?.vitalSigns);
 
-	const createMutation = useMutation(
+	const { mutate: create, isPending: createPending } = useMutation(
 		trpc.medicalRecords.create.mutationOptions({
 			onSuccess: () => {
 				onSave();
@@ -80,7 +70,7 @@ export function MedicalRecordForm({
 		})
 	);
 
-	const updateMutation = useMutation(
+	const { mutate: update, isPending: updatePending } = useMutation(
 		trpc.medicalRecords.update.mutationOptions({
 			onSuccess: () => {
 				onSave();
@@ -95,9 +85,8 @@ export function MedicalRecordForm({
 	const form = useForm({
 		defaultValues: {
 			patientId: record?.patientId || 0,
-			doctorId: record?.doctorId || 0,
-			visitDate:
-				record?.visitDate || new Date().toLocaleDateString(),
+			doctorId: record?.doctorId || "",
+			visitDate: record?.visitDate || new Date().toLocaleDateString(),
 			chiefComplaint: record?.chiefComplaint || "",
 			diagnosis: record?.diagnosis || "",
 			treatment: record?.treatment || "",
@@ -113,7 +102,7 @@ export function MedicalRecordForm({
 			oxygenSaturation: vitalSigns?.oxygenSaturation || "",
 		},
 		onSubmit: async ({ value }) => {
-			if (!selectedPatient) {
+			if (!value.patientId || value.patientId <= 0) {
 				setError("Please select a patient");
 				return;
 			}
@@ -129,30 +118,32 @@ export function MedicalRecordForm({
 					oxygenSaturation: value.oxygenSaturation,
 				};
 
+				// Check if any vital signs have values
+				const hasVitalSigns = Object.values(vitalSignsObj).some(
+					(val) => val && val.trim() !== ""
+				);
+
 				const recordData = {
-					patientId: selectedPatient.id!,
-					doctorId: `${value.doctorId}`,
+					patientId: value.patientId,
+					doctorId: value.doctorId,
 					visitDate: value.visitDate,
-					chiefComplaint: value.chiefComplaint,
-					diagnosis: value.diagnosis,
-					treatment: value.treatment,
-					prescription: value.prescription,
-					notes: value.notes,
-					vitalSigns: Object.keys(vitalSignsObj).some(
-						(key) =>
-							vitalSignsObj[key as keyof typeof vitalSignsObj]
-					)
+					chiefComplaint: value.chiefComplaint?.trim() || "",
+					diagnosis: value.diagnosis?.trim() || "",
+					treatment: value.treatment?.trim() || "",
+					prescription: value.prescription?.trim() || "",
+					notes: value.notes?.trim() || "",
+					vitalSigns: hasVitalSigns
 						? JSON.stringify(vitalSignsObj)
 						: "",
 				};
 
 				if (record?.id) {
-					updateMutation.mutate({
+					update({
 						data: recordData,
 						id: record.id,
 					});
 				} else {
-					createMutation.mutate(recordData);
+					create(recordData);
 				}
 				onSave();
 			} catch (err: any) {
@@ -160,6 +151,10 @@ export function MedicalRecordForm({
 			}
 		},
 	});
+
+	if (isLoading) {
+		return <PageLoading text="Loading medical record for editing..." />;
+	}
 
 	return (
 		<div className="space-y-6">
@@ -183,7 +178,13 @@ export function MedicalRecordForm({
 				</div>
 			</div>
 
-			<form onSubmit={form.handleSubmit} className="space-y-6">
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					form.handleSubmit();
+				}}
+				className="space-y-6"
+			>
 				{/* Patient Selection */}
 				<Card>
 					<CardHeader>
@@ -193,88 +194,61 @@ export function MedicalRecordForm({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						{selectedPatient ? (
-							<div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-								<div className="flex items-center gap-3">
-									<div className="w-10 h-10 bg-secondary text-foreground rounded-full flex items-center justify-center">
-										<User className="h-5 w-5 " />
-									</div>
-									<div>
-										<h3 className="font-semibold">
-											{selectedPatient.firstName}{" "}
-											{selectedPatient.lastName}
-										</h3>
-										<p className="text-sm text-muted-foreground">
-											ID: {selectedPatient.id}
-										</p>
-										{selectedPatient.phone && (
-											<p className="text-sm text-muted-foreground">
-												{selectedPatient.phone}
-											</p>
-										)}
-									</div>
-								</div>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => setSelectedPatient(null)}
-								>
-									Change Patient
-								</Button>
-							</div>
-						) : (
-							<div className="space-y-4">
-								<div className="relative">
-									<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-									<Input
-										placeholder="Search patients by name or ID..."
-										value={patientSearch}
-										onChange={(e) =>
-											setPatientSearch(e.target.value)
-										}
-										className="pl-10"
-									/>
-								</div>
+						<div className="space-y-2">
+							<Label>Patient *</Label>
+							<SearchPatientsDialog
+								patient={patient}
+								onSelect={(selectedPatient) => {
+									// Update the form field value
+									const formInstance = form;
+									formInstance.setFieldValue(
+										"patientId",
+										selectedPatient?.id || 0
+									);
+								}}
+							/>
+						</div>
 
-								{!!patients && patients.length > 0 && (
-									<div className="max-h-60 overflow-y-auto space-y-2">
-										{patients.map((patient) => (
-											<div
-												key={patient.id}
-												className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
-												onClick={() =>
-													setSelectedPatient(patient)
-												}
-											>
-												<div className="flex items-center gap-3">
-													<div className="w-8 h-8 bg-secondary/10 rounded-full flex items-center justify-center">
-														<User className="h-4 w-4 text-secondary" />
-													</div>
-													<div>
-														<p className="font-medium">
-															{patient.firstName}{" "}
-															{patient.lastName}
-														</p>
-														<p className="text-sm text-muted-foreground">
-															ID:{" "}
-															{patient.patientId}
-														</p>
-													</div>
-												</div>
-												<Button
-													type="button"
-													variant="outline"
-													size="sm"
-												>
-													Select
-												</Button>
-											</div>
-										))}
+						{!!patient && (
+							<>
+								<h2 className="text-lg font-semibold text-foreground">
+									Selected Patient
+								</h2>
+								<div className="p-3 bg-muted/50 rounded-lg">
+									<div className="flex items-center gap-3">
+										<div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
+											<User className="h-5 w-5 text-secondary" />
+										</div>
+										<div>
+											<h3 className="font-semibold text-foreground">
+												{patient.firstName}{" "}
+												{patient.lastName}
+											</h3>
+											<p className="text-sm text-muted-foreground">
+												ID: {patient.patientId}
+											</p>
+											{patient.phone && (
+												<p className="text-sm text-muted-foreground">
+													{patient.phone}
+												</p>
+											)}
+										</div>
 									</div>
-								)}
-							</div>
+								</div>
+							</>
 						)}
+
+						{/* Hidden form field to store patientId */}
+						<form.Field
+							name="patientId"
+							validators={{
+								onChange: ({ value }) =>
+									!value || value <= 0
+										? "Patient is required"
+										: undefined,
+							}}
+							children={() => null} // Hidden field
+						/>
 					</CardContent>
 				</Card>
 
@@ -331,43 +305,26 @@ export function MedicalRecordForm({
 							<form.Field
 								name="doctorId"
 								validators={{
-									onChange: z
-										.string()
-										.min(1, "Doctor is required"),
+									onChange: ({ value }) =>
+										!value
+											? "Doctor is required"
+											: undefined,
 								}}
 								children={(field) => (
-									<div className="space-y-2">
+									<div>
 										<Label htmlFor="doctorId">
 											Attending Doctor *
 										</Label>
-										<Select
-											value={field.state.value.toString()}
-											onValueChange={(value) =>
-												field.handleChange(value)
+										<DoctorsDialog
+											onSelect={(doctor) =>
+												field.handleChange(doctor.id)
 											}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select doctor" />
-											</SelectTrigger>
-											<SelectContent>
-												{!!doctors &&
-													doctors.map((doctor) => (
-														<SelectItem
-															key={doctor.id}
-															value={doctor.id}
-														>
-															Dr.{" "}
-															{doctor.firstName}{" "}
-															{doctor.lastName}
-														</SelectItem>
-													))}
-											</SelectContent>
-										</Select>
+											doctorId={field.state.value}
+										/>
+
 										{field.state.meta.errors.length > 0 && (
 											<p className="text-sm text-red-600 mt-1">
-												{field.state.meta.errors.map(
-													(error) => error?.message
-												)}
+												{field.state.meta.errors[0]}
 											</p>
 										)}
 									</div>
@@ -640,9 +597,9 @@ export function MedicalRecordForm({
 					</Button>
 					<Button
 						type="submit"
-						disabled={loading || !selectedPatient}
+						disabled={createPending || updatePending || !patient}
 					>
-						{loading
+						{createPending || updatePending
 							? "Saving..."
 							: record
 								? "Update Record"

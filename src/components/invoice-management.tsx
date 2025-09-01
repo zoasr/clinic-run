@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-import { useInvoices, type Invoice } from "@/hooks/useInvoices";
+import { type Invoice } from "@/hooks/useInvoices";
 import {
 	Search,
 	Plus,
@@ -28,23 +28,56 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Link } from "@tanstack/react-router";
+import {
+	useQuery,
+	useInfiniteQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
+import { trpc } from "@/lib/trpc-client";
+import ErrorComponent from "./error";
 
 export function InvoiceManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
+	const queryClient = useQueryClient();
 
 	const {
-		data: invoices = [],
+		data,
 		isLoading,
-		refetch,
-	} = useInvoices({
-		search: searchTerm || undefined,
-	});
+		isError,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery(
+		trpc.invoices.getAll.infiniteQueryOptions(
+			{
+				search: searchTerm || undefined,
+				limit: 20,
+			},
+			{
+				getNextPageParam: (lastPage) =>
+					lastPage.nextCursor ?? undefined,
+			}
+		)
+	);
+
+	const invoices = data?.pages?.flatMap((page) => page.data) || [];
 
 	// Mutation for deleting invoices
 	const { mutate: deleteInvoice, isPending: isDeleting } = useDeleteInvoice({
 		onSuccess: () => {
 			toast.success("Invoice deleted successfully");
-			refetch();
+			queryClient.invalidateQueries(
+				trpc.invoices.getAll.infiniteQueryOptions(
+					{
+						search: searchTerm || undefined,
+						limit: 20,
+					},
+					{
+						getNextPageParam: (lastPage) =>
+							lastPage.nextCursor ?? undefined,
+					}
+				)
+			);
 		},
 		onError: (error: Error) => {
 			console.error("Failed to delete invoice:", error);
@@ -125,7 +158,9 @@ export function InvoiceManagement() {
 			</Card>
 
 			{/* Invoice List */}
-			{isLoading ? (
+			{isError ? (
+				<ErrorComponent error={new Error("Failed to fetch invoices")} />
+			) : isLoading ? (
 				<div className="flex items-center justify-center py-8">
 					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
 				</div>
@@ -325,7 +360,8 @@ export function InvoiceManagement() {
 											<Link
 												to="/invoices/$invoiceId"
 												params={{
-													invoiceId: invoice.id,
+													invoiceId:
+														invoice.id.toString(),
 												}}
 											>
 												<Button
@@ -339,7 +375,8 @@ export function InvoiceManagement() {
 											<Link
 												to="/invoices/edit/$invoiceId"
 												params={{
-													invoiceId: invoice.id,
+													invoiceId:
+														invoice.id.toLocaleString(),
 												}}
 											>
 												<Button
@@ -400,6 +437,30 @@ export function InvoiceManagement() {
 								</Card>
 							);
 						})}
+				</div>
+			)}
+			{/* Load More Section */}
+			{invoices.length > 0 && (
+				<div className="flex flex-col items-center gap-4 mt-8">
+					{/* Patient Count Info */}
+					<div className="text-sm text-muted-foreground">
+						Showing {invoices.length} invoices
+						{!hasNextPage && " (all loaded)"}
+					</div>
+
+					{/* Load More Button */}
+					{hasNextPage && (
+						<Button
+							onClick={() => fetchNextPage()}
+							disabled={isFetchingNextPage}
+							className="min-w-[120px]"
+							size="lg"
+						>
+							{isFetchingNextPage
+								? "Loading..."
+								: "Load More Invoices"}
+						</Button>
+					)}
 				</div>
 			)}
 		</div>

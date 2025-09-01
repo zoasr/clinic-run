@@ -1,6 +1,6 @@
+import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,13 +20,16 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { DatePicker } from "./date-picker";
-import { usePatients } from "@/hooks/usePatients";
+import { usePatient, usePatients } from "@/hooks/usePatients";
 import { queryKeys, trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
+import SearchPatientsDialog from "./search-patients-dialog";
+import DoctorsDialog from "./search-doctors-dialog";
+import { Loading } from "./ui/loading";
 
 // Infer types from tRPC
 type InvoiceInput = AppRouter["invoices"]["create"]["_def"]["$types"]["input"];
@@ -54,7 +57,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 	);
 
 	// Fetch patients for dropdown
-	const { data: patients = [] } = usePatients();
+	const { data: patient } = usePatient(invoice?.patientId || 0);
 
 	const defaultValues: InvoiceFormValues = {
 		patientId: invoice?.patientId ?? 0,
@@ -194,7 +197,6 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="patientId">Patient *</Label>
 							<form.Field
 								name="patientId"
 								validators={{
@@ -205,28 +207,19 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 								}}
 							>
 								{(field: any) => (
-									<Select
-										value={field.state.value?.toString()}
-										onValueChange={(value) =>
-											field.handleChange(parseInt(value))
-										}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Select patient" />
-										</SelectTrigger>
-										<SelectContent>
-											{patients.map((patient) => (
-												<SelectItem
-													key={patient.id}
-													value={patient.id.toString()}
-												>
-													{patient.firstName}{" "}
-													{patient.lastName} (ID:{" "}
-													{patient.patientId})
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									<div>
+										<Label htmlFor="patientId">
+											Patient *
+										</Label>
+										<SearchPatientsDialog
+											patient={patient}
+											onSelect={(patient) => {
+												field.handleChange(
+													patient?.id || 0
+												);
+											}}
+										/>
+									</div>
 								)}
 							</form.Field>
 						</div>
@@ -424,7 +417,11 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 						Cancel
 					</Button>
 					<Button type="submit" disabled={isPending}>
-						{isPending ? "Saving..." : "Save Invoice"}
+						{isPending
+							? "Saving..."
+							: invoice
+								? "Update"
+								: "Create"}
 					</Button>
 				</div>
 			</form>

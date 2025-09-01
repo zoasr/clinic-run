@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Search, User, Calendar, Activity, Trash2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
-	useMedicalRecords,
+	useMedicalRecordsInfinite,
 	useDeleteMedicalRecord,
 } from "@/hooks/useMedicalRecords";
 import { toast } from "sonner";
@@ -36,18 +36,21 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import LoadMore from "@/components/load-more";
 
 function MedicalRecordsPage() {
 	const [searchTerm, setSearchTerm] = useState("");
 
 	const {
-		data: records = [],
+		data,
 		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
 		refetch,
-	} = useMedicalRecords({
+	} = useMedicalRecordsInfinite({
 		search: searchTerm,
-		page: 1,
-		limit: 100,
+		limit: 20,
 	});
 
 	// Mutation for deleting medical records
@@ -66,6 +69,9 @@ function MedicalRecordsPage() {
 	const handleDeleteMedicalRecord = (recordId: number) => {
 		deleteMedicalRecord({ id: recordId });
 	};
+
+	// Flatten the infinite query data
+	const records = data?.pages.flatMap((page) => page.data) || [];
 	const vitalSigns = (vitalSigns?: string | null) => {
 		if (!vitalSigns) return null;
 		try {
@@ -293,6 +299,15 @@ function MedicalRecordsPage() {
 							</TableBody>
 						</Table>
 					)}
+
+					{/* Load More Button */}
+					<LoadMore
+						label="Records"
+						results={records}
+						fetchNextPage={fetchNextPage}
+						hasNextPage={hasNextPage}
+						isFetchingNextPage={isFetchingNextPage}
+					/>
 				</CardContent>
 			</Card>
 		</div>

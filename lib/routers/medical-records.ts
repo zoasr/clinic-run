@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, desc, or, like } from "drizzle-orm";
+import { eq, and, desc, or, like, lt } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -80,6 +80,90 @@ export const medicalRecordsRouter = router({
 				.orderBy(desc(schema.medicalRecords.visitDate));
 
 			return records;
+		}),
+
+	getInfinite: protectedProcedure
+		.input(
+			z.object({
+				patientId: z.number().optional(),
+				search: z.string().optional(),
+				limit: z.number().min(1).max(100).default(20),
+				cursor: z.number().optional(),
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { patientId, search, limit, cursor } = input;
+			const whereConditions = [];
+
+			if (patientId) {
+				whereConditions.push(
+					eq(schema.medicalRecords.patientId, patientId)
+				);
+			}
+			if (search) {
+				whereConditions.push(
+					or(
+						like(schema.patients.firstName, `%${search}%`),
+						like(schema.patients.lastName, `%${search}%`),
+						like(schema.medicalRecords.diagnosis, `%${search}%`),
+						like(authSchema.user.name, `%${search}%`)
+					)
+				);
+			}
+
+			// Add cursor condition for infinite scrolling
+			if (cursor) {
+				whereConditions.push(lt(schema.medicalRecords.id, cursor));
+			}
+
+			const records = await ctx.db
+				.select({
+					id: schema.medicalRecords.id,
+					visitDate: schema.medicalRecords.visitDate,
+					chiefComplaint: schema.medicalRecords.chiefComplaint,
+					diagnosis: schema.medicalRecords.diagnosis,
+					treatment: schema.medicalRecords.treatment,
+					prescription: schema.medicalRecords.prescription,
+					notes: schema.medicalRecords.notes,
+					vitalSigns: schema.medicalRecords.vitalSigns,
+					patient: {
+						id: schema.patients.id,
+						firstName: schema.patients.firstName,
+						lastName: schema.patients.lastName,
+						patientId: schema.patients.patientId,
+					},
+					doctor: {
+						id: authSchema.user.id,
+						firstName: authSchema.user.firstName,
+						lastName: authSchema.user.lastName,
+					},
+				})
+				.from(schema.medicalRecords)
+				.leftJoin(
+					schema.patients,
+					eq(schema.medicalRecords.patientId, schema.patients.id)
+				)
+				.leftJoin(
+					authSchema.user,
+					eq(schema.medicalRecords.doctorId, authSchema.user.id)
+				)
+				.where(
+					whereConditions.length > 0
+						? and(...whereConditions)
+						: undefined
+				)
+				.limit(limit + 1) // Fetch one extra to determine if there are more
+				.orderBy(desc(schema.medicalRecords.id)); // Order by ID for cursor-based pagination
+
+			const hasNextPage = records.length > limit;
+			const data = hasNextPage ? records.slice(0, limit) : records;
+			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
+
+			return {
+				data,
+				nextCursor,
+				hasNextPage,
+			};
 		}),
 
 	getById: protectedProcedure

@@ -84,10 +84,12 @@ function DoctorsComponent() {
 			<div className="flex justify-between items-center mb-4">
 				<h1 className="text-2xl font-bold text-foreground">Doctors</h1>
 				{isAdmin && (
-					<Button>
-						<UserPlus className="w-4 h-4 mr-2" />
-						Add Doctor
-					</Button>
+					<Link to="/doctors/add">
+						<Button>
+							<UserPlus className="w-4 h-4 mr-2" />
+							Add Doctor
+						</Button>
+					</Link>
 				)}
 			</div>
 			<div className="overflow-x-auto">

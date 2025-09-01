@@ -98,7 +98,7 @@ export const usersRouter = router({
 
 			return users;
 		}),
-	getDoctors: publicProcedure.query(async ({ ctx }) => {
+	getDoctors: protectedProcedure.query(async ({ ctx }) => {
 		const users = await ctx.db
 			.select({
 				id: authSchema.user.id,

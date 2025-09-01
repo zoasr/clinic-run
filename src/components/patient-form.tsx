@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { DatePicker } from "./date-picker";
 import { queryKeys, trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 import { ButtonLoading } from "@/components/ui/loading";
 
 // Basic email regex to validate on the client before submit (backend will still validate via Zod)
@@ -554,7 +554,12 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 
 				{/* Actions */}
 				<div className="flex justify-end gap-4">
-					<Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={onCancel}
+						disabled={isPending}
+					>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={isPending}>

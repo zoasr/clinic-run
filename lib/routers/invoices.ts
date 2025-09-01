@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, desc, like, or } from "drizzle-orm";
+import { eq, and, desc, like, or, lt } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -15,16 +15,17 @@ export const invoicesRouter = router({
 				search: z.string().optional(),
 				status: z.string().optional(),
 				patientId: z.number().optional(),
-				page: z.number().min(1).default(1),
-				limit: z.number().min(1).max(100).default(10),
+				limit: z.number().min(1).max(100).default(20),
+				cursor: z.number().optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { search, status, patientId, page, limit } = input;
-			const offset = (page - 1) * limit;
-
+			const { search, status, patientId, limit, cursor } = input;
 			const whereConditions = [];
 
+			if (cursor) {
+				whereConditions.push(lt(schema.invoices.id, cursor));
+			}
 			if (search) {
 				whereConditions.push(
 					or(
@@ -71,11 +72,18 @@ export const invoicesRouter = router({
 						? and(...whereConditions)
 						: undefined
 				)
-				.limit(limit)
-				.offset(offset)
-				.orderBy(desc(schema.invoices.createdAt));
+				.limit(limit + 1)
+				.orderBy(desc(schema.invoices.id));
 
-			return invoices;
+			const hasNextPage = invoices.length > limit;
+			const data = hasNextPage ? invoices.slice(0, limit) : invoices;
+			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
+
+			return {
+				data,
+				nextCursor,
+				hasNextPage,
+			};
 		}),
 
 	getById: protectedProcedure

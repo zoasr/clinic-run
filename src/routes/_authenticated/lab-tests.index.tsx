@@ -25,7 +25,7 @@ import {
 	Clock,
 	XCircle,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { LabTest } from "@/lib/schema-types";
 import { useDeleteLabTest } from "@/hooks/useLabTests";
 import { toast } from "sonner";
@@ -41,6 +41,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
+import { LoadingCards, TableLoading } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/_authenticated/lab-tests/")({
 	loader: () => ({
@@ -55,17 +56,28 @@ export function LabTestManagement() {
 	const [activeTab, setActiveTab] = useState("tests");
 
 	const {
-		data: labTests,
+		data,
 		isLoading: loading,
 		error,
 		refetch,
-	} = useQuery(
-		trpc.labTests.getAll.queryOptions({
-			search: searchTerm,
-			page: 1,
-			limit: 10,
-		})
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery(
+		trpc.labTests.getAll.infiniteQueryOptions(
+			{
+				search: searchTerm || undefined,
+				status: statusFilter === "all" ? undefined : statusFilter,
+				limit: 20,
+			},
+			{
+				getNextPageParam: (lastPage) =>
+					lastPage.nextCursor ?? undefined,
+			}
+		)
 	);
+
+	const labTests = data?.pages?.flatMap((page) => page.data) || [];
 
 	// Mutation for deleting lab tests
 	const { mutate: deleteLabTest, isPending: isDeleting } = useDeleteLabTest({
@@ -130,29 +142,6 @@ export function LabTestManagement() {
 			};
 		return { status: "recent", color: "bg-green-100 text-green-800" };
 	};
-
-	const filteredLabTests = labTests?.filter((labTest) => {
-		const matchesSearch =
-			searchTerm === "" ||
-			labTest.testName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			labTest.patient?.firstName
-				.toLowerCase()
-				.includes(searchTerm.toLowerCase()) ||
-			labTest.patient?.lastName
-				.toLowerCase()
-				.includes(searchTerm.toLowerCase()) ||
-			labTest.doctor?.firstName
-				.toLowerCase()
-				.includes(searchTerm.toLowerCase()) ||
-			labTest.doctor?.lastName
-				.toLowerCase()
-				.includes(searchTerm.toLowerCase());
-
-		const matchesStatusFilter =
-			statusFilter === "all" || labTest.status === statusFilter;
-
-		return matchesSearch && matchesStatusFilter;
-	});
 
 	const completedCount =
 		labTests?.filter((test) => test.status === "completed").length || 0;
@@ -289,9 +278,6 @@ export function LabTestManagement() {
 								</SelectItem>
 							</SelectContent>
 						</Select>
-						<Button variant="outline" onClick={() => refetch()}>
-							Search
-						</Button>
 					</div>
 				</CardContent>
 			</Card>
@@ -306,10 +292,8 @@ export function LabTestManagement() {
 				<TabsContent value="tests" className="space-y-4">
 					{/* Lab Test List */}
 					{loading ? (
-						<div className="flex items-center justify-center py-8">
-							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-						</div>
-					) : filteredLabTests?.length === 0 ? (
+						<LoadingCards />
+					) : labTests?.length === 0 ? (
 						<Card>
 							<CardContent className="flex flex-col items-center justify-center py-8">
 								<TestTube className="h-12 w-12 text-muted-foreground mb-4" />
@@ -331,8 +315,8 @@ export function LabTestManagement() {
 						</Card>
 					) : (
 						<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-							{filteredLabTests &&
-								filteredLabTests?.map((labTest) => {
+							{labTests &&
+								labTests?.map((labTest) => {
 									const statusInfo = getStatusInfo(
 										labTest.status
 									);
@@ -618,6 +602,27 @@ export function LabTestManagement() {
 										</Card>
 									);
 								})}
+						</div>
+					)}
+					{/* Load More Section */}
+					{labTests.length > 0 && (
+						<div className="flex flex-col items-center gap-4 mt-8">
+							<div className="text-sm text-muted-foreground">
+								Showing {labTests.length} lab tests
+								{!hasNextPage && " (all loaded)"}
+							</div>
+							{hasNextPage && (
+								<Button
+									onClick={() => fetchNextPage()}
+									disabled={isFetchingNextPage}
+									className="min-w-[120px]"
+									size="lg"
+								>
+									{isFetchingNextPage
+										? "Loading..."
+										: "Load More Lab Tests"}
+								</Button>
+							)}
 						</div>
 					)}
 				</TabsContent>

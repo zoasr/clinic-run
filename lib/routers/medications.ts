@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, like, and, asc } from "drizzle-orm";
+import { eq, like, and, desc, lt, sql, lte } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -12,15 +12,15 @@ export const medicationsRouter = router({
 			z.object({
 				search: z.string().optional(),
 				lowStock: z.boolean().optional(),
-				page: z.number().min(1).default(1),
-				limit: z.number().min(1).max(100).default(10),
+				outOfStock: z.boolean().optional(),
+				limit: z.number().min(1).max(100).default(20),
+				cursor: z.number().optional(), // For infinite queries
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { search, lowStock, page, limit } = input;
-			const offset = (page - 1) * limit;
+			const { search, lowStock, outOfStock, limit, cursor } = input;
 
-			const whereConditions = [eq(schema.medications.isActive, true)];
+			const whereConditions = [];
 
 			if (search) {
 				whereConditions.push(
@@ -28,23 +28,67 @@ export const medicationsRouter = router({
 				);
 			}
 
+			if (lowStock) {
+				whereConditions.push(
+					sql`${schema.medications.quantity} <= ${schema.medications.minStockLevel}`
+				);
+				whereConditions.push(sql`${schema.medications.quantity} > 0`);
+			}
+
+			if (outOfStock) {
+				whereConditions.push(eq(schema.medications.quantity, 0));
+			}
+
+			// Add cursor condition for infinite queries
+			if (cursor) {
+				if (!lowStock && !outOfStock)
+					whereConditions.push(lt(schema.medications.id, cursor));
+			}
+
 			const medications = await ctx.db
 				.select()
 				.from(schema.medications)
 				.where(and(...whereConditions))
-				.limit(limit)
-				.offset(offset)
-				.orderBy(asc(schema.medications.name));
+				.limit(limit + 1) // Fetch one extra to check if there are more
+				.orderBy(desc(schema.medications.id));
 
-			// Filter low stock medications if requested
-			if (lowStock) {
-				return medications.filter(
-					(med) => med.quantity <= med.minStockLevel
-				);
-			}
+			const hasNextPage = medications.length > limit;
+			const data = hasNextPage
+				? medications.slice(0, limit)
+				: medications;
+			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
 
-			return medications;
+			return {
+				data,
+				nextCursor,
+				hasNextPage,
+			};
 		}),
+
+	getAllLowStock: protectedProcedure.query(async ({ ctx }) => {
+		const medications = await ctx.db
+			.select()
+			.from(schema.medications)
+			.where(
+				and(
+					eq(schema.medications.isActive, true),
+					sql`${schema.medications.quantity} <= ${schema.medications.minStockLevel}`
+				)
+			)
+			.orderBy(desc(schema.medications.id));
+
+		return medications;
+	}),
+
+	getAllOutOfStock: protectedProcedure.query(async ({ ctx }) => {
+		const medications = await ctx.db
+			.select()
+			.from(schema.medications)
+			.where(lte(schema.medications.quantity, 0))
+			.orderBy(desc(schema.medications.id));
+
+		return medications;
+	}),
 
 	getById: protectedProcedure
 		.input(

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -19,15 +20,17 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 import { toast } from "sonner";
 import { DatePicker } from "./date-picker";
-import { usePatients } from "@/hooks/usePatients";
-import { useDoctors } from "@/hooks/useUsers";
+import { usePatient } from "@/hooks/usePatients";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
+import DoctorsDialog from "./search-doctors-dialog";
+import SearchPatientsDialog from "./search-patients-dialog";
+import { Loading } from "./ui/loading";
 
 // Infer types from tRPC
 type LabTestInput = AppRouter["labTests"]["create"]["_def"]["$types"]["input"];
@@ -45,9 +48,10 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 	const queryClient = useQueryClient();
 	const { user } = useAuth();
 
-	// Fetch patients and doctors for dropdowns
-	const { data: patients = [] } = usePatients();
-	const { data: doctors = [] } = useDoctors();
+	// Fetch patient data for existing lab test
+	const { data: patient, isLoading: patientLoading } = usePatient(
+		labTest?.patientId || 0
+	);
 
 	const defaultValues: LabTestFormValues = {
 		patientId: labTest?.patientId ?? 0,
@@ -158,84 +162,59 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<Label htmlFor="patientId">Patient *</Label>
-								<form.Field
-									name="patientId"
-									validators={{
-										onChange: ({ value }) =>
-											!value || value === 0
-												? "Patient is required"
-												: undefined,
-									}}
-								>
-									{(field: any) => (
-										<Select
-											value={field.state.value?.toString()}
-											onValueChange={(value) =>
+							<form.Field
+								name="patientId"
+								validators={{
+									onChange: ({ value }) =>
+										!value || value <= 0
+											? "Patient is required"
+											: undefined,
+								}}
+								children={(field) => (
+									<div>
+										<Label htmlFor="patientId">
+											Patient *
+										</Label>
+										<SearchPatientsDialog
+											patient={patient}
+											onSelect={(patient) => {
 												field.handleChange(
-													parseInt(value)
-												)
-											}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select patient" />
-											</SelectTrigger>
-											<SelectContent>
-												{patients.map((patient) => (
-													<SelectItem
-														key={patient.id}
-														value={patient.id.toString()}
-													>
-														{patient.firstName}{" "}
-														{patient.lastName} (ID:{" "}
-														{patient.patientId})
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									)}
-								</form.Field>
-							</div>
+													patient?.id || 0
+												);
+											}}
+										/>
+									</div>
+								)}
+							/>
 
-							<div className="space-y-2">
-								<Label htmlFor="doctorId">
-									Ordering Doctor *
-								</Label>
-								<form.Field
-									name="doctorId"
-									validators={{
-										onChange: ({ value }) =>
-											!value?.trim()
-												? "Doctor is required"
-												: undefined,
-									}}
-								>
-									{(field: any) => (
-										<Select
-											value={field.state.value}
-											onValueChange={(value) =>
-												field.handleChange(value)
+							<form.Field
+								name="doctorId"
+								validators={{
+									onChange: ({ value }) =>
+										!value
+											? "Doctor is required"
+											: undefined,
+								}}
+								children={(field) => (
+									<div>
+										<Label htmlFor="doctorId">
+											Ordering Doctor *
+										</Label>
+										<DoctorsDialog
+											onSelect={(doctor) =>
+												field.handleChange(doctor.id)
 											}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select doctor" />
-											</SelectTrigger>
-											<SelectContent>
-												{doctors.map((doctor) => (
-													<SelectItem
-														key={doctor.id}
-														value={doctor.id}
-													>
-														Dr. {doctor.firstName}{" "}
-														{doctor.lastName}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									)}
-								</form.Field>
-							</div>
+											doctorId={field.state.value}
+										/>
+
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-red-600 mt-1">
+												{field.state.meta.errors[0]}
+											</p>
+										)}
+									</div>
+								)}
+							/>
 						</div>
 					</CardContent>
 				</Card>
@@ -510,8 +489,8 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					<Button type="button" variant="outline" onClick={onCancel}>
 						Cancel
 					</Button>
-					<Button type="submit" disabled={isPending}>
-						{isPending ? "Saving..." : "Save Lab Test"}
+					<Button type="submit" disabled={isPending || !patient}>
+						{isPending ? "Saving..." : labTest ? "Update" : "Order"}
 					</Button>
 				</div>
 			</form>

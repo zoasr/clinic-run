@@ -87,10 +87,12 @@ function UsersComponent() {
 				<h1 className="text-2xl font-bold text-foreground">
 					User Management
 				</h1>
-				<Button>
-					<UserPlus className="w-4 h-4 mr-2" />
-					<Link to="/users/add">Add User</Link>
-				</Button>
+				<Link to="/users/add">
+					<Button>
+						Add User
+						<UserPlus className="w-4 h-4 mr-2" />
+					</Button>
+				</Link>
 			</div>
 			<div className="overflow-x-auto">
 				<Table className="border rounded-lg">

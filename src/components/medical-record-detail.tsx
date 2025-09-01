@@ -16,29 +16,7 @@ import {
 	FileText,
 	Pill,
 } from "lucide-react";
-
-interface MedicalRecord {
-	id: number;
-	visitDate: string;
-	chiefComplaint?: string;
-	diagnosis?: string;
-	treatment?: string;
-	prescription?: string;
-	notes?: string;
-	vitalSigns?: string;
-	patient: {
-		id: number;
-		firstName: string;
-		lastName: string;
-		patientId: string;
-	};
-	doctor: {
-		id: number;
-		firstName: string;
-		lastName: string;
-	};
-	appointmentId?: number;
-}
+import { MedicalRecord } from "@/hooks/useMedicalRecords";
 
 interface MedicalRecordDetailProps {
 	record: MedicalRecord;
@@ -51,7 +29,7 @@ export function MedicalRecordDetail({
 	onBack,
 	onEdit,
 }: MedicalRecordDetailProps) {
-	const parseVitalSigns = (vitalSigns?: string) => {
+	const parseVitalSigns = (vitalSigns?: string | null) => {
 		if (!vitalSigns) return null;
 		try {
 			return JSON.parse(vitalSigns);
@@ -59,6 +37,10 @@ export function MedicalRecordDetail({
 			return null;
 		}
 	};
+
+	if (!record) {
+		return <div>Record not found</div>;
+	}
 
 	const vitalSigns = parseVitalSigns(record.vitalSigns);
 
@@ -76,8 +58,9 @@ export function MedicalRecordDetail({
 							Medical Record
 						</h1>
 						<p className="text-muted-foreground">
-							{record.patient.firstName} {record.patient.lastName}{" "}
-							- {new Date(record.visitDate).toLocaleDateString()}
+							{record.patient?.firstName}{" "}
+							{record.patient?.lastName} -{" "}
+							{new Date(record.visitDate).toLocaleDateString()}
 						</p>
 					</div>
 				</div>
@@ -100,11 +83,11 @@ export function MedicalRecordDetail({
 						<div className="space-y-2">
 							<div>
 								<p className="font-semibold">
-									{record.patient.firstName}{" "}
-									{record.patient.lastName}
+									{record.patient?.firstName}{" "}
+									{record.patient?.lastName}
 								</p>
 								<p className="text-sm text-muted-foreground">
-									ID: {record.patient.patientId}
+									ID: {record.patient?.patientId}
 								</p>
 							</div>
 						</div>
@@ -135,8 +118,8 @@ export function MedicalRecordDetail({
 									Doctor:
 								</span>
 								<span className="text-sm font-medium">
-									Dr. {record.doctor.firstName}{" "}
-									{record.doctor.lastName}
+									Dr. {record.doctor?.firstName}{" "}
+									{record.doctor?.lastName}
 								</span>
 							</div>
 						</div>

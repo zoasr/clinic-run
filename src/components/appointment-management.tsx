@@ -32,7 +32,9 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { TableLoading } from "@/components/ui/loading";
+import { Loading, LoadingCards, TableLoading } from "@/components/ui/loading";
+import LoadMore from "./load-more";
+import ErrorComponent from "./error";
 
 export function AppointmentManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -42,16 +44,20 @@ export function AppointmentManagement() {
 	const navigate = useNavigate();
 
 	const {
-		data: appointmentsData,
+		data,
 		isLoading,
 		error,
 		refetch,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
 	} = useAppointments({
 		status: statusFilter !== "all" ? statusFilter : undefined,
 		date: dateFilter || undefined,
-		page: 1,
-		limit: 100,
+		limit: 20,
 	});
+
+	const appointmentsData = data?.pages?.flatMap((page) => page.data) || [];
 
 	// Mutation for updating appointment status
 	const { mutate: updateStatus, isPending: isUpdating } =
@@ -124,7 +130,7 @@ export function AppointmentManagement() {
 	const filteredAppointments = (appointmentsData || []).filter(
 		(appointment: any) => {
 			// Skip appointments with missing patient or doctor data
-			if (!appointment.patient || !appointment.doctor) {
+			if (!appointment.patient) {
 				return false;
 			}
 
@@ -142,7 +148,7 @@ export function AppointmentManagement() {
 	);
 
 	if (error) {
-		return <div>Error loading appointments: {error.message}</div>;
+		return <ErrorComponent error={error} />;
 	}
 
 	return (
@@ -235,7 +241,7 @@ export function AppointmentManagement() {
 				<TabsContent value="list" className="space-y-4">
 					{/* Appointment List */}
 					{isLoading ? (
-						<TableLoading rows={5} />
+						<LoadingCards />
 					) : filteredAppointments.length === 0 ? (
 						<Card>
 							<CardContent className="flex flex-col items-center justify-center py-8">
@@ -264,10 +270,7 @@ export function AppointmentManagement() {
 						<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 							{filteredAppointments.map((appointment: any) => {
 								// Skip appointments with missing data
-								if (
-									!appointment.patient ||
-									!appointment.doctor
-								) {
+								if (!appointment.patient) {
 									return null;
 								}
 
@@ -407,22 +410,24 @@ export function AppointmentManagement() {
 
 												{/* Doctor & Type Row */}
 												<div className="flex items-center justify-between">
-													<div className="flex items-center gap-2">
-														<User className="h-4 w-4 text-muted-foreground" />
-														<span className="text-sm">
-															Dr.{" "}
-															{
-																appointment
-																	.doctor
-																	.firstName
-															}{" "}
-															{
-																appointment
-																	.doctor
-																	.lastName
-															}
-														</span>
-													</div>
+													{appointment.doctor && (
+														<div className="flex items-center gap-2">
+															<User className="h-4 w-4 text-muted-foreground" />
+															<span className="text-sm">
+																Dr.{" "}
+																{
+																	appointment
+																		.doctor
+																		?.firstName
+																}{" "}
+																{
+																	appointment
+																		.doctor
+																		?.lastName
+																}
+															</span>
+														</div>
+													)}
 													<Badge
 														variant="outline"
 														className={getTypeColor(
@@ -555,6 +560,13 @@ export function AppointmentManagement() {
 							})}
 						</div>
 					)}
+					{/* Load More Section */}
+					<LoadMore
+						results={filteredAppointments}
+						hasNextPage={hasNextPage}
+						fetchNextPage={fetchNextPage}
+						isFetchingNextPage={isFetchingNextPage}
+					/>
 				</TabsContent>
 
 				<TabsContent value="calendar">

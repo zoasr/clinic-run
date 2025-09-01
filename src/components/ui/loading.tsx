@@ -2,9 +2,10 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Activity, Heart, Stethoscope } from "lucide-react";
+import { Card, CardContent } from "./card";
 
 interface LoadingProps extends React.HTMLAttributes<HTMLDivElement> {
-	variant?: "spinner" | "pulse" | "skeleton" | "dots" | "medical";
+	variant?: "spinner" | "pulse" | "skeleton" | "dots" | "medical" | "cards";
 	size?: "sm" | "md" | "lg" | "xl";
 	text?: string;
 	fullScreen?: boolean;
@@ -158,6 +159,8 @@ export function Loading({
 				return <LoadingMedical size={size} />;
 			case "skeleton":
 				return <LoadingSkeleton />;
+			case "cards":
+				return <LoadingCards />;
 			default:
 				return <LoadingSpinner size={size} />;
 		}
@@ -166,7 +169,7 @@ export function Loading({
 	const content = (
 		<div
 			className={cn(
-				"flex flex-col items-center justify-center gap-3",
+				"flex flex-col items-center justify-center gap-3 !w-full",
 				fullScreen && "min-h-screen",
 				className
 			)}
@@ -221,6 +224,30 @@ export const TableLoading = ({ rows = 5 }: { rows?: number }) => (
 		))}
 	</div>
 );
+
+export const LoadingCards = () => {
+	return (
+		<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+			{[...Array(6)].map((_, i) => (
+				<Card key={i} className="animate-pulse h-[300px]">
+					<CardContent className="p-6">
+						<div className="flex items-center gap-3 mb-4">
+							<div className="w-12 h-12 bg-accent rounded-full"></div>
+							<div className="flex-1">
+								<div className="h-4 bg-accent rounded mb-2"></div>
+								<div className="h-3 bg-accent rounded w-3/4"></div>
+							</div>
+						</div>
+						<div className="space-y-2">
+							<div className="h-3 bg-accent rounded"></div>
+							<div className="h-3 bg-accent rounded w-5/6"></div>
+						</div>
+					</CardContent>
+				</Card>
+			))}
+		</div>
+	);
+};
 
 export const CardLoading = () => (
 	<div className="space-y-4 p-6">

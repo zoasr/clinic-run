@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 
 // Infer types from tRPC
 type LabTest = AppRouter["labTests"]["getById"]["_def"]["$types"]["output"];

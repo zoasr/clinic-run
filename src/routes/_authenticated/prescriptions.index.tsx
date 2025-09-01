@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { PrescriptionManagement } from "@/components/prescription-management";
 
 export const Route = createFileRoute("/_authenticated/prescriptions/")({

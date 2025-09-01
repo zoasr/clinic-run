@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,11 +24,16 @@ import {
 	Pill,
 	Trash2,
 } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useQuery,
+	useMutation,
+	useQueryClient,
+	useInfiniteQuery,
+} from "@tanstack/react-query";
 import { Medication } from "@/lib/schema-types";
 import { useDeleteMedication } from "@/hooks/useMedications";
 import { toast } from "sonner";
-import { TableLoading } from "@/components/ui/loading";
+import { LoadingCards, TableLoading } from "@/components/ui/loading";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -54,17 +59,32 @@ export function InventoryManagement() {
 	const [activeTab, setActiveTab] = useState("inventory");
 
 	const {
-		data: medications,
+		data,
 		isLoading: loading,
 		error,
 		refetch,
-	} = useQuery(
-		trpc.medications.getAll.queryOptions({
-			search: searchTerm,
-			lowStock: stockFilter === "low",
-			page: 1,
-			limit: 10,
-		})
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery(
+		trpc.medications.getAll.infiniteQueryOptions(
+			{
+				search: searchTerm || undefined,
+				lowStock: stockFilter === "low" ? true : undefined,
+				outOfStock: stockFilter === "out" ? true : undefined,
+				limit: 20,
+			},
+			{
+				getNextPageParam: (lastPage) =>
+					lastPage.nextCursor ?? undefined,
+			}
+		)
+	);
+	const { data: lowStockMeds } = useQuery(
+		trpc.medications.getAllLowStock.queryOptions()
+	);
+	const { data: outOfStockMeds } = useQuery(
+		trpc.medications.getAllOutOfStock.queryOptions()
 	);
 
 	// Mutation for deleting medications
@@ -113,33 +133,10 @@ export function InventoryManagement() {
 			};
 		return { status: "valid", color: "bg-green-100 text-green-800" };
 	};
+	const medications = data?.pages?.flatMap((page) => page.data) || [];
 
-	const filteredMedications = medications?.filter((medication) => {
-		const matchesSearch =
-			searchTerm === "" ||
-			medication.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			medication.genericName
-				?.toLowerCase()
-				.includes(searchTerm.toLowerCase()) ||
-			medication.manufacturer
-				?.toLowerCase()
-				.includes(searchTerm.toLowerCase());
-
-		const matchesStockFilter =
-			stockFilter === "all" ||
-			(stockFilter === "low" &&
-				medication.quantity <= medication.minStockLevel) ||
-			(stockFilter === "out" && medication.quantity === 0);
-
-		return matchesSearch && matchesStockFilter;
-	});
-
-	const lowStockCount = medications?.filter(
-		(med) => med.quantity <= med.minStockLevel && med.quantity > 0
-	).length;
-	const outOfStockCount = medications?.filter(
-		(med) => med.quantity === 0
-	).length;
+	const lowStockCount = lowStockMeds?.length;
+	const outOfStockCount = outOfStockMeds?.length;
 	const expiringCount = medications?.filter((med) => {
 		if (!med.expiryDate) return false;
 		const expiry = new Date(med.expiryDate);
@@ -265,9 +262,6 @@ export function InventoryManagement() {
 								</SelectItem>
 							</SelectContent>
 						</Select>
-						<Button variant="outline" onClick={() => refetch()}>
-							Search
-						</Button>
 					</div>
 				</CardContent>
 			</Card>
@@ -282,8 +276,8 @@ export function InventoryManagement() {
 				<TabsContent value="inventory" className="space-y-4">
 					{/* Medication List */}
 					{loading ? (
-						<TableLoading rows={6} />
-					) : filteredMedications?.length === 0 ? (
+						<LoadingCards />
+					) : medications?.length === 0 ? (
 						<Card>
 							<CardContent className="flex flex-col items-center justify-center py-8">
 								<Package className="h-12 w-12 text-muted-foreground mb-4" />
@@ -305,8 +299,8 @@ export function InventoryManagement() {
 						</Card>
 					) : (
 						<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-							{filteredMedications &&
-								filteredMedications?.map((medication) => {
+							{medications &&
+								medications?.map((medication) => {
 									const stockStatus =
 										getStockStatus(medication);
 									const expiryStatus = getExpiryStatus(
@@ -595,6 +589,27 @@ export function InventoryManagement() {
 								})}
 						</div>
 					)}
+					{/* Load More Section */}
+					{medications.length > 0 && (
+						<div className="flex flex-col items-center gap-4 mt-8">
+							<div className="text-sm text-muted-foreground">
+								Showing {medications.length} medications
+								{!hasNextPage && " (all loaded)"}
+							</div>
+							{hasNextPage && (
+								<Button
+									onClick={() => fetchNextPage()}
+									disabled={isFetchingNextPage}
+									className="min-w-[120px]"
+									size="lg"
+								>
+									{isFetchingNextPage
+										? "Loading..."
+										: "Load More Medications"}
+								</Button>
+							)}
+						</div>
+					)}
 				</TabsContent>
 
 				<TabsContent value="alerts" className="space-y-4">
@@ -616,46 +631,37 @@ export function InventoryManagement() {
 										</div>
 									</div>
 									<div className="space-y-2">
-										{medications
-											.filter(
-												(med) =>
-													med.quantity <=
-														med.minStockLevel &&
-													med.quantity > 0
-											)
-											.map((medication) => (
-												<div
-													key={medication.id}
-													className="flex items-center justify-between p-3 rounded-lg border bg-warning/10 "
-												>
-													<div>
-														<p className="font-medium">
-															{medication.name}
-														</p>
-														<p className="text-sm text-muted-foreground">
-															Current:{" "}
-															{
-																medication.quantity
-															}{" "}
-															| Min:{" "}
-															{
-																medication.minStockLevel
-															}
-														</p>
-													</div>
-													<Link
-														to="/medications/stock/$medicationId"
-														params={{
-															medicationId:
-																medication.id.toString(),
-														}}
-													>
-														<Button size="sm">
-															Restock
-														</Button>
-													</Link>
+										{lowStockMeds?.map((medication) => (
+											<div
+												key={medication.id}
+												className="flex items-center justify-between p-3 rounded-lg border bg-warning/10 "
+											>
+												<div>
+													<p className="font-medium">
+														{medication.name}
+													</p>
+													<p className="text-sm text-muted-foreground">
+														Current:{" "}
+														{medication.quantity} |
+														Min:{" "}
+														{
+															medication.minStockLevel
+														}
+													</p>
 												</div>
-											))}
+												<Link
+													to="/medications/stock/$medicationId"
+													params={{
+														medicationId:
+															medication.id.toString(),
+													}}
+												>
+													<Button size="sm">
+														Restock
+													</Button>
+												</Link>
+											</div>
+										))}
 									</div>
 								</CardContent>
 							</Card>
@@ -678,34 +684,32 @@ export function InventoryManagement() {
 										</div>
 									</div>
 									<div className="space-y-2">
-										{medications
-											.filter((med) => med.quantity === 0)
-											.map((medication) => (
-												<div
-													key={medication.id}
-													className="flex items-center justify-between p-3 rounded-lg border bg-destructive/10 "
-												>
-													<div>
-														<p className="font-medium">
-															{medication.name}
-														</p>
-														<p className="text-sm text-muted-foreground">
-															Stock depleted
-														</p>
-													</div>
-													<Link
-														to="/medications/stock/$medicationId"
-														params={{
-															medicationId:
-																medication.id.toString(),
-														}}
-													>
-														<Button size="sm">
-															Restock
-														</Button>
-													</Link>
+										{outOfStockMeds?.map((medication) => (
+											<div
+												key={medication.id}
+												className="flex items-center justify-between p-3 rounded-lg border bg-destructive/10 "
+											>
+												<div>
+													<p className="font-medium">
+														{medication.name}
+													</p>
+													<p className="text-sm text-muted-foreground">
+														Stock depleted
+													</p>
 												</div>
-											))}
+												<Link
+													to="/medications/stock/$medicationId"
+													params={{
+														medicationId:
+															medication.id.toString(),
+													}}
+												>
+													<Button size="sm">
+														Restock
+													</Button>
+												</Link>
+											</div>
+										))}
 									</div>
 								</CardContent>
 							</Card>

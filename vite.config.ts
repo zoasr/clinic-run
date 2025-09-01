@@ -5,7 +5,13 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 export default defineConfig({
-	plugins: [react(), tanstackRouter(), tailwindcss()],
+	plugins: [
+		tanstackRouter({
+			autoCodeSplitting: true,
+		}),
+		react(),
+		tailwindcss(),
+	],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),

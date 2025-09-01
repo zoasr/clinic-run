@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, desc, like, or } from "drizzle-orm";
+import { eq, and, desc, like, or, lt } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -15,16 +15,17 @@ export const labTestsRouter = router({
 				status: z.string().optional(),
 				patientId: z.number().optional(),
 				testType: z.string().optional(),
-				page: z.number().min(1).default(1),
-				limit: z.number().min(1).max(100).default(10),
+				limit: z.number().min(1).max(100).default(20),
+				cursor: z.number().optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { search, status, patientId, testType, page, limit } = input;
-			const offset = (page - 1) * limit;
-
+			const { search, status, patientId, testType, limit, cursor } = input;
 			const whereConditions = [];
 
+			if (cursor) {
+				whereConditions.push(lt(schema.labTests.id, cursor));
+			}
 			if (search) {
 				whereConditions.push(
 					or(
@@ -86,11 +87,18 @@ export const labTestsRouter = router({
 						? and(...whereConditions)
 						: undefined
 				)
-				.limit(limit)
-				.offset(offset)
-				.orderBy(desc(schema.labTests.orderDate));
+				.limit(limit + 1)
+				.orderBy(desc(schema.labTests.id));
 
-			return labTests;
+			const hasNextPage = labTests.length > limit;
+			const data = hasNextPage ? labTests.slice(0, limit) : labTests;
+			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
+
+			return {
+				data,
+				nextCursor,
+				hasNextPage,
+			};
 		}),
 
 	getById: protectedProcedure

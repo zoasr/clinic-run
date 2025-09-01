@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createInsertSchema } from "drizzle-zod";
 import * as schema from "../db/schema/schema.js";
 import { router, protectedProcedure } from "../trpc.js";
-import { and, desc, eq, like } from "drizzle-orm";
+import { and, desc, eq, like, lt, or } from "drizzle-orm";
 
 const patientInputSchema = createInsertSchema(schema.patients).omit({
 	patientId: true,
@@ -13,31 +13,53 @@ export const patientsRouter = router({
 		.input(
 			z.object({
 				search: z.string().optional(),
-				page: z.number().min(1).default(1),
-				limit: z.number().min(1).max(100).default(10),
+				limit: z.number().min(1).max(100).default(20),
+				cursor: z.number().optional(), // For infinite queries
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { search, page, limit } = input;
-			const offset = (page - 1) * limit;
+			const { search, limit, cursor } = input;
 
-			const whereConditions = [eq(schema.patients.isActive, true)];
+			const whereConditions = [];
 
 			if (search) {
+				let [firstName, lastName] = search.split(" ");
 				whereConditions.push(
-					like(schema.patients.firstName, `%${search}%`)
+					or(
+						like(
+							schema.patients.firstName,
+							`%${firstName ? firstName : ""}%`
+						),
+						like(
+							schema.patients.lastName,
+							`%${lastName ? lastName : ""}%`
+						),
+						like(schema.patients.patientId, `%${search}%`)
+					)
 				);
+			}
+
+			// Add cursor condition for infinite queries
+			if (cursor) {
+				whereConditions.push(lt(schema.patients.id, cursor));
 			}
 
 			const patients = await ctx.db
 				.select()
 				.from(schema.patients)
 				.where(and(...whereConditions))
-				.limit(limit)
-				.offset(offset)
-				.orderBy(desc(schema.patients.createdAt));
+				.limit(limit + 1) // Fetch one extra to check if there are more
+				.orderBy(desc(schema.patients.id));
 
-			return patients;
+			const hasNextPage = patients.length > limit;
+			const data = hasNextPage ? patients.slice(0, limit) : patients;
+			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
+
+			return {
+				data,
+				nextCursor,
+				hasNextPage,
+			};
 		}),
 
 	getById: protectedProcedure

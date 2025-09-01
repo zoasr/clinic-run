@@ -13,8 +13,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { PrescriptionForm } from "@/components/prescription-form";
-import { PrescriptionDetail } from "@/components/prescription-detail";
 import {
 	usePrescriptions,
 	useDeletePrescription,
@@ -23,6 +21,11 @@ import {
 import { Search, Plus, Pill, CheckCircle, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
+import LoadMore from "./load-more";
+import ErrorComponent from "./error";
+import { Loading, LoadingCards } from "./ui/loading";
+import { trpc } from "@/lib/trpc-client";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 export function PrescriptionManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -30,18 +33,30 @@ export function PrescriptionManagement() {
 	const [prescriptionToDelete, setPrescriptionToDelete] =
 		useState<Prescription | null>(null);
 
-	const { data: prescriptions = [], isLoading } = usePrescriptions({
-		search: searchTerm || undefined,
-	});
+	const {
+		data,
+		error,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery(
+		trpc.prescriptions.getAll.infiniteQueryOptions(
+			{
+				search: searchTerm || undefined,
+
+				limit: 20,
+			},
+			{
+				getNextPageParam: (lastPage) =>
+					lastPage.nextCursor ?? undefined,
+			}
+		)
+	);
+
+	const prescriptions = data?.pages?.flatMap((page) => page.data) || [];
 
 	const deleteMutation = useDeletePrescription();
-
-	// Calculate prescription statistics
-	const totalPrescriptions = prescriptions?.length || 0;
-	const pendingPrescriptions =
-		prescriptions?.filter((p) => !p.isDispensed).length || 0;
-	const dispensedPrescriptions =
-		prescriptions?.filter((p) => p.isDispensed).length || 0;
 
 	const handleDeletePrescription = (prescription: Prescription) => {
 		setPrescriptionToDelete(prescription);
@@ -68,13 +83,11 @@ export function PrescriptionManagement() {
 		}
 	};
 
-	const getStatusColor = (isDispensed: boolean) => {
-		return isDispensed ? "default" : "secondary";
-	};
-
 	const getStatusIcon = (isDispensed: boolean) => {
 		return isDispensed ? CheckCircle : Clock;
 	};
+
+	if (error) return <ErrorComponent error={error} />;
 
 	return (
 		<div className="space-y-6 p-6">
@@ -113,25 +126,7 @@ export function PrescriptionManagement() {
 
 			{/* Prescription List */}
 			{isLoading ? (
-				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-					{[...Array(6)].map((_, i) => (
-						<Card key={i} className="animate-pulse">
-							<CardContent className="p-6">
-								<div className="flex items-center gap-3 mb-4">
-									<div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-									<div className="flex-1">
-										<div className="h-4 bg-gray-200 rounded mb-2"></div>
-										<div className="h-3 bg-gray-200 rounded w-3/4"></div>
-									</div>
-								</div>
-								<div className="space-y-2">
-									<div className="h-3 bg-gray-200 rounded"></div>
-									<div className="h-3 bg-gray-200 rounded w-5/6"></div>
-								</div>
-							</CardContent>
-						</Card>
-					))}
-				</div>
+				<LoadingCards />
 			) : prescriptions.length === 0 ? (
 				<Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
 					<CardContent className="flex flex-col items-center justify-center py-12">
@@ -157,6 +152,7 @@ export function PrescriptionManagement() {
 			) : (
 				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{prescriptions?.map((prescription: Prescription) => {
+						if (!prescription) return null;
 						const StatusIcon = getStatusIcon(
 							prescription.isDispensed
 						);
@@ -178,7 +174,8 @@ export function PrescriptionManagement() {
 										<Link
 											to="/prescriptions/$prescriptionId"
 											params={{
-												prescriptionId: prescription.id,
+												prescriptionId:
+													prescription.id.toString(),
 											}}
 											className="flex items-center gap-3 flex-1"
 										>
@@ -315,7 +312,8 @@ export function PrescriptionManagement() {
 										<Link
 											to="/prescriptions/$prescriptionId"
 											params={{
-												prescriptionId: prescription.id,
+												prescriptionId:
+													prescription.id.toString(),
 											}}
 										>
 											<Button
@@ -329,7 +327,8 @@ export function PrescriptionManagement() {
 										<Link
 											to="/prescriptions/edit/$prescriptionId"
 											params={{
-												prescriptionId: prescription.id,
+												prescriptionId:
+													prescription.id.toString(),
 											}}
 										>
 											<Button
@@ -361,6 +360,12 @@ export function PrescriptionManagement() {
 					})}
 				</div>
 			)}
+			<LoadMore
+				results={prescriptions}
+				hasNextPage={hasNextPage}
+				fetchNextPage={fetchNextPage}
+				isFetchingNextPage={isFetchingNextPage}
+			/>
 
 			{/* Delete Confirmation Dialog */}
 			<AlertDialog

@@ -1,17 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 
 // Infer types from tRPC
 type Medication =
-	AppRouter["medications"]["getAll"]["_def"]["$types"]["output"];
+	AppRouter["medications"]["getAll"]["_def"]["$types"]["output"]["data"][number];
 type MedicationInput =
 	AppRouter["medications"]["create"]["_def"]["$types"]["input"];
 type MedicationListParams =
 	AppRouter["medications"]["getAll"]["_def"]["$types"]["input"];
 
-export function useMedications(params?: MedicationListParams) {
-	return useQuery(trpc.medications.getAll.queryOptions(params || {}));
+export function useMedications(params?: MedicationListParams, opts?: any) {
+	return useQuery(trpc.medications.getAll.queryOptions(params || {}, opts));
 }
 
 export function useMedication(medicationId: number) {

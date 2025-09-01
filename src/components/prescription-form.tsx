@@ -21,12 +21,16 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { usePatients } from "@/hooks/usePatients";
+import { Patient, usePatients } from "@/hooks/usePatients";
 import { useMedications } from "@/hooks/useMedications";
 import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
+import SearchPatientsDialog from "./search-patients-dialog";
+import DoctorsDialog from "./search-doctors-dialog";
+import { Doctor } from "@/lib/schema-types";
+import SearchMedicationsDialog from "./search-medications-dialog";
 
 // Infer types from tRPC
 type PrescriptionInput =
@@ -50,9 +54,13 @@ export function PrescriptionForm({
 	const queryClient = useQueryClient();
 
 	// Fetch patients, medications, and doctors for dropdowns
-	const { data: patients = [] } = usePatients();
-	const { data: medications = [] } = useMedications();
-	const { data: doctors = [] } = useQuery(trpc.users.getDoctors.queryOptions());
+	const { data: patientsData, isLoading: patientsLoading } = usePatients();
+	const { data: medicationsData } = useMedications();
+	const { data: doctors = [] } = useQuery(
+		trpc.users.getDoctors.queryOptions()
+	);
+	const patients = patientsData?.data || [];
+	const medications = medicationsData?.data || [];
 
 	const defaultValues: PrescriptionFormValues = {
 		patientId: prescription?.patientId ?? 0,
@@ -159,8 +167,8 @@ export function PrescriptionForm({
 					<CardHeader>
 						<CardTitle>Patient, Doctor & Medication</CardTitle>
 						<CardDescription>
-							Select the patient, prescribing doctor, and medication for this
-							prescription
+							Select the patient, prescribing doctor, and
+							medication for this prescription
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -177,30 +185,18 @@ export function PrescriptionForm({
 									}}
 								>
 									{(field: any) => (
-										<Select
-											value={field.state.value?.toString()}
-											onValueChange={(value) =>
-												field.handleChange(
-													parseInt(value)
-												)
-											}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select patient" />
-											</SelectTrigger>
-											<SelectContent>
-												{patients.map((patient) => (
-													<SelectItem
-														key={patient.id}
-														value={patient.id.toString()}
-													>
-														{patient.firstName}{" "}
-														{patient.lastName} (ID:{" "}
-														{patient.patientId})
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+										<>
+											<SearchPatientsDialog
+												patient={
+													prescription?.patient as Patient
+												}
+												onSelect={(patient) =>
+													field.handleChange(
+														patient?.id
+													)
+												}
+											/>
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -217,27 +213,19 @@ export function PrescriptionForm({
 									}}
 								>
 									{(field: any) => (
-										<Select
-											value={field.state.value?.toString()}
-											onValueChange={(value) =>
-												field.handleChange(value)
-											}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select doctor" />
-											</SelectTrigger>
-											<SelectContent>
-												{doctors.map((doctor) => (
-													<SelectItem
-														key={doctor.id}
-														value={doctor.id.toString()}
-													>
-														Dr. {doctor.firstName}{" "}
-														{doctor.lastName}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+										<>
+											<DoctorsDialog
+												onSelect={(doctor) =>
+													field.handleChange(
+														doctor?.id
+													)
+												}
+												doctorId={
+													prescription?.doctor
+														?.id as string
+												}
+											/>
+										</>
 									)}
 								</form.Field>
 							</div>
@@ -256,31 +244,20 @@ export function PrescriptionForm({
 									}}
 								>
 									{(field: any) => (
-										<Select
-											value={field.state.value?.toString()}
-											onValueChange={(value) =>
-												field.handleChange(
-													parseInt(value)
-												)
-											}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select medication" />
-											</SelectTrigger>
-											<SelectContent>
-												{medications.map(
-													(medication) => (
-														<SelectItem
-															key={medication.id}
-															value={medication.id.toString()}
-														>
-															{medication.name} -{" "}
-															{medication.dosage}
-														</SelectItem>
+										<>
+											<SearchMedicationsDialog
+												medication={
+													prescription?.medication
+														? prescription.medication
+														: null
+												}
+												onSelect={(medication) =>
+													field.handleChange(
+														medication?.id
 													)
-												)}
-											</SelectContent>
-										</Select>
+												}
+											/>
+										</>
 									)}
 								</form.Field>
 							</div>

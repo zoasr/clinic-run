@@ -37,6 +37,10 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import DoctorsDialog from "./search-doctors-dialog";
+import { Patient, usePatient } from "@/hooks/usePatients";
+import SearchPatientsDialog from "./search-patients-dialog";
+import { Loading } from "./ui/loading";
 
 interface AppointmentFormProps {
 	appointment?: Appointment | null;
@@ -49,8 +53,12 @@ export function AppointmentForm({
 	onSave,
 	onCancel,
 }: AppointmentFormProps) {
-	const [patientSearch, setPatientSearch] = useState("");
-	const [selectedPatient, setSelectedPatient] = useState<any>(null);
+	const { data: patient, isLoading: patientLoading } = usePatient(
+		appointment?.patientId || 0
+	);
+	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
+		appointment?.patientId ? patient : null
+	);
 
 	const form = useForm({
 		defaultValues: {
@@ -64,45 +72,31 @@ export function AppointmentForm({
 			notes: appointment?.notes || "",
 		} as Omit<Appointment, "createdAt" | "updatedAt">,
 		onSubmit: async ({ value }) => {
-			if (!selectedPatient) {
-				return;
-			}
-
-			const appointmentData = {
+			const baseData = {
 				...value,
-				patientId: selectedPatient.id,
 				doctorId: value.doctorId,
-				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
 			};
 
 			if (appointment?.id) {
-				updateAppointmentMutation.mutate({
+				// For updates, don't include createdAt
+				const { ...updateData } = baseData;
+				updateAppointment({
 					id: appointment.id,
-					data: appointmentData,
+					data: updateData,
 				});
 			} else {
-				saveAppointment(appointmentData);
+				// For creates, include createdAt
+				saveAppointment({
+					...baseData,
+					createdAt: new Date().toISOString(),
+				});
 			}
 		},
 	});
 
 	const queryClinet = useQueryClient();
 	const appointementsKey = trpc.appointments.getAll.queryKey();
-
-	const { data: doctors = [] } = useQuery(
-		trpc.users.getByRole.queryOptions({ role: "doctor" })
-	);
-
-	const filteredDoctors = doctors;
-
-	const { data: patientsData = [], isLoading: patientsLoading } = useQuery(
-		trpc.patients.getAll.queryOptions({
-			search: patientSearch || undefined,
-			page: 1,
-			limit: 100,
-		})
-	);
 
 	const {
 		mutate: saveAppointment,
@@ -122,7 +116,7 @@ export function AppointmentForm({
 		})
 	);
 
-	const updateAppointmentMutation = useMutation(
+	const { mutate: updateAppointment, isPending: isUpdating } = useMutation(
 		trpc.appointments.update.mutationOptions({
 			onSuccess: () => {
 				queryClinet.invalidateQueries({
@@ -154,42 +148,9 @@ export function AppointmentForm({
 		}
 	};
 
-	useEffect(() => {
-		if (appointment) {
-			form.reset({
-				patientId: appointment.patientId,
-				doctorId: appointment.doctorId,
-				appointmentDate: appointment.appointmentDate,
-				appointmentTime: appointment.appointmentTime,
-				duration: appointment.duration,
-				type: appointment.type,
-				status: appointment.status,
-				notes: appointment.notes,
-			});
-			// Find and set the selected patient
-			const patient = patientsData.find(
-				(p: any) => p.id === appointment.patientId
-			);
-			if (patient) {
-				setSelectedPatient(patient);
-			}
-		}
-	}, [appointment, patientsData, form]);
-
-	// Debounce patient search
-	useEffect(() => {
-		const debounceTimer = setTimeout(() => {
-			// The query will automatically refetch when patientSearch changes
-		}, 300);
-
-		return () => clearTimeout(debounceTimer);
-	}, [patientSearch]);
-
-	const handlePatientSelect = (patient: any) => {
-		setSelectedPatient(patient);
-		setPatientSearch("");
-	};
-
+	if (patientLoading) {
+		return <Loading />;
+	}
 	return (
 		<div className="space-y-6 p-6">
 			{/* Header */}
@@ -233,95 +194,58 @@ export function AppointmentForm({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<div className="relative">
-							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-							<Input
-								placeholder="Search patients by name..."
-								value={patientSearch}
-								onChange={(e) =>
-									setPatientSearch(e.target.value)
-								}
-								className="pl-10"
-							/>
-						</div>
-
-						{selectedPatient && (
-							<>
-								<h2 className="text-lg font-semibold text-foreground">
-									Selected Patient
-								</h2>
-								<div className="p-3 bg-muted/50 rounded-lg">
-									<div className="flex items-center gap-3">
-										<div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
-											<User className="h-5 w-5 text-secondary" />
-										</div>
-										<div>
-											<h3 className="font-semibold text-foreground">
-												{selectedPatient.firstName}{" "}
-												{selectedPatient.lastName}
-											</h3>
-											<p className="text-sm text-muted-foreground">
-												ID: {selectedPatient.patientId}
-											</p>
-										</div>
-									</div>
-								</div>
-							</>
-						)}
-
-						{patientsLoading ? (
-							<div className="text-center py-4">
-								<div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-							</div>
-						) : (
-							<div>
-								{patientsData.length > 0 && (
-									<div className="max-h-60 overflow-y-auto space-y-2 p-2 border rounded-lg">
-										<h2 className="text-lg font-semibold text-foreground">
-											Select Patient
-										</h2>
-										{patientsData
-											.filter(
-												(p) =>
-													p.id !== selectedPatient?.id
-											)
-											.map((patient: any) => (
-												<div
-													key={patient.id}
-													className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-													onClick={() =>
-														handlePatientSelect(
-															patient
-														)
-													}
-												>
-													<div className="flex items-center gap-3">
-														<div className="w-8 h-8 bg-secondary/10 rounded-full flex items-center justify-center">
-															<User className="h-4 w-4 text-secondary" />
-														</div>
-														<div>
-															<h4 className="font-medium text-foreground">
-																{
-																	patient.firstName
-																}{" "}
-																{
-																	patient.lastName
-																}
-															</h4>
-															<p className="text-sm text-muted-foreground">
-																ID:{" "}
-																{
-																	patient.patientId
-																}
-															</p>
-														</div>
+						<form.Field
+							name="patientId"
+							validators={{
+								onChange: ({ value }) =>
+									!value || value <= 0
+										? "Patient is required"
+										: undefined,
+							}}
+							children={(field) => (
+								<>
+									<SearchPatientsDialog
+										patient={patient}
+										onSelect={(patient) => {
+											field.handleChange(
+												patient?.id || 0
+											);
+											setSelectedPatient(patient);
+										}}
+									/>
+									{!!selectedPatient && (
+										<>
+											<h2 className="text-lg font-semibold text-foreground">
+												Selected Patient
+											</h2>
+											<div className="p-3 bg-muted/50 rounded-lg">
+												<div className="flex items-center gap-3">
+													<div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center">
+														<User className="h-5 w-5 text-secondary" />
+													</div>
+													<div>
+														<h3 className="font-semibold text-foreground">
+															{
+																selectedPatient.firstName
+															}{" "}
+															{
+																selectedPatient.lastName
+															}
+														</h3>
+														<p className="text-sm text-muted-foreground">
+															ID:{" "}
+															{
+																selectedPatient.patientId
+															}
+														</p>
 													</div>
 												</div>
-											))}
-									</div>
-								)}
-							</div>
-						)}
+											</div>
+										</>
+									)}
+								</>
+							)}
+						/>
 					</CardContent>
 				</Card>
 
@@ -519,29 +443,13 @@ export function AppointmentForm({
 							children={(field) => (
 								<div>
 									<Label htmlFor="doctorId">Doctor *</Label>
-									<Select
-										value={field.state.value}
-										onValueChange={(value) =>
-											field.handleChange(value)
+									<DoctorsDialog
+										onSelect={(doctor) =>
+											field.handleChange(doctor.id)
 										}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Select a doctor" />
-										</SelectTrigger>
-										<SelectContent>
-											{filteredDoctors.map(
-												(doctor: any) => (
-													<SelectItem
-														key={doctor.id}
-														value={doctor.id}
-													>
-														Dr. {doctor.firstName}{" "}
-														{doctor.lastName}
-													</SelectItem>
-												)
-											)}
-										</SelectContent>
-									</Select>
+										doctorId={field.state.value}
+									/>
+
 									{field.state.meta.errors.length > 0 && (
 										<p className="text-sm text-red-600 mt-1">
 											{field.state.meta.errors[0]}
@@ -626,9 +534,9 @@ export function AppointmentForm({
 						</Button>
 						<Button
 							type="submit"
-							disabled={isSaving || !selectedPatient}
+							disabled={isUpdating || isSaving || !patient}
 						>
-							{isSaving
+							{isSaving || isUpdating
 								? "Saving..."
 								: appointment
 									? "Update"

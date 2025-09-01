@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, lt, or } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -11,27 +11,40 @@ export const prescriptionsRouter = router({
 	getAll: protectedProcedure
 		.input(
 			z.object({
+				search: z.string().optional(),
 				patientId: z.number().optional(),
 				isDispensed: z.boolean().optional(),
-				page: z.number().min(1).default(1),
+				cursor: z.number().min(1).optional(),
 				limit: z.number().min(1).max(100).default(10),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { patientId, isDispensed, page, limit } = input;
-			const offset = (page - 1) * limit;
+			const { search, patientId, isDispensed, cursor, limit } = input;
 
 			const whereConditions = [];
+
+			if (search) {
+				whereConditions.push(
+					or(
+						eq(schema.patients.firstName, search),
+						eq(schema.patients.lastName, search),
+						eq(schema.patients.patientId, search)
+					)
+				);
+			}
 
 			if (patientId) {
 				whereConditions.push(
 					eq(schema.prescriptions.patientId, patientId)
 				);
 			}
-			if (isDispensed !== undefined) {
+			if (isDispensed) {
 				whereConditions.push(
 					eq(schema.prescriptions.isDispensed, isDispensed)
 				);
+			}
+			if (cursor) {
+				whereConditions.push(lt(schema.prescriptions.id, cursor));
 			}
 
 			const prescriptions = await ctx.db
@@ -80,16 +93,22 @@ export const prescriptionsRouter = router({
 					schema.medications,
 					eq(schema.prescriptions.medicationId, schema.medications.id)
 				)
-				.where(
-					whereConditions.length > 0
-						? and(...whereConditions)
-						: undefined
-				)
-				.limit(limit)
-				.offset(offset)
-				.orderBy(desc(schema.prescriptions.createdAt));
+				.where(and(...whereConditions))
+				.limit(limit + 1)
+				// .offset(offset)
+				.orderBy(desc(schema.prescriptions.id));
 
-			return prescriptions;
+			const hasNextPage = prescriptions.length > limit;
+			const data = hasNextPage
+				? prescriptions.slice(0, limit)
+				: prescriptions;
+			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
+
+			return {
+				data,
+				nextCursor,
+				hasNextPage,
+			};
 		}),
 
 	getById: protectedProcedure

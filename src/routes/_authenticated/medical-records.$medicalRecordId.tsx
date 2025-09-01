@@ -21,7 +21,6 @@ export const Route = createFileRoute(
 function RouteComponent() {
 	const { params } = Route.useLoaderData();
 	const navigate = Route.useNavigate();
-	const [editingRecord, setEditingRecord] = useState<any>(null);
 
 	const {
 		data: record,
@@ -45,23 +44,15 @@ function RouteComponent() {
 		);
 	}
 
-	if (editingRecord) {
-		return (
-			<MedicalRecordForm
-				record={editingRecord}
-				onSave={() => {
-					setEditingRecord(null);
-					navigate({ to: "/medical-records" });
-				}}
-				onCancel={() => setEditingRecord(null)}
-			/>
-		);
-	}
-
 	return (
 		<MedicalRecordDetail
 			record={record}
-			onEdit={(record) => setEditingRecord(record)}
+			onEdit={(record) =>
+				navigate({
+					to: "/medical-records/edit/$medicalRecordId",
+					params: { medicalRecordId: record?.id.toString() },
+				})
+			}
 			onBack={() => navigate({ to: "/medical-records" })}
 		/>
 	);

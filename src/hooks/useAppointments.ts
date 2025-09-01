@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 
 // Infer types from tRPC
 export type AppointmentListParams =
@@ -9,14 +9,23 @@ export type Appointment =
 	AppRouter["appointments"]["getByPatientId"]["_def"]["$types"]["output"][number];
 
 export function useAppointments(params: AppointmentListParams) {
-	return useQuery(
-		trpc.appointments.getAll.queryOptions({
-			date: params.date,
-			page: params.page,
-			limit: params.limit,
-			status: params.status,
-		})
+	return useInfiniteQuery(
+		trpc.appointments.getAll.infiniteQueryOptions(
+			{
+				date: params.date,
+				cursor: params.cursor,
+				limit: params.limit,
+				status: params.status,
+			},
+			{
+				getNextPageParam: (lastPage) =>
+					lastPage.nextCursor ?? undefined,
+			}
+		)
 	);
+}
+export function useAppointmentMonth(date: string) {
+	return useQuery(trpc.appointments.getByMonth.queryOptions({ date }));
 }
 export function useCreateAppointment(options) {
 	return useMutation(trpc.appointments.create.mutationOptions(options));

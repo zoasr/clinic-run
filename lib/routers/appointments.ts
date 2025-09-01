@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, lt, like } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -13,15 +13,16 @@ export const appointmentsRouter = router({
 			z.object({
 				date: z.string().optional(),
 				status: z.string().optional(),
-				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
+				cursor: z.number().min(1).optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { date, status, page, limit } = input;
-			const offset = (page - 1) * limit;
-
+			const { date, status, cursor, limit } = input;
 			const whereConditions = [];
+			if (cursor) {
+				whereConditions.push(lt(schema.appointments.id, cursor));
+			}
 
 			if (date) {
 				whereConditions.push(
@@ -67,14 +68,22 @@ export const appointmentsRouter = router({
 						? and(...whereConditions)
 						: undefined
 				)
-				.limit(limit)
-				.offset(offset)
+				.limit(limit + 1)
 				.orderBy(
 					asc(schema.appointments.appointmentDate),
 					asc(schema.appointments.appointmentTime)
 				);
+			const hasNextPage = appointments.length > limit;
+			const data = hasNextPage
+				? appointments.slice(0, limit)
+				: appointments;
+			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
 
-			return appointments;
+			return {
+				data,
+				nextCursor,
+				hasNextPage,
+			};
 		}),
 	getById: protectedProcedure
 		.input(z.object({ id: z.number() }))
@@ -86,6 +95,65 @@ export const appointmentsRouter = router({
 				.where(eq(schema.appointments.id, id))
 				.limit(1);
 			return appointment[0];
+		}),
+
+	getByMonth: protectedProcedure
+		.input(
+			z.object({
+				date: z
+					.string()
+					.describe(
+						"A date string (localeString) of any day in the month desired"
+					),
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { date } = input;
+			const [month, _day, year] = date.split("/");
+
+			console.log(`%${month}/${year}%`);
+
+			const appointments = await ctx.db
+				.select({
+					id: schema.appointments.id,
+					appointmentDate: schema.appointments.appointmentDate,
+					appointmentTime: schema.appointments.appointmentTime,
+					duration: schema.appointments.duration,
+					type: schema.appointments.type,
+					status: schema.appointments.status,
+					notes: schema.appointments.notes,
+					patient: {
+						id: schema.patients.id,
+						firstName: schema.patients.firstName,
+						lastName: schema.patients.lastName,
+						patientId: schema.patients.patientId,
+					},
+					doctor: {
+						id: authSchema.user.id,
+						firstName: authSchema.user.firstName,
+						lastName: authSchema.user.lastName,
+					},
+				})
+				.from(schema.appointments)
+				.leftJoin(
+					schema.patients,
+					eq(schema.appointments.patientId, schema.patients.id)
+				)
+				.leftJoin(
+					authSchema.user,
+					eq(schema.appointments.doctorId, authSchema.user.id)
+				)
+				.where(
+					like(
+						schema.appointments.appointmentDate,
+						`%${month}/%/${year}`
+					)
+				)
+				.orderBy(
+					asc(schema.appointments.appointmentDate),
+					asc(schema.appointments.appointmentTime)
+				);
+			return appointments;
 		}),
 
 	getByPatientId: protectedProcedure
