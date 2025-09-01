@@ -97,7 +97,7 @@ export function DashboardPage() {
 		criticalAlerts.push({
 			type: "destructive",
 			message: `${stats?.outOfStockMedications} medications are completely out of stock`,
-			action: "/inventory",
+			action: "/medications",
 			actionText: "Restock Now",
 		});
 	}
@@ -110,8 +110,8 @@ export function DashboardPage() {
 		criticalAlerts.push({
 			type: "warning",
 			message: `${stats?.lowStockMedications} medications are running low on stock`,
-			action: "/inventory",
-			actionText: "Manage Inventory",
+			action: "/medications",
+			actionText: "Manage Medications",
 		});
 	}
 
