@@ -225,7 +225,7 @@ export function DashboardPage() {
 			icon: Package,
 			color: "text-red-600",
 			trend: getOutOfStockStatus(),
-			link: "/inventory",
+			link: "/medications",
 		},
 		{
 			title: "Low Stock Items",
@@ -234,7 +234,7 @@ export function DashboardPage() {
 			icon: AlertTriangle,
 			color: "text-orange-600",
 			trend: getStockStatus(),
-			link: "/inventory",
+			link: "/medications",
 		},
 	];
 
