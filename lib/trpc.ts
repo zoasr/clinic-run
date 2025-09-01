@@ -3,6 +3,7 @@ import { type FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import { auth } from "./auth.js";
 import { db } from "./db/index.js";
 import * as authSchema from "./db/schema/auth-schema.js";
+import superjson from "superjson";
 
 export type CreateContextOptions = FetchCreateContextFnOptions;
 
@@ -26,7 +27,9 @@ export const createContext = async (opts: CreateContextOptions) => {
 	};
 };
 
-const t = initTRPC.context<typeof createContext>().create();
+const t = initTRPC.context<typeof createContext>().create({
+	transformer: superjson,
+});
 
 // Middleware to check if user is authenticated
 const isAuthed = t.middleware(({ ctx, next }) => {
