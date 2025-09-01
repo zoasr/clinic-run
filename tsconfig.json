@@ -59,7 +59,8 @@
     "*.ts",
     "*.tsx",
     "vite.config.ts",
-    "lib/db/schema/auth-schema.ts"
+    "lib/db/schema/auth-schema.ts",
+    "lib/server.ts"
   ],
   "exclude": [
     "node_modules",

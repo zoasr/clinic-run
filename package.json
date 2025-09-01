@@ -7,7 +7,7 @@
     "build": "NODE_ENV=production bun run scripts/build.ts",
     "dev": "vite",
     "start": "vite preview",
-    "server": "bun run --watch server.ts",
+    "server": "bun run --watch lib/server.ts",
     "dev:all": "bun run scripts/dev.ts",
     "dev:test:all": "NODE_ENV=test bun run scripts/dev.ts",
     "db:generate": "drizzle-kit generate",
@@ -19,7 +19,7 @@
     "test:db:seed": "NODE_ENV=test bun run lib/db/seed-performance.ts",
     "test:db:reset": "rm -f clinic-test.db && NODE_ENV=test bun run test:db:migrate && NODE_ENV=test bun run test:db:seed",
     "test:perf": "NODE_ENV=test bun run test:db:reset",
-    "create-installer": "powershell -ExecutionPolicy Bypass -File scripts/create-installer.ps1"
+    "create-installer": "pwsh -ExecutionPolicy Bypass -File scripts/create-installer.ps1"
   },
   "workspaces": [
     "lib"

@@ -4,21 +4,21 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serveStatic } from "hono/bun";
-import { auth } from "./lib/auth.js";
+import { auth } from "./auth.js";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "./lib/index.js";
-import { createContext } from "./lib/trpc.js";
+import { appRouter } from "./index.js";
+import { createContext } from "./trpc.js";
 
 const app = new Hono();
-const PORT = Number(process.env.BACKEND_PORT) || 3031;
+const PORT = Number(process.env["BACKEND_PORT"]) || 3031;
 
-console.log(process.env.DB_FILE_NAME, process.env.BETTER_AUTH_SECRET);
+console.log(process.env["DB_FILE_NAME"], process.env["BETTER_AUTH_SECRET"]);
 
 // Enhanced CORS configuration
 app.use(
 	"*",
 	cors({
-		origin: process.env.FRONTEND_URL || "http://localhost:3030",
+		origin: process.env["FRONTEND_URL"] || "http://localhost:3030",
 		credentials: true,
 		allowHeaders: ["Content-Type", "Authorization", "Cookie"],
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -64,7 +64,7 @@ app.all("/api/trpc/*", async (c) => {
 							`❌ tRPC failed on ${path ?? "<no-path>"}: ${error}`
 						);
 					}
-				: undefined,
+				: () => {},
 	});
 });
 
@@ -102,7 +102,7 @@ async function setupSystemTray() {
 			console.log("Setting up system tray...");
 
 			// Import system tray functionality (will be available in desktop build)
-			const { setupTray } = await import("./lib/system-tray.js");
+			const { setupTray } = await import("./system-tray.js");
 			await setupTray(PORT);
 		}
 	} catch (error) {
@@ -115,17 +115,22 @@ async function openBrowser() {
 	if (process.env.NODE_ENV !== "production") {
 		try {
 			// Use Bun.spawn instead of child_process.exec
-			const browserProcess = Bun.spawn(
-				["cmd", "/c", `start http://localhost:${PORT}`],
-				{
-					stdout: "pipe",
-					stderr: "pipe",
-				}
-			);
-			await browserProcess.exited;
-			console.log(
-				`Clinic System opened in browser at http://localhost:${PORT}`
-			);
+			if (
+				process.env.NODE_ENV !== "development" &&
+				process.env.NODE_ENV !== "test"
+			) {
+				const browserProcess = Bun.spawn(
+					["cmd", "/c", `start http://localhost:${PORT}`],
+					{
+						stdout: "pipe",
+						stderr: "pipe",
+					}
+				);
+				await browserProcess.exited;
+				console.log(
+					`Clinic System opened in browser at http://localhost:${PORT}`
+				);
+			}
 		} catch (error) {
 			console.log(`Server running at http://localhost:${PORT}`);
 		}
