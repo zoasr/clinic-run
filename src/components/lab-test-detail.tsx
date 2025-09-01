@@ -27,7 +27,7 @@ import {
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc-client";
+import type { AppRouter } from "@/lib/trpc";
 import type { LabTest } from "@/hooks/useLabTests";
 import { Link } from "@tanstack/react-router";
 
@@ -38,9 +38,9 @@ interface LabTestDetailProps {
 
 export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 	const queryClient = useQueryClient();
-	const [results, setResults] = useState(labTest.results || "");
+	const [results, setResults] = useState(labTest?.results || "");
 	const [completedDate, setCompletedDate] = useState(
-		labTest.completedDate || ""
+		labTest?.completedDate || new Date()
 	);
 
 	const updateStatusMutation = useMutation(
@@ -64,7 +64,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 		newStatus: "ordered" | "in-progress" | "completed"
 	) => {
 		const updateData: any = {
-			id: labTest.id,
+			id: labTest?.id,
 			status: newStatus,
 		};
 
@@ -103,8 +103,9 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 		}
 	};
 
-	const StatusIcon = getStatusIcon(labTest.status);
+	const StatusIcon = getStatusIcon(labTest?.status || "");
 
+	if (!labTest) return null;
 	return (
 		<div className="space-y-6 p-6">
 			{/* Header */}
@@ -216,9 +217,15 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 								<Input
 									id="completedDate"
 									type="date"
-									value={completedDate}
+									value={
+										completedDate
+											.toISOString()
+											.split("T")[0]
+									}
 									onChange={(e) =>
-										setCompletedDate(e.target.value)
+										setCompletedDate(
+											new Date(e.target.value)
+										)
 									}
 								/>
 							</div>
@@ -437,13 +444,8 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 								Last Updated
 							</p>
 							<p className="font-medium">
-								{new Date(
-									labTest.updatedAt
-								).toLocaleDateString()}{" "}
-								at{" "}
-								{new Date(
-									labTest.updatedAt
-								).toLocaleTimeString()}
+								{labTest.updatedAt.toLocaleDateString()} at{" "}
+								{labTest.updatedAt.toLocaleTimeString()}
 							</p>
 						</div>
 					</div>

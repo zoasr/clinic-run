@@ -8,7 +8,7 @@ type UserInput = AppRouter["users"]["create"]["_def"]["$types"]["input"];
 
 interface UserListParams {
 	search?: string;
-	role?: string;
+	role?: "staff" | "admin" | "doctor";
 	page?: number;
 	limit?: number;
 }
@@ -29,9 +29,12 @@ export function useUsersByRole(role: string) {
 	);
 }
 
-export function useDoctors(options?: any) {
+export function useDoctors(params?: UserListParams, options?: any) {
 	return useQuery(
-		trpc.users.getByRole.queryOptions({ role: "doctor" }, options)
+		trpc.users.getByRole.queryOptions(
+			{ role: "doctor", ...params },
+			options
+		)
 	);
 }
 

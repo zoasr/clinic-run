@@ -86,7 +86,7 @@ export function MedicalRecordForm({
 		defaultValues: {
 			patientId: record?.patientId || 0,
 			doctorId: record?.doctorId || "",
-			visitDate: record?.visitDate || new Date().toLocaleDateString(),
+			visitDate: record?.visitDate || new Date(),
 			chiefComplaint: record?.chiefComplaint || "",
 			diagnosis: record?.diagnosis || "",
 			treatment: record?.treatment || "",
@@ -285,9 +285,7 @@ export function MedicalRecordForm({
 											}
 											onSelect={(date) => {
 												field.handleChange(
-													date
-														? date.toLocaleDateString()
-														: ""
+													date ? date : new Date()
 												);
 											}}
 											mode="single"

@@ -228,29 +228,29 @@ export const medicalRecordsRouter = router({
 			return newRecord[0];
 		}),
 
-	update: protectedProcedure
-		.input(
-			z.object({
-				id: z.number(),
-				data: medicalRecordInputSchema.partial(),
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const updatedRecord = await ctx.db
-				.update(schema.medicalRecords)
-				.set({
-					...input.data,
-					updatedAt: new Date().toISOString(),
-				})
-				.where(eq(schema.medicalRecords.id, input.id))
-				.returning();
+ 	update: protectedProcedure
+ 		.input(
+ 			z.object({
+ 				id: z.number(),
+ 				data: medicalRecordInputSchema.partial(),
+ 			})
+ 		)
+ 		.mutation(async ({ input, ctx }) => {
+ 			const updatedRecord = await ctx.db
+ 				.update(schema.medicalRecords)
+ 				.set({
+ 					...input.data,
+ 					updatedAt: new Date(),
+ 				})
+ 				.where(eq(schema.medicalRecords.id, input.id))
+ 				.returning();
 
-			if (updatedRecord.length === 0) {
-				throw new Error("Medical record not found");
-			}
+ 			if (updatedRecord.length === 0) {
+ 				throw new Error("Medical record not found");
+ 			}
 
-			return updatedRecord[0];
-		}),
+ 			return updatedRecord[0];
+ 		}),
 
 	delete: protectedProcedure
 		.input(

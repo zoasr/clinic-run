@@ -8,7 +8,7 @@ export const patients = sqliteTable("patients", {
 	patientId: text("patient_id").notNull().unique(), // Custom patient ID (e.g., P001)
 	firstName: text("first_name").notNull(),
 	lastName: text("last_name").notNull(),
-	dateOfBirth: text("date_of_birth").notNull(),
+	dateOfBirth: integer("date_of_birth", { mode: "timestamp" }).notNull(),
 	gender: text("gender").notNull(),
 	phone: text("phone"),
 	email: text("email"),
@@ -19,10 +19,10 @@ export const patients = sqliteTable("patients", {
 	allergies: text("allergies"),
 	medicalHistory: text("medical_history"),
 	isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
@@ -36,16 +36,16 @@ export const appointments = sqliteTable("appointments", {
 	doctorId: text("doctor_id")
 		.notNull()
 		.references(() => user.id),
-	appointmentDate: text("appointment_date").notNull(),
+	appointmentDate: integer("appointment_date", { mode: "timestamp" }).notNull(),
 	appointmentTime: text("appointment_time").notNull(),
 	duration: integer("duration").notNull().default(30), // minutes
 	type: text("type").notNull(), // consultation, checkup, follow-up, emergency
 	status: text("status").notNull().default("scheduled"), // scheduled, completed, cancelled, no-show
 	notes: text("notes"),
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
@@ -60,17 +60,17 @@ export const medicalRecords = sqliteTable("medical_records", {
 		.notNull()
 		.references(() => user.id),
 	appointmentId: integer("appointment_id").references(() => appointments.id),
-	visitDate: text("visit_date").notNull(),
+	visitDate: integer("visit_date", { mode: "timestamp" }).notNull(),
 	chiefComplaint: text("chief_complaint"),
 	diagnosis: text("diagnosis"),
 	treatment: text("treatment"),
 	prescription: text("prescription"),
 	notes: text("notes"),
 	vitalSigns: text("vital_signs"), // JSON string for BP, temp, pulse, etc.
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
@@ -84,15 +84,15 @@ export const medications = sqliteTable("medications", {
 	form: text("form"), // tablet, capsule, syrup, injection
 	manufacturer: text("manufacturer"),
 	batchNumber: text("batch_number"),
-	expiryDate: text("expiry_date"),
+	expiryDate: integer("expiry_date", { mode: "timestamp" }),
 	quantity: integer("quantity").notNull().default(0),
 	minStockLevel: integer("min_stock_level").notNull().default(10),
 	unitPrice: real("unit_price").notNull().default(0),
 	isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
@@ -120,10 +120,10 @@ export const prescriptions = sqliteTable("prescriptions", {
 	isDispensed: integer("is_dispensed", { mode: "boolean" })
 		.notNull()
 		.default(false),
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
@@ -139,12 +139,12 @@ export const invoices = sqliteTable("invoices", {
 	totalAmount: real("total_amount").notNull().default(0),
 	paidAmount: real("paid_amount").notNull().default(0),
 	status: text("status").notNull().default("pending"), // pending, paid, overdue
-	dueDate: text("due_date"),
+	dueDate: integer("due_date", { mode: "timestamp" }),
 	items: text("items"), // JSON string for itemized billing
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
@@ -161,15 +161,15 @@ export const labTests = sqliteTable("lab_tests", {
 	testName: text("test_name").notNull(),
 	testType: text("test_type").notNull(),
 	status: text("status").notNull().default("ordered"), // ordered, in-progress, completed
-	orderDate: text("order_date").notNull(),
-	completedDate: text("completed_date"),
+	orderDate: integer("order_date", { mode: "timestamp" }).notNull(),
+	completedDate: integer("completed_date", { mode: "timestamp" }),
 	results: text("results"),
 	normalRange: text("normal_range"),
 	notes: text("notes"),
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });
@@ -183,10 +183,10 @@ export const systemSettings = sqliteTable("system_settings", {
 	category: text("category").notNull().default("general"), // general, clinic, security, notifications
 	isPublic: integer("is_public", { mode: "boolean" }).notNull().default(false),
 	updatedBy: text("updated_by").references(() => user.id),
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });

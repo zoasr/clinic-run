@@ -24,7 +24,7 @@ export function useAppointments(params: AppointmentListParams) {
 		)
 	);
 }
-export function useAppointmentMonth(date: string) {
+export function useAppointmentMonth(date: Date) {
 	return useQuery(trpc.appointments.getByMonth.queryOptions({ date }));
 }
 export function useCreateAppointment(options) {

@@ -39,7 +39,7 @@ import ErrorComponent from "./error";
 export function AppointmentManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
-	const [dateFilter, setDateFilter] = useState("");
+	const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
 	const [activeView, setActiveView] = useState<"list" | "calendar">("list");
 	const navigate = useNavigate();
 
@@ -213,9 +213,7 @@ export function AppointmentManagement() {
 								dateFilter ? new Date(dateFilter) : undefined
 							}
 							onSelect={(date) => {
-								setDateFilter(
-									date ? date.toLocaleDateString() : ""
-								);
+								setDateFilter(date ? date : undefined);
 							}}
 							mode="single"
 							captionLayout="dropdown"
@@ -571,7 +569,7 @@ export function AppointmentManagement() {
 
 				<TabsContent value="calendar">
 					<AppointmentCalendar
-						appointments={filteredAppointments}
+						// appointments={filteredAppointments}
 						onAppointmentClick={(appointment) => {
 							navigate({
 								to: `/appointments/$appointmentId`,

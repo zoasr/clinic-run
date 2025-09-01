@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure, adminProcedure } from "../trpc.js";
-import { eq } from "drizzle-orm";
+import { and, eq, ilike, like, sql } from "drizzle-orm";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { auth } from "../auth.js";
 
@@ -73,9 +73,19 @@ export const usersRouter = router({
 					z.literal("doctor"),
 					z.literal("admin"),
 				]),
+				search: z.string().optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
+			const whereConditions = [];
+			if (input.role) {
+				whereConditions.push(eq(authSchema.user.role, input.role));
+			}
+			if (input.search !== "" && input.search !== undefined) {
+				whereConditions.push(
+					like(authSchema.user.name, `%${input.search}%`)
+				);
+			}
 			const users = await ctx.db
 				.select({
 					id: authSchema.user.id,
@@ -89,7 +99,7 @@ export const usersRouter = router({
 					createdAt: authSchema.user.createdAt,
 				})
 				.from(authSchema.user)
-				.where(eq(authSchema.user.role, input.role));
+				.where(and(...whereConditions));
 
 			return users;
 		}),

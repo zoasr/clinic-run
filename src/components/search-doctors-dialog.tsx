@@ -12,6 +12,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { useDoctors } from "@/hooks/useUsers";
 import { type Doctor } from "@/lib/schema-types";
 import { User } from "lucide-react";
+import { Input } from "./ui/input";
 
 const Doctor = ({
 	doctor,
@@ -53,7 +54,10 @@ export default function DoctorsDialog({
 }) {
 	const [open, setOpen] = useState(false);
 	const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-	const { data: doctors } = useDoctors();
+	const [search, setSearch] = useState("");
+	const { data: doctors } = useDoctors({
+		search,
+	});
 	const doctor = doctors?.find((d) => d.id === doctorId);
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -88,6 +92,11 @@ export default function DoctorsDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4">
+					<Input
+						placeholder="Search doctors..."
+						onChange={(e) => setSearch(e.target.value)}
+						value={search}
+					/>
 					<ScrollArea className="h-[300px] w-full rounded-md border p-4 space-y-2">
 						{doctors?.map((d) => (
 							<Doctor

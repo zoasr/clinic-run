@@ -59,8 +59,8 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 		testName: labTest?.testName ?? "",
 		testType: labTest?.testType ?? "",
 		status: labTest?.status ?? "ordered",
-		orderDate: labTest?.orderDate ?? new Date().toLocaleDateString(),
-		completedDate: labTest?.completedDate ?? "",
+		orderDate: labTest?.orderDate ?? new Date(),
+		completedDate: labTest?.completedDate ?? new Date(),
 		results: labTest?.results ?? "",
 		normalRange: labTest?.normalRange ?? "",
 		notes: labTest?.notes ?? "",
@@ -333,7 +333,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 												value: Date | undefined
 											) => {
 												field.handleChange(
-													value ? value : ""
+													value ? value : new Date()
 												);
 											}}
 											required
@@ -413,7 +413,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 												value: Date | undefined
 											) => {
 												field.handleChange(
-													value ? value : ""
+													value ? value : new Date()
 												);
 											}}
 										/>

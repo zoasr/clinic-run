@@ -105,50 +105,50 @@ export const patientsRouter = router({
 			return newPatient[0];
 		}),
 
-	update: protectedProcedure
-		.input(
-			z.object({
-				id: z.number(),
-				data: patientInputSchema.partial(),
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const updatedPatient = await ctx.db
-				.update(schema.patients)
-				.set({
-					...input.data,
-					updatedAt: new Date().toISOString(),
-				})
-				.where(eq(schema.patients.id, input.id))
-				.returning();
+ 	update: protectedProcedure
+ 		.input(
+ 			z.object({
+ 				id: z.number(),
+ 				data: patientInputSchema.partial(),
+ 			})
+ 		)
+ 		.mutation(async ({ input, ctx }) => {
+ 			const updatedPatient = await ctx.db
+ 				.update(schema.patients)
+ 				.set({
+ 					...input.data,
+ 					updatedAt: new Date(),
+ 				})
+ 				.where(eq(schema.patients.id, input.id))
+ 				.returning();
 
-			if (updatedPatient.length === 0) {
-				throw new Error("Patient not found");
-			}
+ 			if (updatedPatient.length === 0) {
+ 				throw new Error("Patient not found");
+ 			}
 
-			return updatedPatient[0];
-		}),
+ 			return updatedPatient[0];
+ 		}),
 
-	delete: protectedProcedure
-		.input(
-			z.object({
-				id: z.number(),
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const deletedPatient = await ctx.db
-				.update(schema.patients)
-				.set({
-					isActive: false,
-					updatedAt: new Date().toISOString(),
-				})
-				.where(eq(schema.patients.id, input.id))
-				.returning();
+ 	delete: protectedProcedure
+ 		.input(
+ 			z.object({
+ 				id: z.number(),
+ 			})
+ 		)
+ 		.mutation(async ({ input, ctx }) => {
+ 			const deletedPatient = await ctx.db
+ 				.update(schema.patients)
+ 				.set({
+ 					isActive: false,
+ 					updatedAt: new Date(),
+ 				})
+ 				.where(eq(schema.patients.id, input.id))
+ 				.returning();
 
-			if (deletedPatient.length === 0) {
-				throw new Error("Patient not found");
-			}
+ 			if (deletedPatient.length === 0) {
+ 				throw new Error("Patient not found");
+ 			}
 
-			return { success: true };
-		}),
+ 			return { success: true };
+ 		}),
 });

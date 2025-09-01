@@ -252,29 +252,29 @@ export const prescriptionsRouter = router({
 			return newPrescription[0];
 		}),
 
-	update: protectedProcedure
-		.input(
-			z.object({
-				id: z.number(),
-				data: prescriptionInputSchema.partial(),
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const updatedPrescription = await ctx.db
-				.update(schema.prescriptions)
-				.set({
-					...input.data,
-					updatedAt: new Date().toISOString(),
-				})
-				.where(eq(schema.prescriptions.id, input.id))
-				.returning();
+ 	update: protectedProcedure
+ 		.input(
+ 			z.object({
+ 				id: z.number(),
+ 				data: prescriptionInputSchema.partial(),
+ 			})
+ 		)
+ 		.mutation(async ({ input, ctx }) => {
+ 			const updatedPrescription = await ctx.db
+ 				.update(schema.prescriptions)
+ 				.set({
+ 					...input.data,
+ 					updatedAt: new Date(),
+ 				})
+ 				.where(eq(schema.prescriptions.id, input.id))
+ 				.returning();
 
-			if (updatedPrescription.length === 0) {
-				throw new Error("Prescription not found");
-			}
+ 			if (updatedPrescription.length === 0) {
+ 				throw new Error("Prescription not found");
+ 			}
 
-			return updatedPrescription[0];
-		}),
+ 			return updatedPrescription[0];
+ 		}),
 
 	delete: protectedProcedure
 		.input(
@@ -295,26 +295,26 @@ export const prescriptionsRouter = router({
 			return { success: true };
 		}),
 
-	dispense: protectedProcedure
-		.input(
-			z.object({
-				id: z.number(),
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const dispensedPrescription = await ctx.db
-				.update(schema.prescriptions)
-				.set({
-					isDispensed: true,
-					updatedAt: new Date().toISOString(),
-				})
-				.where(eq(schema.prescriptions.id, input.id))
-				.returning();
+ 	dispense: protectedProcedure
+ 		.input(
+ 			z.object({
+ 				id: z.number(),
+ 			})
+ 		)
+ 		.mutation(async ({ input, ctx }) => {
+ 			const dispensedPrescription = await ctx.db
+ 				.update(schema.prescriptions)
+ 				.set({
+ 					isDispensed: true,
+ 					updatedAt: new Date(),
+ 				})
+ 				.where(eq(schema.prescriptions.id, input.id))
+ 				.returning();
 
-			if (dispensedPrescription.length === 0) {
-				throw new Error("Prescription not found");
-			}
+ 			if (dispensedPrescription.length === 0) {
+ 				throw new Error("Prescription not found");
+ 			}
 
-			return dispensedPrescription[0];
-		}),
+ 			return dispensedPrescription[0];
+ 		}),
 });

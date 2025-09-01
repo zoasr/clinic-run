@@ -12,11 +12,12 @@ import {
 } from "lucide-react";
 import { Appointment, useAppointmentMonth } from "@/hooks/useAppointments";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { LoadingCards } from "./ui/loading";
 
 interface AppointmentCalendarProps {
-	appointments: Appointment[];
+	// appointments: Appointment[];
 	onAppointmentClick: (appointment: Appointment) => void;
-	onDateClick: (date: string) => void;
+	onDateClick: (date: Date) => void;
 }
 
 export function AppointmentCalendar({
@@ -25,9 +26,7 @@ export function AppointmentCalendar({
 	onDateClick,
 }: AppointmentCalendarProps) {
 	const [currentDate, setCurrentDate] = useState(new Date());
-	const { data: appointments, isLoading } = useAppointmentMonth(
-		currentDate.toLocaleDateString()
-	);
+	const { data: appointments, isLoading } = useAppointmentMonth(currentDate);
 
 	const getDaysInMonth = (date: Date) => {
 		return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -37,12 +36,15 @@ export function AppointmentCalendar({
 		return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 	};
 
-	const getAppointmentsForDate = (date: string) => {
+	const getAppointmentsForDate = (date: Date) => {
+		const startOfDay = new Date(date.setHours(0, 0, 0, 0)).getTime();
+		const endOfDay = new Date(date.setHours(23, 59, 59, 999)).getTime();
 		return appointments
 			? appointments.filter((apt) => {
-					return apt.appointmentDate
-						? apt.appointmentDate === date
-						: false;
+					return (
+						apt.appointmentDate.getTime() >= startOfDay &&
+						apt.appointmentDate.getTime() <= endOfDay
+					);
 				})
 			: [];
 	};
@@ -104,12 +106,13 @@ export function AppointmentCalendar({
 		return (
 			<Card>
 				<CardHeader>
-					<div className="flex items-center justify-between">
-						<CardTitle className="flex items-center gap-2">
-							<Calendar className="h-5 w-5" />
-							Loading...
-						</CardTitle>
-					</div>
+					<CardTitle className="flex items-center gap-2">
+						<Calendar className="h-5 w-5" />
+						Loading...
+					</CardTitle>
+					<CardContent>
+						<LoadingCards />
+					</CardContent>
 				</CardHeader>
 			</Card>
 		);
@@ -163,13 +166,12 @@ export function AppointmentCalendar({
 					{/* Days of the month */}
 					{Array.from({ length: daysInMonth }, (_, i) => {
 						const day = i + 1;
-						const dateString = new Date(
+						const date = new Date(
 							currentDate.getFullYear(),
 							currentDate.getMonth(),
 							day
-						).toLocaleDateString();
-						const dayAppointments =
-							getAppointmentsForDate(dateString);
+						);
+						const dayAppointments = getAppointmentsForDate(date);
 
 						return (
 							<>
@@ -287,7 +289,7 @@ export function AppointmentCalendar({
 											)}
 											<Button
 												onClick={() =>
-													onDateClick(dateString)
+													onDateClick(date)
 												}
 												className="w-full"
 											>

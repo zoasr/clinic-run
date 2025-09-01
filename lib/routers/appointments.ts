@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, asc, lt, like } from "drizzle-orm";
+import { eq, and, asc, lt, gt, lte, gte, between } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -11,7 +11,7 @@ export const appointmentsRouter = router({
 	getAll: protectedProcedure
 		.input(
 			z.object({
-				date: z.string().optional(),
+				date: z.date().optional(),
 				status: z.string().optional(),
 				limit: z.number().min(1).max(100).default(10),
 				cursor: z.number().min(1).optional(),
@@ -25,8 +25,14 @@ export const appointmentsRouter = router({
 			}
 
 			if (date) {
+				const startOfDay = new Date(date?.setHours(0, 0, 0, 0));
+				const endOfDay = new Date(date?.setHours(23, 59, 59, 999));
 				whereConditions.push(
-					eq(schema.appointments.appointmentDate, date)
+					between(
+						schema.appointments.appointmentDate,
+						startOfDay,
+						endOfDay
+					)
 				);
 			}
 			if (status) {
@@ -101,17 +107,25 @@ export const appointmentsRouter = router({
 		.input(
 			z.object({
 				date: z
-					.string()
+					.date()
 					.describe(
-						"A date string (localeString) of any day in the month desired"
+						"A date object representing any day in the month desired"
 					),
 			})
 		)
 		.query(async ({ input, ctx }) => {
 			const { date } = input;
-			const [month, _day, year] = date.split("/");
+			const year = date.getFullYear();
+			const month = date.getMonth();
 
-			console.log(`%${month}/${year}%`);
+			// Create date range for the month
+			const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+			const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+			console.log(
+				startOfMonth.getTime(),
+				endOfMonth.getTime(),
+				date.getTime()
+			);
 
 			const appointments = await ctx.db
 				.select({
@@ -144,9 +158,10 @@ export const appointmentsRouter = router({
 					eq(schema.appointments.doctorId, authSchema.user.id)
 				)
 				.where(
-					like(
+					between(
 						schema.appointments.appointmentDate,
-						`%${month}/%/${year}`
+						startOfMonth,
+						endOfMonth
 					)
 				)
 				.orderBy(
@@ -160,7 +175,7 @@ export const appointmentsRouter = router({
 		.input(
 			z.object({
 				patientId: z.number(),
-				date: z.string().optional(),
+				date: z.date().optional(),
 				status: z.string().optional(),
 				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
@@ -175,8 +190,14 @@ export const appointmentsRouter = router({
 			];
 
 			if (date) {
+				const startOfDay = new Date(date?.setHours(0, 0, 0, 0));
+				const endOfDay = new Date(date?.setHours(23, 59, 59, 999));
 				whereConditions.push(
-					eq(schema.appointments.appointmentDate, date)
+					between(
+						schema.appointments.appointmentDate,
+						startOfDay,
+						endOfDay
+					)
 				);
 			}
 			if (status) {
@@ -247,7 +268,7 @@ export const appointmentsRouter = router({
 				.update(schema.appointments)
 				.set({
 					...input.data,
-					updatedAt: new Date().toISOString(),
+					updatedAt: new Date(),
 				})
 				.where(eq(schema.appointments.id, input.id))
 				.returning();

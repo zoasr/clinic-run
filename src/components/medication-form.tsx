@@ -18,11 +18,11 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DatePicker } from "@/components/date-picker";
-import { trpc } from "@/lib/trpc-client";
+import { queryKeys, trpc } from "@/lib/trpc-client";
 import { ArrowLeft } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AppRouter, queryKeys } from "@/lib/trpc-client";
+import { AppRouter } from "@/lib/trpc";
 import { TRPCClientErrorLike } from "@trpc/client";
 import { Medication } from "@/lib/schema-types";
 
@@ -100,7 +100,7 @@ export function MedicationForm({
 				form: value.form?.trim() || undefined,
 				manufacturer: value.manufacturer?.trim() || undefined,
 				batchNumber: value.batchNumber?.trim() || undefined,
-				expiryDate: value.expiryDate?.trim() || undefined,
+				expiryDate: value.expiryDate || new Date(),
 				quantity: Number(value.quantity) || 0,
 				minStockLevel: Number(value.minStockLevel) || 0,
 				unitPrice: Number(value.unitPrice) || 0,
@@ -345,9 +345,7 @@ export function MedicationForm({
 												}
 												onSelect={(date) => {
 													field.handleChange(
-														date
-															? date.toLocaleDateString()
-															: ""
+														date ? date : new Date()
 													);
 												}}
 												disabled={(date) => {

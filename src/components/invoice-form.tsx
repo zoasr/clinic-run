@@ -65,7 +65,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 		totalAmount: invoice?.totalAmount ?? 0,
 		paidAmount: invoice?.paidAmount ?? 0,
 		status: invoice?.status ?? "pending",
-		dueDate: invoice?.dueDate ?? "",
+		dueDate: invoice?.dueDate ?? new Date(),
 		items: invoice?.items ?? "",
 	};
 
@@ -392,9 +392,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 												value: Date | undefined
 											) => {
 												field.handleChange(
-													value
-														? value.toLocaleDateString()
-														: ""
+													value ? value : new Date()
 												);
 											}}
 										/>

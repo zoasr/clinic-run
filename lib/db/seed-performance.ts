@@ -5,9 +5,9 @@ import { auth } from "../auth";
 
 // Configuration for data generation
 const CONFIG = {
-	patients: 3000, // 10k patients
-	doctors: 30, // 50 doctors
-	admins: 10, // 50 nurses
+	patients: 3000, // 3k patients
+	doctors: 30, // 30 doctors
+	admins: 10, // 10 admins
 	receptionists: 25, // 25 receptionists
 	appointments: 5000, // 50k appointments
 	medicalRecords: 3000, // 30k medical records
@@ -195,10 +195,11 @@ export async function seedPerformanceData() {
 				patientId: generatePatientId(i),
 				firstName: faker.person.firstName(),
 				lastName: faker.person.lastName(),
-				dateOfBirth: generateRandomDate(
-					new Date(1950, 0, 1),
-					new Date(2005, 11, 31)
-				),
+				dateOfBirth: faker.date.birthdate({
+					min: 18,
+					max: 80,
+					mode: "age",
+				}),
 				gender: faker.helpers.arrayElement(["Male", "Female", "Other"]),
 				phone: faker.phone.number(),
 				email: faker.internet.email(),
@@ -253,10 +254,8 @@ export async function seedPerformanceData() {
 				]),
 				manufacturer: faker.company.name(),
 				batchNumber: `BATCH-${faker.string.alphanumeric(8).toUpperCase()}`,
-				expiryDate: generateRandomDate(
-					new Date(),
-					new Date(2026, 11, 31)
-				),
+				expiryDate: faker.date.future({ years: 1 }),
+
 				quantity: faker.number.int({ min: 0, max: 1000 }),
 				minStockLevel: faker.number.int({ min: 5, max: 50 }),
 				unitPrice: faker.number.float({
@@ -289,10 +288,10 @@ export async function seedPerformanceData() {
 			appointments.push({
 				patientId,
 				doctorId,
-				appointmentDate: generateRandomDate(
-					new Date(2023, 0, 1),
-					new Date(2025, 11, 31)
-				),
+				appointmentDate: faker.date.between({
+					from: new Date(2023, 0, 1),
+					to: new Date(2025, 11, 31),
+				}),
 				appointmentTime: faker.helpers.arrayElement([
 					"09:00",
 					"09:30",
@@ -352,7 +351,10 @@ export async function seedPerformanceData() {
 				patientId,
 				doctorId,
 				appointmentId,
-				visitDate: generateRandomDate(new Date(2023, 0, 1), new Date()),
+				visitDate: faker.date.between({
+					from: new Date(2023, 0, 1),
+					to: new Date(),
+				}),
 				chiefComplaint: faker.lorem.sentences(1),
 				diagnosis: faker.helpers.arrayElement([
 					"Hypertension",
@@ -474,7 +476,10 @@ export async function seedPerformanceData() {
 					paidAmount >= totalAmount
 						? "paid"
 						: faker.helpers.arrayElement(["pending", "overdue"]),
-				dueDate: generateRandomDate(new Date(), new Date(2025, 11, 31)),
+				dueDate: faker.date.between({
+					from: new Date(),
+					to: new Date(2025, 11, 31),
+				}),
 				items: generateBillingItems(),
 			});
 		}
@@ -521,9 +526,16 @@ export async function seedPerformanceData() {
 					"in-progress",
 					"completed",
 				]),
-				orderDate: generateRandomDate(new Date(2023, 0, 1), new Date()),
+				orderDate: faker.date.between({
+					from: new Date(2023, 0, 1),
+					to: new Date(),
+				}),
 				completedDate: faker.helpers.maybe(
-					() => generateRandomDate(new Date(2023, 0, 1), new Date()),
+					() =>
+						faker.date.between({
+							from: new Date(2023, 0, 1),
+							to: new Date(),
+						}),
 					{ probability: 0.7 }
 				),
 				results: faker.helpers.maybe(() => faker.lorem.sentences(2), {

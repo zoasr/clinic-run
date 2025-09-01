@@ -51,7 +51,9 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 	const defaultValues: PatientFormValues = {
 		firstName: (patient as any)?.firstName ?? "",
 		lastName: (patient as any)?.lastName ?? "",
-		dateOfBirth: (patient as any)?.dateOfBirth ?? "",
+		dateOfBirth: (patient as any)?.dateOfBirth
+			? new Date((patient as any).dateOfBirth)
+			: new Date(),
 		gender: (patient as any)?.gender ?? "",
 		phone: (patient as any)?.phone ?? "",
 		email: (patient as any)?.email ?? "",
@@ -247,11 +249,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 												onSelect={(
 													value: Date | undefined
 												) => {
-													field.handleChange(
-														value
-															? value.toLocaleDateString()
-															: ""
-													);
+													field.handleChange(value);
 												}}
 												required
 											/>

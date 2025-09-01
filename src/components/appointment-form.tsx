@@ -75,7 +75,7 @@ export function AppointmentForm({
 			const baseData = {
 				...value,
 				doctorId: value.doctorId,
-				updatedAt: new Date().toISOString(),
+				updatedAt: new Date(),
 			};
 
 			if (appointment?.id) {
@@ -89,7 +89,7 @@ export function AppointmentForm({
 				// For creates, include createdAt
 				saveAppointment({
 					...baseData,
-					createdAt: new Date().toISOString(),
+					createdAt: new Date(),
 				});
 			}
 		},
@@ -280,9 +280,7 @@ export function AppointmentForm({
 											}
 											onSelect={(date) => {
 												field.handleChange(
-													date
-														? date.toLocaleDateString()
-														: ""
+													date ? date : new Date()
 												);
 											}}
 											disabled={(date) => {
@@ -534,7 +532,9 @@ export function AppointmentForm({
 						</Button>
 						<Button
 							type="submit"
-							disabled={isUpdating || isSaving || !patient}
+							disabled={
+								isUpdating || isSaving || !selectedPatient
+							}
 						>
 							{isSaving || isUpdating
 								? "Saving..."

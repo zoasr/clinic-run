@@ -8,18 +8,18 @@ export const reportsRouter = router({
 	getPatientStats: protectedProcedure
 		.input(
 			z.object({
-				startDate: z.string().optional(),
-				endDate: z.string().optional(),
+				startDate: z.date().optional(),
+				endDate: z.date().optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
 			const { startDate, endDate } = input;
 
 			let whereConditions = [];
-			if (startDate && startDate.trim()) {
+			if (startDate && startDate) {
 				whereConditions.push(gte(schema.patients.createdAt, startDate));
 			}
-			if (endDate && endDate.trim()) {
+			if (endDate && endDate) {
 				whereConditions.push(lte(schema.patients.createdAt, endDate));
 			}
 
@@ -66,7 +66,7 @@ export const reportsRouter = router({
 
 			return {
 				totalPatients: patients.length,
-				activePatients: patients.filter(p => p.isActive).length,
+				activePatients: patients.filter((p) => p.isActive).length,
 				ageDistribution: ageGroups,
 				genderDistribution: genderStats,
 			};
@@ -76,19 +76,23 @@ export const reportsRouter = router({
 	getAppointmentStats: protectedProcedure
 		.input(
 			z.object({
-				startDate: z.string().optional(),
-				endDate: z.string().optional(),
+				startDate: z.date().optional(),
+				endDate: z.date().optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
 			const { startDate, endDate } = input;
 
 			let whereConditions = [];
-			if (startDate && startDate.trim()) {
-				whereConditions.push(gte(schema.appointments.appointmentDate, startDate));
+			if (startDate && startDate) {
+				whereConditions.push(
+					gte(schema.appointments.appointmentDate, startDate)
+				);
 			}
-			if (endDate && endDate.trim()) {
-				whereConditions.push(lte(schema.appointments.appointmentDate, endDate));
+			if (endDate && endDate) {
+				whereConditions.push(
+					lte(schema.appointments.appointmentDate, endDate)
+				);
 			}
 
 			const appointments = await ctx.db
@@ -123,9 +127,10 @@ export const reportsRouter = router({
 				totalAppointments: appointments.length,
 				statusDistribution: statusStats,
 				typeDistribution: typeStats,
-				completionRate: appointments.length > 0
-					? (statusStats.completed / appointments.length) * 100
-					: 0,
+				completionRate:
+					appointments.length > 0
+						? (statusStats.completed / appointments.length) * 100
+						: 0,
 			};
 		}),
 
@@ -133,18 +138,18 @@ export const reportsRouter = router({
 	getFinancialStats: protectedProcedure
 		.input(
 			z.object({
-				startDate: z.string().optional(),
-				endDate: z.string().optional(),
+				startDate: z.date().optional(),
+				endDate: z.date().optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
 			const { startDate, endDate } = input;
 
 			let whereConditions = [];
-			if (startDate && startDate.trim()) {
+			if (startDate && startDate) {
 				whereConditions.push(gte(schema.invoices.createdAt, startDate));
 			}
-			if (endDate && endDate.trim()) {
+			if (endDate && endDate) {
 				whereConditions.push(lte(schema.invoices.createdAt, endDate));
 			}
 
@@ -157,8 +162,14 @@ export const reportsRouter = router({
 						: undefined
 				);
 
-			const totalRevenue = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-			const totalPaid = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
+			const totalRevenue = invoices.reduce(
+				(sum, inv) => sum + inv.totalAmount,
+				0
+			);
+			const totalPaid = invoices.reduce(
+				(sum, inv) => sum + inv.paidAmount,
+				0
+			);
 			const outstandingAmount = totalRevenue - totalPaid;
 
 			const statusStats = {
@@ -177,7 +188,8 @@ export const reportsRouter = router({
 				outstandingAmount,
 				invoiceCount: invoices.length,
 				statusDistribution: statusStats,
-				averageInvoiceValue: invoices.length > 0 ? totalRevenue / invoices.length : 0,
+				averageInvoiceValue:
+					invoices.length > 0 ? totalRevenue / invoices.length : 0,
 			};
 		}),
 
@@ -188,17 +200,24 @@ export const reportsRouter = router({
 			.from(schema.medications)
 			.where(eq(schema.medications.isActive, true));
 
-		const lowStock = medications.filter(med => med.quantity <= med.minStockLevel && med.quantity > 0);
-		const outOfStock = medications.filter(med => med.quantity === 0);
-		const healthyStock = medications.filter(med => med.quantity > med.minStockLevel);
+		const lowStock = medications.filter(
+			(med) => med.quantity <= med.minStockLevel && med.quantity > 0
+		);
+		const outOfStock = medications.filter((med) => med.quantity === 0);
+		const healthyStock = medications.filter(
+			(med) => med.quantity > med.minStockLevel
+		);
 
-		const totalValue = medications.reduce((sum, med) => sum + (med.quantity * med.unitPrice), 0);
+		const totalValue = medications.reduce(
+			(sum, med) => sum + med.quantity * med.unitPrice,
+			0
+		);
 
 		// Get expiring medications (next 30 days)
 		const thirtyDaysFromNow = new Date();
 		thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-		const expiringSoon = medications.filter(med => {
+		const expiringSoon = medications.filter((med) => {
 			if (!med.expiryDate) return false;
 			const expiryDate = new Date(med.expiryDate);
 			return expiryDate <= thirtyDaysFromNow && expiryDate >= new Date();
@@ -233,11 +252,19 @@ export const reportsRouter = router({
 			for (let i = months - 1; i >= 0; i--) {
 				const date = new Date();
 				date.setMonth(date.getMonth() - i);
-				const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-				const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+				const monthStart = new Date(
+					date.getFullYear(),
+					date.getMonth(),
+					1
+				);
+				const monthEnd = new Date(
+					date.getFullYear(),
+					date.getMonth() + 1,
+					0
+				);
 
-				const monthStartStr = monthStart.toISOString().split('T')[0];
-				const monthEndStr = monthEnd.toISOString().split('T')[0];
+				const monthStartStr = monthStart;
+				const monthEndStr = monthEnd;
 
 				// Get appointments for this month
 				const appointments = await ctx.db
@@ -245,8 +272,14 @@ export const reportsRouter = router({
 					.from(schema.appointments)
 					.where(
 						and(
-							gte(schema.appointments.appointmentDate, monthStartStr),
-							lte(schema.appointments.appointmentDate, monthEndStr)
+							gte(
+								schema.appointments.appointmentDate,
+								monthStartStr
+							),
+							lte(
+								schema.appointments.appointmentDate,
+								monthEndStr
+							)
 						)
 					);
 
@@ -261,13 +294,21 @@ export const reportsRouter = router({
 						)
 					);
 
-				const revenue = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+				const revenue = invoices.reduce(
+					(sum, inv) => sum + inv.totalAmount,
+					0
+				);
 
 				trends.push({
-					month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+					month: monthStart.toLocaleDateString("en-US", {
+						month: "short",
+						year: "numeric",
+					}),
 					appointments: appointments.length,
 					revenue,
-					completedAppointments: appointments.filter(a => a.status === 'completed').length,
+					completedAppointments: appointments.filter(
+						(a) => a.status === "completed"
+					).length,
 				});
 			}
 

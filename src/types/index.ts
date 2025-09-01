@@ -6,8 +6,8 @@ export interface User {
   lastName: string
   role: "admin" | "doctor" | "nurse" | "receptionist"
   isActive: boolean
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface Patient {
@@ -15,7 +15,7 @@ export interface Patient {
   patientId: string
   firstName: string
   lastName: string
-  dateOfBirth: string
+  dateOfBirth: Date
   gender: "male" | "female" | "other"
   phone: string
   email: string
@@ -26,22 +26,22 @@ export interface Patient {
   allergies: string
   medicalHistory: string
   isActive: boolean
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface Appointment {
   id: number
   patientId: number
   doctorId: number
-  appointmentDate: string
+  appointmentDate: Date
   appointmentTime: string
   duration: number
   type: "consultation" | "follow-up" | "emergency" | "routine"
   status: "scheduled" | "confirmed" | "completed" | "cancelled" | "no-show"
   notes: string
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
   patient?: {
     id: number
     firstName: string
@@ -59,7 +59,7 @@ export interface MedicalRecord {
   id: number
   patientId: number
   doctorId: number
-  visitDate: string
+  visitDate: Date
   chiefComplaint: string
   diagnosis: string
   treatment: string
@@ -74,8 +74,8 @@ export interface MedicalRecord {
     weight: number
     height: number
   }
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
   patient?: {
     id: number
     firstName: string
@@ -97,15 +97,15 @@ export interface Medication {
   form: "tablet" | "capsule" | "liquid" | "injection" | "cream" | "other"
   manufacturer: string
   batchNumber: string
-  expiryDate: string
+  expiryDate: Date | null
   quantity: number
   minStockLevel: number
   unitPrice: number
   supplier: string
   description: string
   isActive: boolean
-  createdAt: string
-  updatedAt: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface DashboardStats {

@@ -82,7 +82,7 @@ export const systemSettingsRouter = router({
 				.set({
 					...input.data,
 					updatedBy: ctx.user.id,
-					updatedAt: new Date().toISOString(),
+					updatedAt: new Date(),
 				})
 				.where(eq(schema.systemSettings.key, input.key))
 				.returning();

@@ -50,7 +50,7 @@ export default function SearchPatientsDialog({
 	patient: Patient;
 }) {
 	const [search, setSearch] = useState(
-		`${patient?.firstName} ${patient?.lastName}` || ""
+		patient ? `${patient?.firstName} ${patient?.lastName}` : ""
 	);
 	const [open, setOpen] = useState(false);
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(

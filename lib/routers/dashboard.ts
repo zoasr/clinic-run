@@ -5,10 +5,8 @@ import * as schema from "../db/schema/schema.js";
 
 export const dashboardRouter = router({
 	getStats: protectedProcedure.query(async ({ ctx }) => {
-		const today = new Date().toLocaleDateString() as string;
-		const yesterday = new Date(
-			Date.now() - 24 * 60 * 60 * 1000
-		).toLocaleDateString() as string;
+		const today = new Date();
+		const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 		// const weekAgo = new Date(
 		// 	Date.now() - 7 * 24 * 60 * 60 * 1000
 		// ).toLocaleDateString() as string;
@@ -164,10 +162,8 @@ export const dashboardRouter = router({
 		)
 		.query(async ({ input, ctx }) => {
 			const { days } = input;
-			const startDate = new Date().toLocaleDateString();
-			const endDate = new Date(
-				Date.now() + days * 24 * 60 * 60 * 1000
-			).toLocaleDateString();
+			const startDate = new Date();
+			const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
 			const upcomingAppointments = await ctx.db
 				.select({

@@ -43,7 +43,7 @@ function PatientManagement() {
 		// This will be handled automatically by React Query's key invalidation
 	};
 
-	const calculateAge = (dateOfBirth: string) => {
+	const calculateAge = (dateOfBirth: Date) => {
 		const today = new Date();
 		const birthDate = new Date(dateOfBirth);
 		let age = today.getFullYear() - birthDate.getFullYear();
@@ -129,121 +129,118 @@ function PatientManagement() {
 						</Card>
 					</div>
 				) : (
-					patients?.map(
-						(patient: Patient) =>
-							!!patient && (
-								<Card
-									key={patient.id}
-									className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-border/50 hover:border-primary/20"
-								>
-									<CardContent className="p-6">
-										<div className="flex items-start justify-between mb-4">
-											<Link
-												className="flex items-center gap-3 flex-1"
-												to="/patients/$patientId"
-												params={{
-													patientId: `${patient.id}`,
-												}}
-											>
-												<div className="relative">
-													<div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/20 transition-colors">
-														<User className="h-6 w-6 text-primary" />
-													</div>
-													<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background"></div>
+					patients?.map((patient) =>
+						!!patient ? (
+							<Card
+								key={patient.id}
+								className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-border/50 hover:border-primary/20"
+							>
+								<CardContent className="p-6">
+									<div className="flex items-start justify-between mb-4">
+										<Link
+											className="flex items-center gap-3 flex-1"
+											to="/patients/$patientId"
+											params={{
+												patientId: `${patient.id}`,
+											}}
+										>
+											<div className="relative">
+												<div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/20 transition-colors">
+													<User className="h-6 w-6 text-primary" />
 												</div>
-												<div className="flex-1 min-w-0">
-													<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-														{patient.firstName}{" "}
-														{patient.lastName}
-													</h3>
-													<p className="text-sm text-muted-foreground font-mono">
-														ID: {patient.patientId}
-													</p>
-												</div>
-											</Link>
-											<Link
-												to="/patients/$patientId"
-												params={{
-													patientId: `${patient.id}`,
-												}}
+												<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background"></div>
+											</div>
+											<div className="flex-1 min-w-0">
+												<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+													{patient.firstName}{" "}
+													{patient.lastName}
+												</h3>
+												<p className="text-sm text-muted-foreground font-mono">
+													ID: {patient.patientId}
+												</p>
+											</div>
+										</Link>
+										<Link
+											to="/patients/$patientId"
+											params={{
+												patientId: `${patient.id}`,
+											}}
+										>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="opacity-20 group-hover:opacity-100 transition-all"
 											>
-												<Button
-													variant="ghost"
-													size="sm"
-													className="opacity-20 group-hover:opacity-100 transition-all"
-												>
-													View
-												</Button>
-											</Link>
+												View
+											</Button>
+										</Link>
+									</div>
+
+									{/* Patient Details Grid */}
+									<div className="space-y-3">
+										{/* Primary Info Row */}
+										<div className="flex items-center justify-between">
+											<div className="flex items-center gap-2">
+												<User className="h-4 w-4 text-muted-foreground" />
+												<span className="text-sm text-muted-foreground">
+													{calculateAge(
+														patient.dateOfBirth
+													)}{" "}
+													old
+												</span>
+											</div>
+											<Badge
+												variant={
+													patient.gender === "male"
+														? "default"
+														: "secondary"
+												}
+												className="text-xs"
+											>
+												{patient.gender}
+											</Badge>
 										</div>
 
-										{/* Patient Details Grid */}
-										<div className="space-y-3">
-											{/* Primary Info Row */}
-											<div className="flex items-center justify-between">
-												<div className="flex items-center gap-2">
-													<User className="h-4 w-4 text-muted-foreground" />
-													<span className="text-sm text-muted-foreground">
-														{calculateAge(
-															patient.dateOfBirth
-														)}{" "}
-														years old
-													</span>
-												</div>
+										{/* Contact Info */}
+										{(patient.phone || patient.email) && (
+											<div className="space-y-2">
+												{patient.phone && (
+													<div className="flex items-center gap-2 text-sm">
+														<Phone className="h-3 w-3 text-muted-foreground" />
+														<span className="text-muted-foreground">
+															{patient.phone}
+														</span>
+													</div>
+												)}
+												{patient.email && (
+													<div className="flex items-center gap-2 text-sm">
+														<Mail className="h-3 w-3 text-muted-foreground" />
+														<span className="text-muted-foreground truncate">
+															{patient.email}
+														</span>
+													</div>
+												)}
+											</div>
+										)}
+
+										{/* Medical Info */}
+										{patient.bloodType && (
+											<div className="flex items-center justify-between pt-2 border-t border-border/50">
+												<span className="text-xs text-muted-foreground">
+													Blood Type
+												</span>
 												<Badge
-													variant={
-														patient.gender ===
-														"male"
-															? "default"
-															: "secondary"
-													}
-													className="text-xs"
+													variant="outline"
+													className="font-mono"
 												>
-													{patient.gender}
+													{patient.bloodType}
 												</Badge>
 											</div>
-
-											{/* Contact Info */}
-											{(patient.phone ||
-												patient.email) && (
-												<div className="space-y-2">
-													{patient.phone && (
-														<div className="flex items-center gap-2 text-sm">
-															<Phone className="h-3 w-3 text-muted-foreground" />
-															<span className="text-muted-foreground">
-																{patient.phone}
-															</span>
-														</div>
-													)}
-													{patient.email && (
-														<div className="flex items-center gap-2 text-sm">
-															<Mail className="h-3 w-3 text-muted-foreground" />
-															<span className="text-muted-foreground truncate">
-																{patient.email}
-															</span>
-														</div>
-													)}
-												</div>
-											)}
-
-											{/* Medical Info */}
-											{patient.bloodType && (
-												<div className="flex items-center justify-between pt-2 border-t border-border/50">
-													<span className="text-xs text-muted-foreground">
-														Blood Type
-													</span>
-													<Badge
-														variant="outline"
-														className="font-mono"
-													>
-														{patient.bloodType}
-													</Badge>
-												</div>
-											)}
-										</div>
-									</CardContent>
-								</Card>
-							)
+										)}
+									</div>
+								</CardContent>
+							</Card>
+						) : null
 					)
 				)}
 			</div>
