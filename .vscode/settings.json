@@ -1,0 +1,15 @@
+{
+	"workbench.editor.customLabels.patterns": {
+		"**/src/routes/__root.tsx": "route:/",
+		"**/src/routes/*.tsx": "route:/${filename}",
+		"**/src/routes/**/_*.tsx": "pathlesslayout:${filename}",
+		"**/src/routes/**/index.tsx": "route:/${dirname}",
+		"**/src/routes/**/$.tsx": "route:/${dirname}/*",
+		"**/src/routes/**/*.tsx": "route:/${dirname}/${filename}/${extname}",
+		"**/src/routes/**/*.*.tsx": "route:/${dirname}/${filename}/${extname(1)}",
+		"**/src/routes/**/*.*.*.tsx": "route:/${dirname}/${filename}/${extname(2)}/${extname(1)}",
+		"**/src/routes/**/*.*.*.*.tsx": "route:/${dirname}/${filename}/${extname(3)}/${extname(2)}/${extname(1)}",
+		"**/src/routes/**/*.*.*.*.*.tsx": "route:/${dirname}/${filename}/${extname(4)}/${extname(3)}/${extname(2)}/${extname(1)}",
+		"**/src/routes/**/*.*.*.*.*.*.tsx": "route:/${dirname}/${filename}/${extname(5)}/${extname(4)}/${extname(3)}/${extname(2)}/${extname(1)}",
+	}
+}
