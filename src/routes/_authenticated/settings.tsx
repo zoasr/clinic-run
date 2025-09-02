@@ -4,6 +4,8 @@ import { trpc } from "@/lib/trpc-client";
 import { SystemSettingsForm } from "@/components/system-settings-form";
 import ErrorComponent from "@/components/error";
 import { PageLoading } from "@/components/ui/loading";
+import { systemSettingsSchema } from "@/hooks/useSettings";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/settings")({
 	loader: () => ({
@@ -41,29 +43,27 @@ function SettingsComponent() {
 	if (error) return <ErrorComponent error={error} />;
 
 	return (
-		<div className="p-4 w-full mx-auto">
-			<div className="flex justify-between items-center mb-4">
-				<h1 className="text-2xl font-bold">System Settings</h1>
-				{(!settings || settings.length === 0) && (
-					<button
+		<div className="p-4 w-full mx-auto h-full grid ">
+			{settings &&
+			settings.length >= systemSettingsSchema.keyof().options.length ? (
+				<SystemSettingsForm settings={settings} />
+			) : (
+				<div className="text-center py-8 grid gap-4 size-auto m-auto">
+					<h1 className="text-2xl font-bold">System Settings</h1>
+
+					<Button
 						onClick={() => initializeDefaultsMutation.mutate()}
-						className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+						size="lg"
+						className="px-4 py-2 text-xl"
 						disabled={initializeDefaultsMutation.isPending}
 					>
 						{initializeDefaultsMutation.isPending
 							? "Initializing..."
 							: "Initialize Default Settings"}
-					</button>
-				)}
-			</div>
-
-			{settings && settings.length > 0 ? (
-				<SystemSettingsForm settings={settings} />
-			) : (
-				<div className="text-center py-8">
+					</Button>
 					<p className="text-muted-foreground mb-4">
-						No system settings found. Initialize default settings to
-						get started.
+						Not All system settings have been configured yet.
+						Initialize them useing the button above
 					</p>
 				</div>
 			)}

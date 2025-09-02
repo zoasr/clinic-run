@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { trpc } from "@/lib/trpc-client";
-import { useQuery } from "@tanstack/react-query";
+import { useAppearanceSettings } from "@/hooks/useSettings";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -30,46 +29,18 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-	const [theme, setThemeState] = useState<ThemeMode>("light");
+	const appearanceSettings = useAppearanceSettings();
+	const [theme, setThemeState] = useState<ThemeMode>(appearanceSettings.themeMode);
 	const [primaryColor, setPrimaryColorState] = useState("#3b82f6");
-	const [sidebarCollapsed, setSidebarCollapsedState] = useState(false);
-	const [compactMode, setCompactModeState] = useState(false);
-
-	// Fetch theme settings from system settings
-	const { data: settings } = useQuery(
-		trpc.systemSettings.getPublic.queryOptions()
-	);
+	const [sidebarCollapsed, setSidebarCollapsedState] = useState(appearanceSettings.sidebarCollapsed);
+	const [compactMode, setCompactModeState] = useState(appearanceSettings.compactMode);
 
 	// Update theme state when settings change
 	useEffect(() => {
-		if (settings) {
-			const themeSetting = settings.find((s) => s.key === "theme_mode");
-			const primaryColorSetting = settings.find(
-				(s) => s.key === "primary_color"
-			);
-			const sidebarCollapsedSetting = settings.find(
-				(s) => s.key === "sidebar_collapsed"
-			);
-			const compactModeSetting = settings.find(
-				(s) => s.key === "compact_mode"
-			);
-
-			if (themeSetting) {
-				setThemeState(themeSetting.value as ThemeMode);
-			}
-			if (primaryColorSetting) {
-				setPrimaryColorState(primaryColorSetting.value);
-			}
-			if (sidebarCollapsedSetting) {
-				setSidebarCollapsedState(
-					sidebarCollapsedSetting.value === "true"
-				);
-			}
-			if (compactModeSetting) {
-				setCompactModeState(compactModeSetting.value === "true");
-			}
-		}
-	}, [settings]);
+		setThemeState(appearanceSettings.themeMode);
+		setSidebarCollapsedState(appearanceSettings.sidebarCollapsed);
+		setCompactModeState(appearanceSettings.compactMode);
+	}, [appearanceSettings.themeMode, appearanceSettings.sidebarCollapsed, appearanceSettings.compactMode]);
 
 	// Determine if dark mode should be active
 	const getSystemTheme = (): boolean => {

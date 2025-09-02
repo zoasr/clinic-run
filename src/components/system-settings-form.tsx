@@ -27,6 +27,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { systemSettingsSchema } from "@/hooks/useSettings";
 
 interface SystemSetting {
 	id: number;
@@ -36,56 +37,53 @@ interface SystemSetting {
 	category: string;
 	isPublic: boolean;
 	updatedBy: string | null;
-	createdAt: string;
-	updatedAt: string;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 interface SystemSettingsFormProps {
 	settings: SystemSetting[];
 }
 
-const systemSettingsSchema = z.object({
-	clinic_name: z.string().min(1, "Clinic name is required"),
-	clinic_address: z.string().optional(),
-	clinic_phone: z.string().optional(),
-	clinic_email: z.string().optional(),
-	working_hours: z.string().optional(),
-	session_timeout: z
-		.number()
-		.min(1, "Session timeout must be at least 1 minute"),
-	password_min_length: z
-		.number()
-		.min(6, "Password must be at least 6 characters"),
-	email_notifications: z.boolean(),
-	appointment_reminders: z.boolean(),
-	theme_mode: z.enum(["light", "dark", "system"]),
-	sidebar_collapsed: z.boolean(),
-	compact_mode: z.boolean(),
-});
-
 export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 	const [success, setSuccess] = useState("");
 	const queryClient = useQueryClient();
 
+	const getByKey = (key: string) => {
+		return settings.find((s) => s.key === key)?.value;
+	};
+
 	// Convert settings array to form object
 	const initialValues = useMemo(() => {
-		const formData: Record<string, any> = {};
-		settings.forEach((setting) => {
-			switch (setting.key) {
-				case "session_timeout":
-				case "password_min_length":
-					formData[setting.key] = parseInt(setting.value) || 0;
-					break;
-				case "email_notifications":
-				case "appointment_reminders":
-				case "sidebar_collapsed":
-				case "compact_mode":
-					formData[setting.key] = setting.value === "true";
-					break;
-				default:
-					formData[setting.key] = setting.value;
-			}
-		});
+		const formData: Record<string, any> = {
+			clinic_name: getByKey("clinic_name") || "",
+			clinic_address: getByKey("clinic_address") || "",
+			clinic_phone: getByKey("clinic_phone") || "",
+			clinic_email: getByKey("clinic_email") || "",
+			working_hours: getByKey("working_hours") || "",
+			session_timeout: Number(getByKey("session_timeout")) || 24 * 60,
+			password_min_length: Number(getByKey("password_min_length")) || 8,
+			theme_mode: getByKey("theme_mode") || "system",
+			sidebar_collapsed: Boolean(getByKey("sidebar_collapsed")) || false,
+			compact_mode: Boolean(getByKey("compact_mode")) || false,
+		};
+
+		const parsed = systemSettingsSchema.safeParse(formData);
+		if (parsed.success)
+			settings.forEach((setting) => {
+				switch (setting.key) {
+					case "session_timeout":
+					case "password_min_length":
+						formData[setting.key] = parseInt(setting.value) || 8;
+						break;
+					case "sidebar_collapsed":
+					case "compact_mode":
+						formData[setting.key] = setting.value === "true";
+						break;
+					default:
+						formData[setting.key] = setting.value;
+				}
+			});
 		return formData;
 	}, [settings]);
 
@@ -112,6 +110,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 		defaultValues: initialValues,
 		validators: {
 			onChange: systemSettingsSchema,
+			onMount: systemSettingsSchema,
 		},
 		onSubmit: async ({ value }) => {
 			// Update all settings
@@ -126,6 +125,8 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 						"clinic_email",
 						"working_hours",
 						"theme_mode",
+						"sidebar_collapsed",
+						"compact_mode",
 					].includes(key),
 				},
 			}));
@@ -224,6 +225,14 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 										placeholder="Enter clinic address"
 										rows={3}
 									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-sm text-destructive">
+											{
+												field.state.meta.errors[0]
+													?.message
+											}
+										</p>
+									)}
 								</div>
 							)}
 						/>
@@ -246,6 +255,14 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 											}
 											placeholder="Enter phone number"
 										/>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-destructive">
+												{
+													field.state.meta.errors[0]
+														?.message
+												}
+											</p>
+										)}
 									</div>
 								)}
 							/>
@@ -268,6 +285,14 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 											}
 											placeholder="Enter email address"
 										/>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-destructive">
+												{
+													field.state.meta.errors[0]
+														?.message
+												}
+											</p>
+										)}
 									</div>
 								)}
 							/>
@@ -288,6 +313,14 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 										}
 										placeholder="e.g., 9:00 AM - 5:00 PM"
 									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-sm text-destructive">
+											{
+												field.state.meta.errors[0]
+													?.message
+											}
+										</p>
+									)}
 								</div>
 							)}
 						/>
@@ -389,64 +422,6 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
-							Notifications
-							<Badge variant="secondary">
-								{groupedSettings.notifications?.length || 0}
-							</Badge>
-						</CardTitle>
-						<CardDescription>
-							Configure notification preferences.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<form.Field
-							name="email_notifications"
-							children={(field) => (
-								<div className="flex items-center justify-between">
-									<div className="space-y-0.5">
-										<Label htmlFor={field.name}>
-											Email Notifications
-										</Label>
-										<p className="text-sm text-muted-foreground">
-											Enable email notifications for
-											system events
-										</p>
-									</div>
-									<Switch
-										id={field.name}
-										checked={field.state.value || false}
-										onCheckedChange={field.handleChange}
-									/>
-								</div>
-							)}
-						/>
-
-						<form.Field
-							name="appointment_reminders"
-							children={(field) => (
-								<div className="flex items-center justify-between">
-									<div className="space-y-0.5">
-										<Label htmlFor={field.name}>
-											Appointment Reminders
-										</Label>
-										<p className="text-sm text-muted-foreground">
-											Send automatic appointment reminders
-										</p>
-									</div>
-									<Switch
-										id={field.name}
-										checked={field.state.value || false}
-										onCheckedChange={field.handleChange}
-									/>
-								</div>
-							)}
-						/>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
 							Appearance
 							<Badge variant="secondary">
 								{groupedSettings.appearance?.length || 0}
@@ -487,7 +462,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 										</SelectContent>
 									</Select>
 									{field.state.meta.errors.length > 0 && (
-										<p className="text-sm text-destructisve">
+										<p className="text-sm text-destructive">
 											{
 												field.state.meta.errors[0]
 													?.message

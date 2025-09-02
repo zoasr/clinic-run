@@ -34,8 +34,12 @@ export const auth = betterAuth({
 		requireEmailVerification: false, // Disabled for offline clinic system
 	},
 	session: {
-		expiresIn: 30 * 60 * 60 * 24, // 24 hours
-		updateAge: 30 * 60 * 60 * 24, // 24 hours
+		// Server-side session expiry is set to 24 hours
+		// Client-side timeout is managed dynamically via SessionManager component
+		// using the session_timeout setting from the database
+		expiresIn: 30 * 60 * 60 * 24, // 24 hours (server max)
+		updateAge: 30 * 60 * 60 * 24, // 24 hours (server max)
+		// The actual session timeout is enforced client-side based on settings
 	},
 	user: {
 		additionalFields: {

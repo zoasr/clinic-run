@@ -20,8 +20,8 @@ import { Link } from "@tanstack/react-router";
 import NotFound from "@/components/not-found";
 import ErrorComponent from "@/components/error";
 import { PageLoading } from "@/components/ui/loading";
-import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { SessionManager } from "@/components/SessionManager";
+import { useAppearanceSettings } from "@/hooks/useSettings";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ context, location }) => {
@@ -47,6 +47,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 	component: () => {
 		const matches = useMatches();
+		const appearanceSettings = useAppearanceSettings();
 
 		const breadcrumbItems = matches
 			.filter((match) => match.loaderData?.crumb)
@@ -55,40 +56,45 @@ export const Route = createFileRoute("/_authenticated")({
 				label: loaderData?.crumb || pathname,
 			}));
 		return (
-			<SidebarProvider>
-				<AppSidebar />
-				<SidebarInset>
-					<header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-						<SidebarTrigger className="-ml-1" />
-						<Separator
-							orientation="vertical"
-							className="mr-2 data-[orientation=vertical]:h-4"
-						/>
-						<Breadcrumb>
-							<BreadcrumbList>
-								{breadcrumbItems.map((link, index) => (
-									<Fragment key={link.label}>
-										<BreadcrumbItem>
-											<BreadcrumbLink asChild>
-												<Link to={link.href}>
-													{link.label}
-												</Link>
-											</BreadcrumbLink>
-										</BreadcrumbItem>
-										{index < breadcrumbItems.length - 1 && (
-											<BreadcrumbSeparator />
-										)}
-									</Fragment>
-								))}
-							</BreadcrumbList>
-						</Breadcrumb>
-					</header>
+			<SessionManager>
+				<SidebarProvider
+					defaultOpen={!appearanceSettings.sidebarCollapsed}
+				>
+					<AppSidebar />
+					<SidebarInset>
+						<header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+							<SidebarTrigger className="-ml-1" />
+							<Separator
+								orientation="vertical"
+								className="mr-2 data-[orientation=vertical]:h-4"
+							/>
+							<Breadcrumb>
+								<BreadcrumbList>
+									{breadcrumbItems.map((link, index) => (
+										<Fragment key={link.label}>
+											<BreadcrumbItem>
+												<BreadcrumbLink asChild>
+													<Link to={link.href}>
+														{link.label}
+													</Link>
+												</BreadcrumbLink>
+											</BreadcrumbItem>
+											{index <
+												breadcrumbItems.length - 1 && (
+												<BreadcrumbSeparator />
+											)}
+										</Fragment>
+									))}
+								</BreadcrumbList>
+							</Breadcrumb>
+						</header>
 
-					<main className="max-w-[1200px] w-full mx-auto">
-						<Outlet />
-					</main>
-				</SidebarInset>
-			</SidebarProvider>
+						<section className="max-w-[1200px] w-full h-full mx-auto">
+							<Outlet />
+						</section>
+					</SidebarInset>
+				</SidebarProvider>
+			</SessionManager>
 		);
 	},
 });

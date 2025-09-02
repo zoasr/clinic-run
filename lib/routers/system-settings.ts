@@ -166,20 +166,6 @@ export const systemSettingsRouter = router({
 				isPublic: false,
 			},
 			{
-				key: "email_notifications",
-				value: "true",
-				description: "Enable email notifications",
-				category: "notifications",
-				isPublic: false,
-			},
-			{
-				key: "appointment_reminders",
-				value: "true",
-				description: "Send appointment reminders",
-				category: "notifications",
-				isPublic: false,
-			},
-			{
 				key: "theme_mode",
 				value: "light",
 				description: "Application theme mode (light, dark, system)",
@@ -199,6 +185,20 @@ export const systemSettingsRouter = router({
 				description: "Use compact layout for better space utilization",
 				category: "appearance",
 				isPublic: true,
+			},
+			{
+				key: "demo_email",
+				value: "admin@clinic.local",
+				description: "Demo user email for login page",
+				category: "demo",
+				isPublic: true,
+			},
+			{
+				key: "demo_password",
+				value: "admin123",
+				description: "Demo user password for login page",
+				category: "demo",
+				isPublic: false,
 			},
 		];
 

@@ -34,6 +34,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "@tanstack/react-router";
 import { useMatches } from "@tanstack/react-router";
+import { useClinicInfo } from "@/hooks/useSettings";
 
 const navItems = [
 	{
@@ -125,6 +126,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const navigate = useNavigate();
 	const matches = useMatches();
 	const { user, logout } = useAuth();
+	const clinicInfo = useClinicInfo();
 
 	const isActive = React.useCallback(
 		(href: string) => {
@@ -184,7 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</div>
 					<div>
 						<h2 className="text-lg font-semibold text-foreground">
-							Clinic Run
+							{clinicInfo.name}
 						</h2>
 						<p className="text-xs text-muted-foreground">
 							Medical Management

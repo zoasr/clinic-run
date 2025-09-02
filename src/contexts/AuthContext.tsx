@@ -126,6 +126,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	const logout = async () => {
 		try {
+			// Signal logout to other tabs
+			localStorage.setItem("auth-logout", "true");
+			setTimeout(() => {
+				localStorage.removeItem("auth-logout");
+			}, 100);
+
 			// Clear local state first
 			setUser(null);
 			setSession(null);
