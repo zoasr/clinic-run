@@ -24,6 +24,7 @@ import { ArrowLeft, Package } from "lucide-react";
 import { type Medication } from "@/lib/schema-types";
 import { useMutation } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface StockAdjustmentFormProps {
 	medication: Medication;
@@ -81,9 +82,12 @@ export function StockAdjustmentForm({
 						},
 					});
 				}
+				toast.success("Stock adjusted successfully!");
 				onSave();
 			} catch (err: any) {
-				setError(err.message || "Failed to adjust stock");
+				const errorMessage = err.message || "Failed to adjust stock";
+				setError(errorMessage);
+				toast.error(errorMessage);
 			} finally {
 				setLoading(false);
 			}

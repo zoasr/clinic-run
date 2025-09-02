@@ -14,6 +14,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Role, roles, roleSchema } from "@/lib/auth";
+import { toast } from "sonner";
 
 const userFormSchema = z.object({
 	username: z.string().min(3, "Username must be at least 3 characters"),
@@ -40,7 +41,11 @@ function AddUserComponent() {
 		trpc.users.create.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({ queryKey: usersKey });
+				toast.success("User created successfully!");
 				navigate({ to: "/users" });
+			},
+			onError: (error: any) => {
+				toast.error(error.message || "Failed to create user");
 			},
 		})
 	);

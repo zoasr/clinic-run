@@ -4,6 +4,7 @@ import type React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 import { PageLoading } from "@/components/ui/loading";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export interface AuthContextType {
 	isAuthenticated: boolean;
@@ -113,13 +114,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				queryClient.clear();
 				refreshAuth();
 
+				toast.success(
+					`Login successful! Welcome back. ${sessionData.user.name}`
+				);
 				return true;
 			}
 
 			console.error("Login failed - no user data in response");
+			toast.error("Login failed. Please check your credentials.");
 			return false;
 		} catch (error) {
 			console.error("💥 Login failed with exception:", error);
+			toast.error("Login failed. Please try again.");
 			return false;
 		}
 	};
@@ -144,6 +150,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			await authClient.signOut();
 			refreshAuth();
 
+			toast.success("Logged out successfully.");
+
 			// Navigate to login page
 			throw redirect({
 				to: "/login",
@@ -151,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			});
 		} catch (error) {
 			console.error("Logout error:", error);
+			toast.error("Logout completed with some issues.");
 			// Even if logout fails, clear local state
 			setUser(null);
 			setSession(null);

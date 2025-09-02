@@ -135,6 +135,8 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			for (const update of updates) {
 				await updateSettingMutation.mutateAsync(update);
 			}
+
+			toast.success("Settings updated successfully!");
 		},
 	});
 

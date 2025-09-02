@@ -64,11 +64,12 @@ export function AppointmentManagement() {
 		useUpdateAppointment({
 			onSuccess: () => {
 				// Invalidate and refetch
+				toast.success("Appointment status updated successfully");
 				refetch();
 			},
-
 			onError: (error: Error) => {
 				console.error("Failed to update appointment status:", error);
+				toast.error("Failed to update appointment status");
 			},
 		});
 
