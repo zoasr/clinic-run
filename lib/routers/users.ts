@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { router, protectedProcedure, adminProcedure } from "../trpc.js";
+import {
+	router,
+	protectedProcedure,
+	adminProcedure,
+	publicProcedure,
+} from "../trpc.js";
 import { and, eq, ilike, like, sql } from "drizzle-orm";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { auth } from "../auth.js";
@@ -329,5 +334,24 @@ export const usersRouter = router({
 		}
 
 		return user[0];
+	}),
+
+	checkDemoUser: publicProcedure.query(async ({ ctx }) => {
+		const demoUser = await ctx.db
+			.select({
+				id: authSchema.user.id,
+				email: authSchema.user.email,
+				isActive: authSchema.user.isActive,
+			})
+			.from(authSchema.user)
+			.where(eq(authSchema.user.email, "admin@clinic.local"))
+			.limit(1);
+
+		console.log(demoUser);
+
+		return {
+			exists: demoUser.length > 0 && demoUser[0]?.isActive ? true : false,
+			user: demoUser.length > 0 ? demoUser[0] : null,
+		};
 	}),
 });

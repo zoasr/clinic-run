@@ -17,6 +17,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "@tanstack/react-router";
+import { User } from "@/hooks/useUsers";
+import { toast } from "sonner";
 
 const profileFormSchema = z.object({
 	firstName: z.string().min(1, "First name is required"),
@@ -27,17 +29,7 @@ const profileFormSchema = z.object({
 });
 
 interface ProfileFormProps {
-	profile: {
-		id: string;
-		username: string;
-		email: string;
-		name: string;
-		firstName: string;
-		lastName: string;
-		role: string;
-		isActive: boolean;
-		createdAt: string;
-	};
+	profile: User;
 }
 
 export function ProfileForm({ profile }: ProfileFormProps) {
@@ -50,6 +42,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 		trpc.users.updateProfile.mutationOptions({
 			onSuccess: () => {
 				setSuccess("Profile updated successfully!");
+				toast.success("Profile updated successfully!");
 				queryClient.invalidateQueries({
 					queryKey: trpc.users.getProfile.queryKey(),
 				});
@@ -57,6 +50,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 			},
 			onError: (error: any) => {
 				setError(error.message || "Failed to update profile");
+				toast.error(error.message || "Failed to update profile");
 			},
 		})
 	);
@@ -65,21 +59,23 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 		trpc.users.changePassword.mutationOptions({
 			onSuccess: () => {
 				setSuccess("Password changed successfully!");
+				toast.success("Password changed successfully!");
 				setTimeout(() => setSuccess(""), 3000);
 			},
 			onError: (error: any) => {
 				setError(error.message || "Failed to change password");
+				toast.error(error.message || "Failed to change password");
 			},
 		})
 	);
 
 	const profileForm = useForm({
 		defaultValues: {
-			firstName: profile.firstName,
-			lastName: profile.lastName,
-			email: profile.email,
-			username: profile.username,
-			name: profile.name,
+			firstName: profile?.firstName || "",
+			lastName: profile?.lastName || "",
+			email: profile?.email || "",
+			username: profile?.username || "",
+			name: profile?.name || "",
 		},
 		validators: {
 			onChange: profileFormSchema,
@@ -117,7 +113,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 		onSubmit: async ({ value }) => {
 			setError("");
 			changePasswordMutation.mutate({
-				id: profile.id,
+				id: profile?.id || "",
 				currentPassword: value.currentPassword,
 				newPassword: value.newPassword,
 			});
@@ -302,42 +298,52 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 			</Card>
 
 			{/* Account Information */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Account Information</CardTitle>
-					<CardDescription>
-						View your account details and role information.
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="space-y-4">
-						<div className="flex justify-between items-center">
-							<span className="text-sm font-medium">Role:</span>
-							<Badge variant="secondary">{profile.role}</Badge>
+			{!!profile ? (
+				<Card>
+					<CardHeader>
+						<CardTitle>Account Information</CardTitle>
+						<CardDescription>
+							View your account details and role information.
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-4">
+							<div className="flex justify-between items-center">
+								<span className="text-sm font-medium">
+									Role:
+								</span>
+								<Badge variant="secondary">
+									{profile.role}
+								</Badge>
+							</div>
+							<div className="flex justify-between items-center">
+								<span className="text-sm font-medium">
+									Status:
+								</span>
+								<Badge
+									variant={
+										profile.isActive
+											? "default"
+											: "destructive"
+									}
+								>
+									{profile.isActive ? "Active" : "Inactive"}
+								</Badge>
+							</div>
+							<div className="flex justify-between items-center">
+								<span className="text-sm font-medium">
+									Member since:
+								</span>
+								<span className="text-sm text-muted-foreground">
+									{new Date(
+										profile.createdAt
+									).toLocaleDateString()}
+								</span>
+							</div>
 						</div>
-						<div className="flex justify-between items-center">
-							<span className="text-sm font-medium">Status:</span>
-							<Badge
-								variant={
-									profile.isActive ? "default" : "destructive"
-								}
-							>
-								{profile.isActive ? "Active" : "Inactive"}
-							</Badge>
-						</div>
-						<div className="flex justify-between items-center">
-							<span className="text-sm font-medium">
-								Member since:
-							</span>
-							<span className="text-sm text-muted-foreground">
-								{new Date(
-									profile.createdAt
-								).toLocaleDateString()}
-							</span>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+					</CardContent>
+				</Card>
+			) : null}
 
 			{/* Change Password */}
 			<Card>

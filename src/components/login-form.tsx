@@ -11,15 +11,57 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "@tanstack/react-router";
+import { useLoaderData, useNavigate } from "@tanstack/react-router";
+import { useClinicInfo } from "@/hooks/useSettings";
+import { Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 import z from "zod";
 
 export function LoginForm() {
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [copiedField, setCopiedField] = useState<"email" | "password" | null>(
+		null
+	);
 	const { login } = useAuth();
 	const navigate = useNavigate();
+	const { name: clinicName } = useClinicInfo();
+	// const { shouldShowDemoCredentials, demoEmail, demoPassword } = useShowDemoCredentials();
+	const defaultUser = useLoaderData({ from: "/login" });
+
+	const copyToClipboard = async (
+		text: string,
+		field: "email" | "password"
+	) => {
+		try {
+			await navigator.clipboard.writeText(text);
+			setCopiedField(field);
+			toast.success(
+				`${field === "email" ? "Email" : "Password"} copied to clipboard!`
+			);
+
+			// Reset the copied state after 2 seconds
+			setTimeout(() => setCopiedField(null), 2000);
+		} catch (err) {
+			toast.error("Failed to copy to clipboard");
+		}
+	};
+
+	const copyAllCredentials = async () => {
+		try {
+			const credentials = `Email: ${defaultUser?.user?.email}\nPassword: admin123`;
+			await navigator.clipboard.writeText(credentials);
+			setCopiedField("email"); // Use email state to show copied
+			toast.success("All demo credentials copied to clipboard!");
+
+			// Reset the copied state after 2 seconds
+			setTimeout(() => setCopiedField(null), 2000);
+		} catch (err) {
+			toast.error("Failed to copy to clipboard");
+		}
+	};
 
 	const form = useForm({
 		defaultValues: {
@@ -46,102 +88,223 @@ export function LoginForm() {
 	});
 
 	return (
-		<div className="min-h-screen flex items-center justify-center p-4">
-			<Card className="w-full max-w-md">
-				<CardHeader className="text-center">
-					<CardTitle className="text-2xl font-serif font-bold text-primary">
-						Clinic Run
-					</CardTitle>
-					<CardDescription>
-						Sign in to access your clinic dashboard
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							form.handleSubmit();
-						}}
-						className="space-y-4"
-					>
-						<form.Field
-							name="email"
-							validators={{
-								onChange: z.email(),
-							}}
-							children={(field) => (
-								<div className="space-y-2">
-									<Label htmlFor="email">Email</Label>
-									<Input
-										id="email"
-										type="email"
-										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
-										required
-										placeholder="Enter your email"
-									/>
-									{field.state.meta.errors.length > 0 && (
-										<p className="text-sm text-red-600 mt-1">
-											{
-												field.state.meta.errors[0]
-													?.message
-											}
-										</p>
-									)}
-								</div>
-							)}
+		<div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-secondary/20 flex items-center justify-center p-4">
+			<div className="w-full max-w-md space-y-8">
+				{/* Logo and Welcome Section */}
+				<div className="text-center space-y-4">
+					<div className="flex justify-center">
+						<img
+							src="/logo-light.svg"
+							alt={`${clinicName} Logo`}
+							className="h-16 w-auto dark:hidden"
 						/>
-						<form.Field
-							name="password"
-							validators={{
-								onChange: ({ value }) =>
-									!value
-										? "Password is required"
-										: value.length < 6
-											? "Password must be at least 6 characters"
-											: undefined,
-							}}
-							children={(field) => (
-								<div className="space-y-2">
-									<Label htmlFor="password">Password</Label>
-									<Input
-										id="password"
-										type="password"
-										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
-										required
-										placeholder="Enter your password"
-									/>
-									{field.state.meta.errors.length > 0 && (
-										<p className="text-sm text-red-600 mt-1">
-											{field.state.meta.errors[0]}
-										</p>
-									)}
-								</div>
-							)}
+						<img
+							src="/logo-dark.svg"
+							alt={`${clinicName} Logo`}
+							className="h-16 w-auto hidden dark:block"
 						/>
-						{error && (
-							<Alert variant="destructive">
-								<AlertDescription>{error}</AlertDescription>
-							</Alert>
-						)}
-						<Button
-							type="submit"
-							className="w-full"
-							disabled={isLoading}
-						>
-							{isLoading ? "Signing in..." : "Sign In"}
-						</Button>
-					</form>
-					<div className="mt-4 text-sm text-muted-foreground text-center">
-						Default login: admin@clinic.com / admin123
 					</div>
-				</CardContent>
-			</Card>
+					<div className="space-y-2">
+						<h1 className="text-3xl font-bold text-foreground">
+							Welcome Back
+						</h1>
+						<p className="text-muted-foreground">
+							<span className="text-primary font-bold">
+								{clinicName}
+							</span>{" "}
+							Dashboard
+						</p>
+					</div>
+				</div>
+
+				{/* Login Card */}
+				<Card className="shadow-xl border-0 bg-card/95 backdrop-blur-sm">
+					<CardHeader className="text-center pb-2">
+						<CardTitle className="text-xl font-semibold text-card-foreground">
+							Sign In to Your Account
+						</CardTitle>
+						<CardDescription className="text-muted-foreground">
+							Access your{" "}
+							<span className="text-primary font-bold">
+								{clinicName}
+							</span>{" "}
+							dashboard and manage patient care
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-6">
+						<form
+							onSubmit={(e) => {
+								e.preventDefault();
+								form.handleSubmit();
+							}}
+							className="space-y-5"
+						>
+							<form.Field
+								name="email"
+								validators={{
+									onChange: z.email(),
+								}}
+								children={(field) => (
+									<div className="space-y-2">
+										<Label
+											htmlFor="email"
+											className="text-sm font-medium text-foreground"
+										>
+											Email Address
+										</Label>
+										<Input
+											id="email"
+											type="email"
+											value={field.state.value}
+											onChange={(e) =>
+												field.handleChange(
+													e.target.value
+												)
+											}
+											required
+											placeholder="Enter your email"
+											className="h-11"
+										/>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-destructive mt-1">
+												{
+													field.state.meta.errors[0]
+														?.message
+												}
+											</p>
+										)}
+									</div>
+								)}
+							/>
+							<form.Field
+								name="password"
+								validators={{
+									onChange: ({ value }) =>
+										!value
+											? "Password is required"
+											: value.length < 6
+												? "Password must be at least 6 characters"
+												: undefined,
+								}}
+								children={(field) => (
+									<div className="space-y-2">
+										<Label
+											htmlFor="password"
+											className="text-sm font-medium text-foreground"
+										>
+											Password
+										</Label>
+										<Input
+											id="password"
+											type="password"
+											value={field.state.value}
+											onChange={(e) =>
+												field.handleChange(
+													e.target.value
+												)
+											}
+											required
+											placeholder="Enter your password"
+											className="h-11"
+										/>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-destructive mt-1">
+												{field.state.meta.errors[0]}
+											</p>
+										)}
+									</div>
+								)}
+							/>
+							{error && (
+								<Alert variant="destructive">
+									<AlertDescription>{error}</AlertDescription>
+								</Alert>
+							)}
+							<Button
+								type="submit"
+								className="w-full h-11 bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary/90 hover:via-primary/95 hover:to-primary text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+								disabled={isLoading}
+							>
+								{isLoading
+									? "Signing in..."
+									: "Sign In to Dashboard"}
+							</Button>
+						</form>
+
+						{/* Default Credentials - Only show if demo user exists and credentials are default */}
+						{defaultUser.exists && !!defaultUser.user && (
+							<div className="space-y-4">
+								<Separator />
+								<div className="text-xs text-muted-foreground text-center space-y-3">
+									<div className="flex items-center justify-center gap-2">
+										<p className="font-medium">
+											Default Credentials:
+										</p>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											className="h-6 px-2 text-xs text-muted-foreground hover:text-primary"
+											onClick={copyAllCredentials}
+										>
+											<Copy className="h-3 w-3 mr-1" />
+											Copy All
+										</Button>
+									</div>
+									<div className="space-y-2">
+										<div className="flex items-center justify-center gap-2">
+											<span>
+												Email:{" "}
+												{defaultUser?.user?.email}
+											</span>
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+												onClick={() =>
+													copyToClipboard(
+														defaultUser?.user
+															?.email || "",
+														"email"
+													)
+												}
+											>
+												{copiedField === "email" ? (
+													<Check className="h-3 w-3 text-green-500" />
+												) : (
+													<Copy className="h-3 w-3" />
+												)}
+											</Button>
+										</div>
+										<div className="flex items-center justify-center gap-2">
+											<span>Password: admin123</span>
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+												onClick={() =>
+													copyToClipboard(
+														"admin123",
+														"password"
+													)
+												}
+											>
+												{copiedField === "password" ? (
+													<Check className="h-3 w-3 text-green-500" />
+												) : (
+													<Copy className="h-3 w-3" />
+												)}
+											</Button>
+										</div>
+									</div>
+								</div>
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			</div>
 		</div>
 	);
 }
