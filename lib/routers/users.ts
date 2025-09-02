@@ -5,7 +5,7 @@ import {
 	adminProcedure,
 	publicProcedure,
 } from "../trpc.js";
-import { and, eq, ilike, like, sql } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { auth } from "../auth.js";
 
@@ -346,8 +346,6 @@ export const usersRouter = router({
 			.from(authSchema.user)
 			.where(eq(authSchema.user.email, "admin@clinic.local"))
 			.limit(1);
-
-		console.log(demoUser);
 
 		return {
 			exists: demoUser.length > 0 && demoUser[0]?.isActive ? true : false,

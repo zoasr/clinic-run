@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, asc, lt, gt, lte, gte, between } from "drizzle-orm";
+import { eq, and, asc, lt, between } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -121,11 +121,6 @@ export const appointmentsRouter = router({
 			// Create date range for the month
 			const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
 			const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
-			console.log(
-				startOfMonth.getTime(),
-				endOfMonth.getTime(),
-				date.getTime()
-			);
 
 			const appointments = await ctx.db
 				.select({

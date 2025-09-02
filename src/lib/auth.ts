@@ -3,7 +3,6 @@ import { adminClient } from "better-auth/client/plugins";
 import z from "zod";
 
 const baseURL = import.meta.env.VITE_SERVER_URL || "http://localhost:3031";
-console.log("Better-Auth client baseURL:", baseURL);
 
 export const authClient = createAuthClient({
 	baseURL,

@@ -37,8 +37,6 @@ function SettingsComponent() {
 		})
 	);
 
-	console.log(error);
-
 	if (isLoading) return <PageLoading text="Loading settings..." />;
 	if (error) return <ErrorComponent error={error} />;
 

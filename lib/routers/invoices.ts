@@ -182,8 +182,6 @@ export const invoicesRouter = router({
 
 			const invoiceNumber = `INV${String((lastInvoice[0]?.id || 0) + 1).padStart(4, "0")}`;
 
-			console.log(invoiceNumber);
-
 			const newInvoice = await ctx.db
 				.insert(schema.invoices)
 				.values({
@@ -192,34 +190,32 @@ export const invoicesRouter = router({
 				})
 				.returning();
 
-			console.log(newInvoice);
-
 			return newInvoice[0];
 		}),
 
- 	update: protectedProcedure
- 		.input(
- 			z.object({
- 				id: z.number(),
- 				data: invoiceInputSchema.partial(),
- 			})
- 		)
- 		.mutation(async ({ input, ctx }) => {
- 			const updatedInvoice = await ctx.db
- 				.update(schema.invoices)
- 				.set({
- 					...input.data,
- 					updatedAt: new Date(),
- 				})
- 				.where(eq(schema.invoices.id, input.id))
- 				.returning();
+	update: protectedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				data: invoiceInputSchema.partial(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const updatedInvoice = await ctx.db
+				.update(schema.invoices)
+				.set({
+					...input.data,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.invoices.id, input.id))
+				.returning();
 
- 			if (updatedInvoice.length === 0) {
- 				throw new Error("Invoice not found");
- 			}
+			if (updatedInvoice.length === 0) {
+				throw new Error("Invoice not found");
+			}
 
- 			return updatedInvoice[0];
- 		}),
+			return updatedInvoice[0];
+		}),
 
 	delete: protectedProcedure
 		.input(
@@ -240,39 +236,39 @@ export const invoicesRouter = router({
 			return { success: true };
 		}),
 
- 	markAsPaid: protectedProcedure
- 		.input(
- 			z.object({
- 				id: z.number(),
- 				paidAmount: z.number().optional(),
- 			})
- 		)
- 		.mutation(async ({ input, ctx }) => {
- 			const invoiceData = await ctx.db
- 				.select()
- 				.from(schema.invoices)
- 				.where(eq(schema.invoices.id, input.id))
- 				.limit(1);
+	markAsPaid: protectedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				paidAmount: z.number().optional(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const invoiceData = await ctx.db
+				.select()
+				.from(schema.invoices)
+				.where(eq(schema.invoices.id, input.id))
+				.limit(1);
 
- 			const invoice = invoiceData[0];
+			const invoice = invoiceData[0];
 
- 			if (!invoice) {
- 				throw new Error("Invoice not found");
- 			}
+			if (!invoice) {
+				throw new Error("Invoice not found");
+			}
 
- 			const paidAmount = input.paidAmount || invoice.totalAmount;
+			const paidAmount = input.paidAmount || invoice.totalAmount;
 
- 			const updatedInvoice = await ctx.db
- 				.update(schema.invoices)
- 				.set({
- 					paidAmount,
- 					status:
- 						paidAmount >= invoice.totalAmount ? "paid" : "pending",
- 					updatedAt: new Date(),
- 				})
- 				.where(eq(schema.invoices.id, input.id))
- 				.returning();
+			const updatedInvoice = await ctx.db
+				.update(schema.invoices)
+				.set({
+					paidAmount,
+					status:
+						paidAmount >= invoice.totalAmount ? "paid" : "pending",
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.invoices.id, input.id))
+				.returning();
 
- 			return updatedInvoice[0];
- 		}),
+			return updatedInvoice[0];
+		}),
 });

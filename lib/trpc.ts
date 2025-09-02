@@ -80,7 +80,6 @@ const hasAnyRole = (...required: string[]) =>
 			)
 		);
 		const ok = roles.some((r) => needed.has(r));
-		console.log({ roles, required, ok, needed });
 		if (!ok) {
 			throw new TRPCError({ code: "FORBIDDEN" });
 		}

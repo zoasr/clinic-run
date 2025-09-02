@@ -29,10 +29,6 @@ function generateInvoiceNumber(index: number): string {
 	return `INV-${year}${month}-${String(index + 1).padStart(6, "0")}`;
 }
 
-function generateRandomDate(start: Date, end: Date): string {
-	return faker.date.between({ from: start, to: end }).toLocaleDateString();
-}
-
 function generateVitalSigns(): string {
 	return JSON.stringify({
 		bloodPressure: `${faker.number.int({ min: 90, max: 180 })}/${faker.number.int({ min: 60, max: 120 })}`,
