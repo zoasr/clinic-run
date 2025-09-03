@@ -32,7 +32,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loading, LoadingCards, TableLoading } from "@/components/ui/loading";
+import { LoadingCards } from "@/components/ui/loading";
 import LoadMore from "./load-more";
 import ErrorComponent from "./error";
 

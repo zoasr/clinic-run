@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "@tanstack/react-router";
-import { useMatches } from "@tanstack/react-router";
 import { memo, useMemo } from "react";
 import { cva } from "class-variance-authority";
 
@@ -122,89 +121,18 @@ const navItems = [
 		adminOnly: true,
 	},
 ];
-
-type Matches = ReturnType<typeof useMatches>;
-
-const isActive = (matches: Matches, href: string) => {
-	if (!matches || matches.length === 0) return false;
-
-	// Check if any matched route corresponds to this navigation item
-	return matches.some((match) => {
-		// For exact matches
-		if (
-			match.fullPath === href &&
-			match.routeId !== "__root__" &&
-			match.routeId !== "/_authenticated"
-		) {
-			return true;
-		}
-
-		// For routes with parameters, check if the route path matches
-		// TanStack Router provides the route path in match.route.path
-		if (
-			match.params &&
-			match.pathname === href &&
-			match.routeId !== "__root__" &&
-			match.routeId !== "/_authenticated"
-		) {
-			return true;
-		}
-
-		// For nested routes, check if the current match is a child of this href
-		if (href !== "/" && match.pathname?.startsWith(href)) {
-			const nextChar = match.pathname[href.length];
-			return !nextChar || nextChar === "/";
-		}
-
-		return false;
-	});
-};
 const navItemVariants = cva(
 	"group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 active:scale-95",
 	{
 		variants: {
 			variant: {
-				public: {
-					active: "bg-primary/15 text-primary shadow-sm border border-primary/20",
-					inactive:
-						"text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm border-transparent",
-				},
-				admin: {
-					active: "bg-orange-100 text-orange-800 shadow-sm border-orange-200",
-					inactive:
-						"text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100",
-				},
-			},
-			state: {
-				active: "",
-				inactive: "",
+				public: "[&.active]:bg-primary/15 [&.active]:text-primary [&.active]:shadow-sm [&.active]:border [&.active]:border-primary/20 text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm border-transparent",
+				admin: "[&.active]:bg-orange-100 [&.active]:text-orange-800 [&.active]:shadow-sm [&.active]:border-orange-200 text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100",
 			},
 		},
-		compoundVariants: [
-			{
-				variant: "public",
-				state: "active",
-				class: "bg-primary/15 text-primary shadow-sm border border-primary/20",
-			},
-			{
-				variant: "public",
-				state: "inactive",
-				class: "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm border-transparent",
-			},
-			{
-				variant: "admin",
-				state: "active",
-				class: "bg-orange-100 text-orange-800 shadow-sm border-orange-200",
-			},
-			{
-				variant: "admin",
-				state: "inactive",
-				class: "text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100",
-			},
-		],
+
 		defaultVariants: {
 			variant: "public",
-			state: "inactive",
 		},
 	}
 );
@@ -212,60 +140,41 @@ const navItemVariants = cva(
 const navItemIconVariants = cva("h-4 w-4 transition-colors", {
 	variants: {
 		variant: {
-			public: {
-				active: "text-primary",
-				inactive:
-					"text-muted-foreground group-hover:text-accent-foreground",
-			},
-			admin: {
-				active: "text-orange-600",
-				inactive: "text-muted-foreground group-hover:text-orange-600",
-			},
-		},
-		state: {
-			active: "",
-			inactive: "",
+			public: "group-[&.active]:text-primary text-muted-foreground group-hover:text-accent-foreground",
+			admin: "text-muted-foreground group-hover:text-orange-600 group-[&.active]:text-orange-600",
 		},
 	},
 	defaultVariants: {
 		variant: "public",
-		state: "inactive",
 	},
 });
 
 const NavItem = memo(
 	({
 		item,
-		active,
 		variant = "public",
 	}: {
 		item: (typeof navItems)[number];
-		active: boolean;
 		variant?: "public" | "admin";
 	}) => {
 		const Icon = item.icon;
-		const state = active ? "active" : "inactive";
 
 		return (
 			<SidebarMenuItem key={item.href}>
 				<Link
 					to={item.href}
-					className={navItemVariants({ variant, state })}
+					className={navItemVariants({ variant })}
 					title={item.title}
 				>
-					<Icon className={navItemIconVariants({ variant, state })} />
-					<span className={active ? "font-semibold" : ""}>
+					<Icon className={navItemIconVariants({ variant })} />
+					<span className="group-[&.active]:font-bold">
 						{item.name}
 					</span>
-					{active && (
-						<div
-							className={`ml-auto h-1.5 w-1.5 rounded-full animate-pulse ${
-								variant === "admin"
-									? "bg-orange-500"
-									: "bg-primary"
-							}`}
-						/>
-					)}
+					<div
+						className={`ml-auto h-1.5 w-1.5 rounded-full animate-pulse group-[&.active]:block hidden ${
+							variant === "admin" ? "bg-orange-500" : "bg-primary"
+						}`}
+					/>
 				</Link>
 			</SidebarMenuItem>
 		);
@@ -274,7 +183,6 @@ const NavItem = memo(
 export const AppSidebar = memo(
 	({ ...props }: React.ComponentProps<typeof Sidebar>) => {
 		const navigate = useNavigate();
-		const matches = useMatches();
 		const { user, logout } = useAuth();
 		const { clinicInfo } = useLoaderData({ from: "/_authenticated" });
 
@@ -285,11 +193,11 @@ export const AppSidebar = memo(
 		// Separate navigation items by access level
 		const publicNavItems = useMemo(
 			() => navItems.filter((item) => !item.adminOnly),
-			[matches]
+			[navItems]
 		);
 		const adminNavItems = useMemo(
 			() => navItems.filter((item) => item.adminOnly),
-			[matches]
+			[navItems]
 		);
 
 		const publicNavItemsEls = useMemo(() => {
@@ -297,7 +205,7 @@ export const AppSidebar = memo(
 				<NavItem
 					key={item.href}
 					item={item}
-					active={isActive(matches, item.href)}
+					// active={isActive(matches, item.href)}
 					variant="public"
 				/>
 			));
@@ -308,7 +216,7 @@ export const AppSidebar = memo(
 				<NavItem
 					key={item.href}
 					item={item}
-					active={isActive(matches, item.href)}
+					// active={isActive(matches, item.href)}
 					variant="admin"
 				/>
 			));

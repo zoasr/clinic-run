@@ -444,8 +444,13 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 								Last Updated
 							</p>
 							<p className="font-medium">
-								{labTest.updatedAt.toLocaleDateString()} at{" "}
-								{labTest.updatedAt.toLocaleTimeString()}
+								{new Date(
+									labTest.updatedAt
+								).toLocaleDateString()}{" "}
+								at{" "}
+								{new Date(
+									labTest.updatedAt
+								).toLocaleTimeString()}
 							</p>
 						</div>
 					</div>

@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -23,13 +22,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Plus, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { DatePicker } from "./date-picker";
-import { usePatient, usePatients } from "@/hooks/usePatients";
+import { usePatient } from "@/hooks/usePatients";
 import { queryKeys, trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import SearchPatientsDialog from "./search-patients-dialog";
-import DoctorsDialog from "./search-doctors-dialog";
-import { Loading } from "./ui/loading";
 
 // Infer types from tRPC
 type InvoiceInput = AppRouter["invoices"]["create"]["_def"]["$types"]["input"];

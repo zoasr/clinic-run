@@ -1,39 +1,32 @@
 import { AppointmentForm } from "@/components/appointment-form";
-import { trpc } from "@/lib/trpc-client";
-import { useQuery } from "@tanstack/react-query";
+import { trpcClient } from "@/lib/trpc-client";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageLoading } from "@/components/ui/loading";
+import ErrorComponent from "@/components/error";
 
 export const Route = createFileRoute(
 	"/_authenticated/appointments/$appointmentId"
 )({
-	loader: ({ params }) => {
+	loader: async ({ params }) => {
+		const appointment = await trpcClient.appointments.getById.query({
+			id: Number(params.appointmentId),
+		});
 		return {
 			crumb: "Edit Appointment",
-			params,
+			appointment,
 		};
 	},
+	pendingComponent: () => (
+		<PageLoading text="Loading appointment details..." />
+	),
+	errorComponent: ({ error }) => <ErrorComponent error={error} />,
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { params } = Route.useLoaderData();
+	const { appointment } = Route.useLoaderData();
 	const navigate = Route.useNavigate();
-	const {
-		data: appointment,
-		isLoading,
-		error,
-	} = useQuery(
-		trpc.appointments.getById.queryOptions({
-			id: Number(params.appointmentId),
-		})
-	);
-	if (isLoading) {
-		return <PageLoading text="Loading appointment details..." />;
-	}
-	if (error) {
-		return <div>Error: {error.message}</div>;
-	}
+
 	return (
 		<AppointmentForm
 			appointment={appointment}

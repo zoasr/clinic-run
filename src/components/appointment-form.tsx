@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DatePicker } from "@/components/date-picker";
 import { queryKeys, trpc } from "@/lib/trpc-client";
-import { ArrowLeft, Search, User, Trash2 } from "lucide-react";
+import { ArrowLeft, User, Trash2 } from "lucide-react";
 import { Appointment } from "@/lib/schema-types";
 import { useDeleteAppointment } from "@/hooks/useAppointments";
 import { toast } from "sonner";
@@ -38,7 +37,6 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import DoctorsDialog from "./search-doctors-dialog";
-import { Patient, usePatient } from "@/hooks/usePatients";
 import SearchPatientsDialog from "./search-patients-dialog";
 import { Loading } from "./ui/loading";
 
@@ -53,11 +51,13 @@ export function AppointmentForm({
 	onSave,
 	onCancel,
 }: AppointmentFormProps) {
-	const { data: patient, isLoading: patientLoading } = usePatient(
-		appointment?.patientId || 0
-	);
-	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
-		appointment?.patientId ? patient : null
+	const { data: patient, isLoading: patientLoading } = useQuery(
+		trpc.patients.getById.queryOptions(
+			{ id: appointment?.patientId || 0 },
+			{
+				enabled: !!appointment?.patientId,
+			}
+		)
 	);
 
 	const form = useForm({
@@ -210,10 +210,9 @@ export function AppointmentForm({
 											field.handleChange(
 												patient?.id || 0
 											);
-											setSelectedPatient(patient);
 										}}
 									/>
-									{!!selectedPatient && (
+									{!!patient && (
 										<>
 											<h2 className="text-lg font-semibold text-foreground">
 												Selected Patient
@@ -225,18 +224,12 @@ export function AppointmentForm({
 													</div>
 													<div>
 														<h3 className="font-semibold text-foreground">
-															{
-																selectedPatient.firstName
-															}{" "}
-															{
-																selectedPatient.lastName
-															}
+															{patient.firstName}{" "}
+															{patient.lastName}
 														</h3>
 														<p className="text-sm text-muted-foreground">
 															ID:{" "}
-															{
-																selectedPatient.patientId
-															}
+															{patient.patientId}
 														</p>
 													</div>
 												</div>
@@ -530,18 +523,24 @@ export function AppointmentForm({
 						>
 							Cancel
 						</Button>
-						<Button
-							type="submit"
-							disabled={
-								isUpdating || isSaving || !selectedPatient
-							}
-						>
-							{isSaving || isUpdating
-								? "Saving..."
-								: appointment
-									? "Update"
-									: "Schedule"}
-						</Button>
+						<form.Subscribe
+							children={(field) => (
+								<Button
+									type="submit"
+									disabled={
+										isUpdating ||
+										isSaving ||
+										!field.canSubmit
+									}
+								>
+									{isSaving || isUpdating
+										? "Saving..."
+										: appointment
+											? "Update"
+											: "Schedule"}
+								</Button>
+							)}
+						/>
 					</div>
 				</div>
 

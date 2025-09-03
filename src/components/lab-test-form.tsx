@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,6 @@ import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import DoctorsDialog from "./search-doctors-dialog";
 import SearchPatientsDialog from "./search-patients-dialog";
-import { Loading } from "./ui/loading";
 
 // Infer types from tRPC
 type LabTestInput = AppRouter["labTests"]["create"]["_def"]["$types"]["input"];
@@ -183,6 +181,12 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 												);
 											}}
 										/>
+
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-red-600 mt-1">
+												{field.state.meta.errors[0]}
+											</p>
+										)}
 									</div>
 								)}
 							/>
@@ -489,9 +493,20 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					<Button type="button" variant="outline" onClick={onCancel}>
 						Cancel
 					</Button>
-					<Button type="submit" disabled={isPending || !patient}>
-						{isPending ? "Saving..." : labTest ? "Update" : "Order"}
-					</Button>
+					<form.Subscribe
+						children={(field) => (
+							<Button
+								type="submit"
+								disabled={isPending || !field.canSubmit}
+							>
+								{isPending
+									? "Saving..."
+									: labTest
+										? "Update"
+										: "Order"}
+							</Button>
+						)}
+					/>
 				</div>
 			</form>
 		</div>

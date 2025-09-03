@@ -12,6 +12,7 @@ const router = createRouter({
 	routeTree,
 	context: { auth: {} as AuthContextType },
 	defaultStaleTime: 1000 * 60,
+	defaultPreload: "intent",
 });
 
 // Register the router instance for type safety

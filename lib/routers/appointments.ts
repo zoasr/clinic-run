@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, asc, lt, between } from "drizzle-orm";
+import { eq, and, asc, lt, between, sql, or, like } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -13,15 +13,26 @@ export const appointmentsRouter = router({
 			z.object({
 				date: z.date().optional(),
 				status: z.string().optional(),
+				search: z.string().optional(),
 				limit: z.number().min(1).max(100).default(10),
 				cursor: z.number().min(1).optional(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { date, status, cursor, limit } = input;
+			const { date, status, cursor, limit, search } = input;
 			const whereConditions = [];
 			if (cursor) {
 				whereConditions.push(lt(schema.appointments.id, cursor));
+			}
+
+			if (search) {
+				whereConditions.push(
+					or(
+						like(schema.patients.firstName, `%${search}%`),
+						like(schema.patients.lastName, `%${search}%`),
+						like(authSchema.user.name, `%${search}%`)
+					)
+				);
 			}
 
 			if (date) {

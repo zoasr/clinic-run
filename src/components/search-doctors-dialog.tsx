@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
-import { useDoctors } from "@/hooks/useUsers";
 import { type Doctor } from "@/lib/schema-types";
 import { User } from "lucide-react";
 import { Input } from "./ui/input";
@@ -30,7 +29,7 @@ const Doctor = ({
 			{!!doctor ? (
 				<div
 					key={doctor.id}
-					className="flex gap-4 items-center p-4 cursor-pointer border border-accent bg-accent/20"
+					className="flex gap-4 items-center p-4 cursor-pointer border border-accent bg-accent/20 rounded-md"
 					onClick={() => {
 						onSelect(doctor);
 						closeDialog();
@@ -54,11 +53,23 @@ export default function DoctorsDialog({
 	onSelect: (doctor: Doctor) => void;
 	doctorId: string;
 }) {
+	const { data: doctors } = useQuery(trpc.users.getDoctors.queryOptions());
 	const [open, setOpen] = useState(false);
 	const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
 	const [search, setSearch] = useState("");
-	const { data: doctors } = useQuery(trpc.users.getDoctors.queryOptions());
 	const doctor = doctors?.find((d) => d.id === doctorId);
+	const filteredDoctors = search
+		? doctors?.filter((d) => {
+				return (
+					search.toLowerCase().includes(d.firstName.toLowerCase()) ||
+					search.toLowerCase().includes(d.lastName.toLowerCase()) ||
+					search.toLowerCase().includes(d.id.toLowerCase())
+				);
+			})
+		: doctors;
+	if (!doctors) {
+		return null;
+	}
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
@@ -98,17 +109,28 @@ export default function DoctorsDialog({
 						value={search}
 					/>
 					<ScrollArea className="h-[300px] w-full rounded-md border p-4 space-y-2">
-						{doctors?.map((d) => (
-							<Doctor
-								key={d.id}
-								doctor={d}
-								onSelect={(doctor) => {
-									setSelectedDoctor(doctor);
-									onSelect(doctor);
-								}}
-								closeDialog={() => setOpen(false)}
-							/>
-						))}
+						<div className="grid gap-4 my-auto h-[100px]">
+							{filteredDoctors ? (
+								filteredDoctors?.map((d) => (
+									<Doctor
+										key={d.id}
+										doctor={d}
+										onSelect={(doctor) => {
+											setSelectedDoctor(doctor);
+											setSearch(doctor.name);
+											onSelect(doctor);
+										}}
+										closeDialog={() => setOpen(false)}
+									/>
+								))
+							) : (
+								<div className="w-full my-auto h-full text-center flex items-center justify-center">
+									<p className="">
+										Start searching for doctors
+									</p>
+								</div>
+							)}
+						</div>
 					</ScrollArea>
 				</div>
 			</DialogContent>

@@ -26,6 +26,7 @@ import {
 	getClinicInfo,
 	getSessionTimeout,
 } from "@/lib/utils";
+import { memo } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ context, location }) => {
@@ -62,15 +63,8 @@ export const Route = createFileRoute("/_authenticated")({
 	staleTime: 1000 * 60 * 60, // 1 hour
 
 	component: () => {
-		const matches = useMatches();
 		const { appearanceSettings } = Route.useLoaderData();
 
-		const breadcrumbItems = matches
-			.filter((match) => match.loaderData?.crumb)
-			.map(({ pathname, loaderData }) => ({
-				href: pathname,
-				label: loaderData?.crumb || pathname,
-			}));
 		return (
 			<SessionManager>
 				<SidebarProvider
@@ -78,33 +72,7 @@ export const Route = createFileRoute("/_authenticated")({
 				>
 					<AppSidebar />
 					<SidebarInset>
-						<header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-							<SidebarTrigger className="-ml-1" />
-							<Separator
-								orientation="vertical"
-								className="mr-2 data-[orientation=vertical]:h-4"
-							/>
-							<Breadcrumb>
-								<BreadcrumbList>
-									{breadcrumbItems.map((link, index) => (
-										<Fragment key={link.label}>
-											<BreadcrumbItem>
-												<BreadcrumbLink asChild>
-													<Link to={link.href}>
-														{link.label}
-													</Link>
-												</BreadcrumbLink>
-											</BreadcrumbItem>
-											{index <
-												breadcrumbItems.length - 1 && (
-												<BreadcrumbSeparator />
-											)}
-										</Fragment>
-									))}
-								</BreadcrumbList>
-							</Breadcrumb>
-						</header>
-
+						<Header />
 						<section className="max-w-[1200px] w-full h-full mx-auto">
 							<Outlet />
 						</section>
@@ -113,4 +81,40 @@ export const Route = createFileRoute("/_authenticated")({
 			</SessionManager>
 		);
 	},
+});
+
+const Header = memo(() => {
+	const matches = useMatches();
+
+	const breadcrumbItems = matches
+		.filter((match) => match.loaderData?.crumb)
+		.map(({ pathname, loaderData }) => ({
+			href: pathname,
+			label: loaderData?.crumb || pathname,
+		}));
+	return (
+		<header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+			<SidebarTrigger className="-ml-1" />
+			<Separator
+				orientation="vertical"
+				className="mr-2 data-[orientation=vertical]:h-4"
+			/>
+			<Breadcrumb>
+				<BreadcrumbList>
+					{breadcrumbItems.map((link, index) => (
+						<Fragment key={link.label}>
+							<BreadcrumbItem>
+								<BreadcrumbLink asChild>
+									<Link to={link.href}>{link.label}</Link>
+								</BreadcrumbLink>
+							</BreadcrumbItem>
+							{index < breadcrumbItems.length - 1 && (
+								<BreadcrumbSeparator />
+							)}
+						</Fragment>
+					))}
+				</BreadcrumbList>
+			</Breadcrumb>
+		</header>
+	);
 });

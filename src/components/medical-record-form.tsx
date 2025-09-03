@@ -1,16 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+
 import {
 	Card,
 	CardContent,
@@ -194,20 +188,31 @@ export function MedicalRecordForm({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label>Patient *</Label>
-							<SearchPatientsDialog
-								patient={patient}
-								onSelect={(selectedPatient) => {
-									// Update the form field value
-									const formInstance = form;
-									formInstance.setFieldValue(
-										"patientId",
-										selectedPatient?.id || 0
-									);
-								}}
-							/>
-						</div>
+						<form.Field
+							name="patientId"
+							validators={{
+								onChange: (value) =>
+									!value ? "Patient is required" : undefined,
+							}}
+							children={(field) => (
+								<>
+									<Label>Patient *</Label>
+									<SearchPatientsDialog
+										patient={patient}
+										onSelect={(selectedPatient) => {
+											field.handleChange(
+												selectedPatient?.id || 0
+											);
+										}}
+									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-sm text-red-600 mt-1">
+											{field.state.meta.errors[0]}
+										</p>
+									)}
+								</>
+							)}
+						/>
 
 						{!!patient && (
 							<>
@@ -237,18 +242,6 @@ export function MedicalRecordForm({
 								</div>
 							</>
 						)}
-
-						{/* Hidden form field to store patientId */}
-						<form.Field
-							name="patientId"
-							validators={{
-								onChange: ({ value }) =>
-									!value || value <= 0
-										? "Patient is required"
-										: undefined,
-							}}
-							children={() => null} // Hidden field
-						/>
 					</CardContent>
 				</Card>
 
@@ -593,16 +586,32 @@ export function MedicalRecordForm({
 					<Button type="button" variant="outline" onClick={onCancel}>
 						Cancel
 					</Button>
-					<Button
+					<form.Subscribe
+						children={({ canSubmit }) => (
+							<Button
+								type="submit"
+								disabled={
+									createPending || updatePending || !canSubmit
+								}
+							>
+								{createPending || updatePending
+									? "Saving..."
+									: record
+										? "Update Record"
+										: "Create Record"}
+							</Button>
+						)}
+					/>
+					{/* <Button
 						type="submit"
-						disabled={createPending || updatePending || !patient}
+						disabled={createPending || updatePending}
 					>
 						{createPending || updatePending
 							? "Saving..."
 							: record
 								? "Update Record"
 								: "Create Record"}
-					</Button>
+					</Button> */}
 				</div>
 			</form>
 		</div>

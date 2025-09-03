@@ -17,16 +17,16 @@ const Patient = ({
 	onSelect,
 	closeDialog,
 }: {
-	patient: Patient;
+	patient?: Patient;
 	onSelect: (patient: Patient) => void;
 	closeDialog: () => void;
 }) => {
 	return (
 		<>
-			{!!patient ? (
+			{patient ? (
 				<div
 					key={patient.id}
-					className="flex items-center p-4 cursor-pointer border border-accent bg-accent/20"
+					className="flex items-center p-4 cursor-pointer border border-accent bg-accent/20 rounded-md"
 					onClick={() => {
 						onSelect(patient);
 						closeDialog();
@@ -49,12 +49,14 @@ export default function SearchPatientsDialog({
 	onSelect: (patient: Patient) => void;
 	patient: Patient;
 }) {
-	const [search, setSearch] = useState(
-		patient ? `${patient?.firstName} ${patient?.lastName}` : ""
-	);
 	const [open, setOpen] = useState(false);
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
-		patient
+		patient ? patient : null
+	);
+	const [search, setSearch] = useState(
+		selectedPatient
+			? `${selectedPatient.firstName} ${selectedPatient.lastName}`
+			: ""
 	);
 	const { data } = usePatients(
 		{
@@ -103,23 +105,33 @@ export default function SearchPatientsDialog({
 						value={search}
 					/>
 					<ScrollArea className="h-[300px] w-full rounded-md border p-4 space-y-2">
-						{patients?.map((p) => (
-							<Patient
-								key={p.id}
-								patient={p}
-								onSelect={(patient) => {
-									setSelectedPatient(patient);
-									onSelect(patient);
-								}}
-								closeDialog={() => {
-									setSearch(
-										`${selectedPatient?.firstName} ${selectedPatient?.lastName}` ||
-											""
-									);
-									setOpen(false);
-								}}
-							/>
-						))}
+						<div className="grid gap-4 my-auto h-[100px]">
+							{!!patients ? (
+								patients?.map((p) => (
+									<Patient
+										key={p.id}
+										patient={p}
+										onSelect={(patient) => {
+											setSelectedPatient(patient);
+											setSearch(
+												`${patient?.firstName} ${patient?.lastName}` ||
+													""
+											);
+											onSelect(patient);
+										}}
+										closeDialog={() => {
+											setOpen(false);
+										}}
+									/>
+								))
+							) : (
+								<div className="w-full my-auto h-full text-center flex items-center justify-center">
+									<p className="">
+										Start searching for patients
+									</p>
+								</div>
+							)}
+						</div>
 					</ScrollArea>
 				</div>
 			</DialogContent>

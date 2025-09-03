@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSessionTimeout } from "@/hooks/useSettings";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -12,7 +11,8 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { useLoaderData } from "@tanstack/react-router";
+import { redirect, useLoaderData } from "@tanstack/react-router";
+import { Button } from "./ui/button";
 
 interface SessionManagerProps {
 	children: React.ReactNode;
@@ -73,7 +73,11 @@ export function SessionManager({ children }: SessionManagerProps) {
 	const handleTimeout = useCallback(async () => {
 		setShowWarning(false);
 		toast.error("Your session has expired. Please log in again.");
-		await logout();
+		logout();
+		throw redirect({
+			to: "/login",
+			search: { redirect: window.location.pathname },
+		});
 	}, [logout]);
 
 	// Setup activity listeners and timeout logic
@@ -204,8 +208,13 @@ export function SessionManager({ children }: SessionManagerProps) {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel onClick={handleTimeout}>
-							Log Out
+						<AlertDialogCancel asChild>
+							<Button
+								onClick={handleTimeout}
+								variant="destructive"
+							>
+								Log Out
+							</Button>
 						</AlertDialogCancel>
 						<AlertDialogAction onClick={extendSession}>
 							Continue Session

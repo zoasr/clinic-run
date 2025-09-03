@@ -1,15 +1,22 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { trpcClient } from "./trpc-client";
+import { type AppRouter } from "./trpc";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
+type SystemSetting =
+	AppRouter["systemSettings"]["getPublic"]["_def"]["$types"]["output"][number];
+let settings: SystemSetting[] | null = null;
+
+const setSettings = async () => {
+	settings = await trpcClient.systemSettings.getPublic.query();
+};
+setSettings();
 
 const getSetting = async (key: string) => {
-	const settings = await trpcClient.systemSettings.getPublic.query();
-	console.log(settings);
-
+	// const settings = await trpcClient.systemSettings.getPublic.query();
 	return settings?.find((s) => s.key === key)?.value;
 };
 
@@ -47,6 +54,5 @@ export const getAppearanceSettings = async () => {
 
 export const getSessionTimeout = async () => {
 	const sessionTimeout = await getSettingAsNumber("session_timeout");
-	console.log(sessionTimeout);
 	return sessionTimeout || 30; // Default to 30 minutes
 };
