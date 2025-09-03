@@ -21,7 +21,11 @@ import NotFound from "@/components/not-found";
 import ErrorComponent from "@/components/error";
 import { PageLoading } from "@/components/ui/loading";
 import { SessionManager } from "@/components/SessionManager";
-import { useAppearanceSettings } from "@/hooks/useSettings";
+import {
+	getAppearanceSettings,
+	getClinicInfo,
+	getSessionTimeout,
+} from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ context, location }) => {
@@ -35,6 +39,17 @@ export const Route = createFileRoute("/_authenticated")({
 			});
 		}
 	},
+	loader: async () => {
+		const appearanceSettings = await getAppearanceSettings();
+		const clinicInfo = await getClinicInfo();
+		const sessionTimeout = await getSessionTimeout();
+		return {
+			appearanceSettings,
+			clinicInfo,
+			sessionTimeout,
+			crumb: "",
+		};
+	},
 	pendingComponent: () => {
 		return <PageLoading text="Verifying authentication..." />;
 	},
@@ -44,10 +59,11 @@ export const Route = createFileRoute("/_authenticated")({
 	errorComponent: ({ error }) => {
 		return <ErrorComponent error={error} />;
 	},
+	staleTime: 1000 * 60 * 60, // 1 hour
 
 	component: () => {
 		const matches = useMatches();
-		const appearanceSettings = useAppearanceSettings();
+		const { appearanceSettings } = Route.useLoaderData();
 
 		const breadcrumbItems = matches
 			.filter((match) => match.loaderData?.crumb)

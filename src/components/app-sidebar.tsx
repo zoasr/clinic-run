@@ -1,5 +1,4 @@
-import * as React from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLoaderData } from "@tanstack/react-router";
 import {
 	Home,
 	User,
@@ -34,7 +33,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "@tanstack/react-router";
 import { useMatches } from "@tanstack/react-router";
-import { useClinicInfo } from "@/hooks/useSettings";
+import { memo, useMemo } from "react";
+import { cva } from "class-variance-authority";
 
 const navItems = [
 	{
@@ -122,273 +122,340 @@ const navItems = [
 		adminOnly: true,
 	},
 ];
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-	const navigate = useNavigate();
-	const matches = useMatches();
-	const { user, logout } = useAuth();
-	const clinicInfo = useClinicInfo();
 
-	const isActive = React.useCallback(
-		(href: string) => {
-			if (!matches || matches.length === 0) return false;
+type Matches = ReturnType<typeof useMatches>;
 
-			// Check if any matched route corresponds to this navigation item
-			return matches.some((match) => {
-				// For exact matches
-				if (
-					match.fullPath === href &&
-					match.routeId !== "__root__" &&
-					match.routeId !== "/_authenticated"
-				) {
-					return true;
-				}
+const isActive = (matches: Matches, href: string) => {
+	if (!matches || matches.length === 0) return false;
 
-				// For routes with parameters, check if the route path matches
-				// TanStack Router provides the route path in match.route.path
-				if (
-					match.params &&
-					match.pathname === href &&
-					match.routeId !== "__root__" &&
-					match.routeId !== "/_authenticated"
-				) {
-					return true;
-				}
+	// Check if any matched route corresponds to this navigation item
+	return matches.some((match) => {
+		// For exact matches
+		if (
+			match.fullPath === href &&
+			match.routeId !== "__root__" &&
+			match.routeId !== "/_authenticated"
+		) {
+			return true;
+		}
 
-				// For nested routes, check if the current match is a child of this href
-				if (href !== "/" && match.pathname?.startsWith(href)) {
-					const nextChar = match.pathname[href.length];
-					return !nextChar || nextChar === "/";
-				}
+		// For routes with parameters, check if the route path matches
+		// TanStack Router provides the route path in match.route.path
+		if (
+			match.params &&
+			match.pathname === href &&
+			match.routeId !== "__root__" &&
+			match.routeId !== "/_authenticated"
+		) {
+			return true;
+		}
 
-				return false;
-			});
+		// For nested routes, check if the current match is a child of this href
+		if (href !== "/" && match.pathname?.startsWith(href)) {
+			const nextChar = match.pathname[href.length];
+			return !nextChar || nextChar === "/";
+		}
+
+		return false;
+	});
+};
+const navItemVariants = cva(
+	"group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 active:scale-95",
+	{
+		variants: {
+			variant: {
+				public: {
+					active: "bg-primary/15 text-primary shadow-sm border border-primary/20",
+					inactive:
+						"text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm border-transparent",
+				},
+				admin: {
+					active: "bg-orange-100 text-orange-800 shadow-sm border-orange-200",
+					inactive:
+						"text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100",
+				},
+			},
+			state: {
+				active: "",
+				inactive: "",
+			},
 		},
-		[matches]
-	);
+		compoundVariants: [
+			{
+				variant: "public",
+				state: "active",
+				class: "bg-primary/15 text-primary shadow-sm border border-primary/20",
+			},
+			{
+				variant: "public",
+				state: "inactive",
+				class: "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm border-transparent",
+			},
+			{
+				variant: "admin",
+				state: "active",
+				class: "bg-orange-100 text-orange-800 shadow-sm border-orange-200",
+			},
+			{
+				variant: "admin",
+				state: "inactive",
+				class: "text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100",
+			},
+		],
+		defaultVariants: {
+			variant: "public",
+			state: "inactive",
+		},
+	}
+);
 
-	const isAdmin = user?.role === "admin";
-	const isDoctor = user?.role === "doctor";
-	const isStaff = user?.role === "staff";
+const navItemIconVariants = cva("h-4 w-4 transition-colors", {
+	variants: {
+		variant: {
+			public: {
+				active: "text-primary",
+				inactive:
+					"text-muted-foreground group-hover:text-accent-foreground",
+			},
+			admin: {
+				active: "text-orange-600",
+				inactive: "text-muted-foreground group-hover:text-orange-600",
+			},
+		},
+		state: {
+			active: "",
+			inactive: "",
+		},
+	},
+	defaultVariants: {
+		variant: "public",
+		state: "inactive",
+	},
+});
 
-	// Separate navigation items by access level
-	const publicNavItems = navItems.filter((item) => !item.adminOnly);
-	const adminNavItems = navItems.filter((item) => item.adminOnly);
+const NavItem = memo(
+	({
+		item,
+		active,
+		variant = "public",
+	}: {
+		item: (typeof navItems)[number];
+		active: boolean;
+		variant?: "public" | "admin";
+	}) => {
+		const Icon = item.icon;
+		const state = active ? "active" : "inactive";
 
-	return (
-		<Sidebar
-			{...props}
-			className="border-r-2 border-gradient-to-b from-primary/20 to-transparent"
-		>
-			<SidebarHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-secondary/10 p-6">
-				<div className="flex items-center gap-3">
-					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-						<Activity className="h-6 w-6 text-primary" />
+		return (
+			<SidebarMenuItem key={item.href}>
+				<Link
+					to={item.href}
+					className={navItemVariants({ variant, state })}
+					title={item.title}
+				>
+					<Icon className={navItemIconVariants({ variant, state })} />
+					<span className={active ? "font-semibold" : ""}>
+						{item.name}
+					</span>
+					{active && (
+						<div
+							className={`ml-auto h-1.5 w-1.5 rounded-full animate-pulse ${
+								variant === "admin"
+									? "bg-orange-500"
+									: "bg-primary"
+							}`}
+						/>
+					)}
+				</Link>
+			</SidebarMenuItem>
+		);
+	}
+);
+export const AppSidebar = memo(
+	({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+		const navigate = useNavigate();
+		const matches = useMatches();
+		const { user, logout } = useAuth();
+		const { clinicInfo } = useLoaderData({ from: "/_authenticated" });
+
+		const isAdmin = user?.role === "admin";
+		const isDoctor = user?.role === "doctor";
+		const isStaff = user?.role === "staff";
+
+		// Separate navigation items by access level
+		const publicNavItems = useMemo(
+			() => navItems.filter((item) => !item.adminOnly),
+			[matches]
+		);
+		const adminNavItems = useMemo(
+			() => navItems.filter((item) => item.adminOnly),
+			[matches]
+		);
+
+		const publicNavItemsEls = useMemo(() => {
+			return publicNavItems.map((item) => (
+				<NavItem
+					key={item.href}
+					item={item}
+					active={isActive(matches, item.href)}
+					variant="public"
+				/>
+			));
+		}, [publicNavItems]);
+
+		const adminNavItemsEls = useMemo(() => {
+			return adminNavItems.map((item) => (
+				<NavItem
+					key={item.href}
+					item={item}
+					active={isActive(matches, item.href)}
+					variant="admin"
+				/>
+			));
+		}, [adminNavItems]);
+
+		return (
+			<Sidebar
+				{...props}
+				className="border-r-2 border-gradient-to-b from-primary/20 to-transparent"
+			>
+				<SidebarHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-secondary/10 p-6">
+					<div className="flex items-center gap-3">
+						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+							<Activity className="h-6 w-6 text-primary" />
+						</div>
+						<div>
+							<h2 className="text-lg font-semibold text-foreground">
+								{clinicInfo.name}
+							</h2>
+							<p className="text-xs text-muted-foreground">
+								Medical Management
+							</p>
+						</div>
 					</div>
-					<div>
-						<h2 className="text-lg font-semibold text-foreground">
-							{clinicInfo.name}
-						</h2>
-						<p className="text-xs text-muted-foreground">
-							Medical Management
-						</p>
-					</div>
-				</div>
-			</SidebarHeader>
+				</SidebarHeader>
 
-			<SidebarContent className="px-3 py-4">
-				{/* Main Navigation */}
-				<SidebarGroup>
-					<SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-						Main Navigation
-					</SidebarGroupLabel>
-					<SidebarGroupContent>
-						<SidebarMenu className="space-y-1">
-							{publicNavItems.map((item) => {
-								const Icon = item.icon;
-								const active = isActive(item.href);
-
-								return (
-									<SidebarMenuItem key={item.href}>
-										<Link
-											to={item.href}
-											className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-												active
-													? "bg-primary/15 text-primary shadow-sm border border-primary/20"
-													: "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm"
-											}`}
-											title={item.title}
-										>
-											<Icon
-												className={`h-4 w-4 transition-colors ${
-													active
-														? "text-primary"
-														: "text-muted-foreground group-hover:text-accent-foreground"
-												}`}
-											/>
-											<span
-												className={
-													active
-														? "font-semibold"
-														: ""
-												}
-											>
-												{item.name}
-											</span>
-											{active && (
-												<div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-											)}
-										</Link>
-									</SidebarMenuItem>
-								);
-							})}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-
-				{/* Admin Navigation */}
-				{isAdmin && adminNavItems.length > 0 && (
-					<SidebarGroup className="mt-6">
-						<SidebarGroupLabel className="flex items-center gap-2 text-xs font-semibold text-orange-600 uppercase tracking-wider mb-3">
-							<Shield className="h-3 w-3" />
-							Administration
-							<Badge
-								variant="secondary"
-								className="ml-auto text-xs bg-orange-100 text-orange-700"
-							>
-								Admin
-							</Badge>
+				<SidebarContent className="px-3 py-4">
+					{/* Main Navigation */}
+					<SidebarGroup>
+						<SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+							Main Navigation
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu className="space-y-1">
-								{adminNavItems.map((item) => {
-									const Icon = item.icon;
-									const active = isActive(item.href);
-
-									return (
-										<SidebarMenuItem key={item.href}>
-											<Link
-												to={item.href}
-												className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 border ${
-													active
-														? "bg-orange-100 text-orange-800 shadow-sm border-orange-200"
-														: "text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100"
-												}`}
-												title={item.title}
-											>
-												<Icon
-													className={`h-4 w-4 transition-colors ${
-														active
-															? "text-orange-600"
-															: "text-muted-foreground group-hover:text-orange-600"
-													}`}
-												/>
-												<span
-													className={
-														active
-															? "font-semibold"
-															: ""
-													}
-												>
-													{item.name}
-												</span>
-												{active && (
-													<div className="ml-auto h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
-												)}
-											</Link>
-										</SidebarMenuItem>
-									);
-								})}
+								{publicNavItemsEls}
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
-				)}
-			</SidebarContent>
 
-			{/* User Profile Section */}
-			<SidebarFooter className="border-t border-border/50 bg-gradient-to-r from-muted/30 to-muted/10 p-4">
-				<div className="flex items-center gap-3 mb-4">
-					<Avatar className="h-10 w-10 ring-2 ring-primary/20">
-						<AvatarFallback className="bg-primary/10 text-primary font-semibold">
-							{user?.name
-								.split(" ")
-								.map((n) => n[0])
-								.join("")}
-						</AvatarFallback>
-					</Avatar>
-					<div className="flex-1 min-w-0">
-						<p className="font-medium text-sm truncate">
-							{user?.name}
-						</p>
-						<div className="flex items-center gap-2">
-							<Badge
-								variant={
-									isAdmin
-										? "default"
-										: isDoctor
-											? "secondary"
-											: "outline"
-								}
-								className={`text-xs ${
-									isAdmin
-										? "bg-orange-100 text-orange-700 hover:bg-orange-200"
-										: isDoctor
-											? "bg-blue-100 text-blue-700"
-											: "bg-gray-100 text-gray-700"
-								}`}
-							>
-								{user?.role || "staff"}
-							</Badge>
+					{/* Admin Navigation */}
+					{isAdmin && adminNavItems.length > 0 && (
+						<SidebarGroup className="mt-6">
+							<SidebarGroupLabel className="flex items-center gap-2 text-xs font-semibold text-orange-600 uppercase tracking-wider mb-3">
+								<Shield className="h-3 w-3" />
+								Administration
+								<Badge
+									variant="secondary"
+									className="ml-auto text-xs bg-orange-100 text-orange-700"
+								>
+									Admin
+								</Badge>
+							</SidebarGroupLabel>
+							<SidebarGroupContent>
+								<SidebarMenu className="space-y-1">
+									{adminNavItemsEls}
+								</SidebarMenu>
+							</SidebarGroupContent>
+						</SidebarGroup>
+					)}
+				</SidebarContent>
+
+				{/* User Profile Section */}
+				<SidebarFooter className="border-t border-border/50 bg-gradient-to-r from-muted/30 to-muted/10 p-4">
+					<div className="flex items-center gap-3 mb-4">
+						<Avatar className="h-10 w-10 ring-2 ring-primary/20">
+							<AvatarFallback className="bg-primary/10 text-primary font-semibold">
+								{user?.name
+									.split(" ")
+									.map((n) => n[0])
+									.join("")}
+							</AvatarFallback>
+						</Avatar>
+						<div className="flex-1 min-w-0">
+							<p className="font-medium text-sm truncate">
+								{user?.name}
+							</p>
+							<div className="flex items-center gap-2">
+								<Badge
+									variant={
+										isAdmin
+											? "default"
+											: isDoctor
+												? "secondary"
+												: "outline"
+									}
+									className={`text-xs ${
+										isAdmin
+											? "bg-orange-100 text-orange-700 hover:bg-orange-200"
+											: isDoctor
+												? "bg-blue-100 text-blue-700"
+												: "bg-gray-100 text-gray-700"
+									}`}
+								>
+									{user?.role || "staff"}
+								</Badge>
+							</div>
 						</div>
 					</div>
-				</div>
 
-				{/* Bottom Navigation */}
-				<div className="flex items-center justify-between">
-					<Button
-						variant="ghost"
-						size="sm"
-						className="flex-1 justify-start gap-2 h-9 rounded-lg hover:bg-accent/50"
-						asChild
-					>
-						<Link to="/profile" title="Profile">
-							<User className="h-4 w-4" />
-							<span className="text-sm">Profile</span>
-						</Link>
-					</Button>
-
-					{isAdmin && (
+					{/* Bottom Navigation */}
+					<div className="flex items-center justify-between">
 						<Button
 							variant="ghost"
 							size="sm"
 							className="flex-1 justify-start gap-2 h-9 rounded-lg hover:bg-accent/50"
 							asChild
 						>
-							<Link to="/settings" title="Settings">
-								<Settings className="h-4 w-4" />
-								<span className="text-sm">Settings</span>
+							<Link to="/profile" title="Profile">
+								<User className="h-4 w-4" />
+								<span className="text-sm">Profile</span>
 							</Link>
 						</Button>
-					)}
 
-					<Button
-						variant="ghost"
-						size="sm"
-						className="justify-center h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive"
-						onClick={() => {
-							logout();
-							navigate({
-								to: "/login",
-								search: {
-									redirect: location.pathname,
-								},
-							});
-						}}
-						title="Logout"
-					>
-						<LogOut className="h-4 w-4" />
-					</Button>
-				</div>
-			</SidebarFooter>
-		</Sidebar>
-	);
-}
+						{isAdmin && (
+							<Button
+								variant="ghost"
+								size="sm"
+								className="flex-1 justify-start gap-2 h-9 rounded-lg hover:bg-accent/50"
+								asChild
+							>
+								<Link to="/settings" title="Settings">
+									<Settings className="h-4 w-4" />
+									<span className="text-sm">Settings</span>
+								</Link>
+							</Button>
+						)}
+
+						<Button
+							variant="ghost"
+							size="sm"
+							className="justify-center h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+							onClick={() => {
+								logout();
+								navigate({
+									to: "/login",
+									search: {
+										redirect: location.pathname,
+									},
+								});
+							}}
+							title="Logout"
+						>
+							<LogOut className="h-4 w-4" />
+						</Button>
+					</div>
+				</SidebarFooter>
+			</Sidebar>
+		);
+	}
+);

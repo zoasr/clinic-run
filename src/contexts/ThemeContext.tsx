@@ -31,17 +31,27 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
 	const appearanceSettings = useAppearanceSettings();
-	const [theme, setThemeState] = useState<ThemeMode>(appearanceSettings.themeMode);
+	const [theme, setThemeState] = useState<ThemeMode>(
+		appearanceSettings.themeMode
+	);
 	const [primaryColor, setPrimaryColorState] = useState("#3b82f6");
-	const [sidebarCollapsed, setSidebarCollapsedState] = useState(appearanceSettings.sidebarCollapsed);
-	const [compactMode, setCompactModeState] = useState(appearanceSettings.compactMode);
+	const [sidebarCollapsed, setSidebarCollapsedState] = useState(
+		appearanceSettings.sidebarCollapsed
+	);
+	const [compactMode, setCompactModeState] = useState(
+		appearanceSettings.compactMode
+	);
 
 	// Update theme state when settings change
 	useEffect(() => {
 		setThemeState(appearanceSettings.themeMode);
 		setSidebarCollapsedState(appearanceSettings.sidebarCollapsed);
 		setCompactModeState(appearanceSettings.compactMode);
-	}, [appearanceSettings.themeMode, appearanceSettings.sidebarCollapsed, appearanceSettings.compactMode]);
+	}, [
+		appearanceSettings.themeMode,
+		appearanceSettings.sidebarCollapsed,
+		appearanceSettings.compactMode,
+	]);
 
 	// Determine if dark mode should be active
 	const getSystemTheme = (): boolean => {
@@ -99,7 +109,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
 	const setCompactMode = (compact: boolean) => {
 		setCompactModeState(compact);
-		toast.success(compact ? "Compact mode enabled" : "Compact mode disabled");
+		toast.success(
+			compact ? "Compact mode enabled" : "Compact mode disabled"
+		);
 	};
 
 	const value: ThemeContextType = {

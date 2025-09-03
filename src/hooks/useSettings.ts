@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import z from "zod";
 
 interface SystemSetting {
@@ -63,23 +63,32 @@ function useSettings(options?: {
 	} = useQuery(queryOptions);
 
 	// Helper function to get a setting value by key
-	const getSetting = (key: string): string | undefined => {
-		return settings?.find((s) => s.key === key)?.value;
-	};
+	const getSetting = useCallback(
+		(key: string): string | undefined => {
+			return settings?.find((s) => s.key === key)?.value;
+		},
+		[settings]
+	);
 
 	// Helper function to get a setting value as a number
-	const getSettingAsNumber = (key: string): number | undefined => {
-		const value = getSetting(key);
-		if (value === undefined) return undefined;
-		const num = parseInt(value, 10);
-		return isNaN(num) ? undefined : num;
-	};
+	const getSettingAsNumber = useCallback(
+		(key: string): number | undefined => {
+			const value = getSetting(key);
+			if (value === undefined) return undefined;
+			const num = parseInt(value, 10);
+			return isNaN(num) ? undefined : num;
+		},
+		[getSetting]
+	);
 
 	// Helper function to get a setting value as a boolean
-	const getSettingAsBoolean = (key: string): boolean => {
-		const value = getSetting(key);
-		return value === "true";
-	};
+	const getSettingAsBoolean = useCallback(
+		(key: string): boolean => {
+			const value = getSetting(key);
+			return value === "true";
+		},
+		[getSetting]
+	);
 
 	// Subscribe to settings changes for real-time updates
 	useEffect(() => {
@@ -89,14 +98,17 @@ function useSettings(options?: {
 				event?.query?.queryKey?.[0] === "systemSettings" &&
 				event.type === "updated"
 			) {
-				refetch();
+				// Only refetch if the data has actually changed
+				queryClient.invalidateQueries({
+					queryKey: trpc.systemSettings.getAll.queryKey(),
+				});
 			}
 		});
 
 		return () => {
 			unsubscribe();
 		};
-	}, [queryClient, refetch]);
+	}, [queryClient]);
 
 	return {
 		// @ts-ignore
@@ -112,63 +124,127 @@ function useSettings(options?: {
 
 // Specific hooks for common settings
 export function useSessionTimeout(): number {
-	const { getSettingAsNumber } = useSettings({ includePrivate: true });
-	return getSettingAsNumber("session_timeout") || 30; // Default to 30 minutes
+	const { settings } = useSettings({ includePrivate: true });
+	const sessionTimeout = useMemo(() => {
+		const getSetting = (key: string): string | undefined => {
+			return settings?.find((s) => s.key === key)?.value;
+		};
+
+		const getSettingAsNumber = (key: string): number | undefined => {
+			const value = getSetting(key);
+			if (value === undefined) return undefined;
+			const num = parseInt(value, 10);
+			return isNaN(num) ? undefined : num;
+		};
+
+		return getSettingAsNumber("session_timeout") || 30; // Default to 30 minutes
+	}, [settings]);
+	return sessionTimeout;
 }
 
 export function useClinicInfo() {
-	const { getSetting } = useSettings();
-	return {
-		name: getSetting("clinic_name") || "Clinic Management System",
-		address: getSetting("clinic_address") || "",
-		phone: getSetting("clinic_phone") || "",
-		email: getSetting("clinic_email") || "",
-		workingHours: getSetting("working_hours") || "9:00 AM - 5:00 PM",
-	};
+	const { settings } = useSettings();
+	const info = useMemo(() => {
+		const getSetting = (key: string): string | undefined => {
+			return settings?.find((s) => s.key === key)?.value;
+		};
+
+		return {
+			name: getSetting("clinic_name") || "Clinic Management System",
+			address: getSetting("clinic_address") || "",
+			phone: getSetting("clinic_phone") || "",
+			email: getSetting("clinic_email") || "",
+			workingHours: getSetting("working_hours") || "9:00 AM - 5:00 PM",
+		};
+	}, [settings]);
+	return info;
 }
 
 export function useAppearanceSettings() {
-	const { getSetting, getSettingAsBoolean } = useSettings();
-	return {
-		themeMode: (getSetting("theme_mode") || "light") as
-			| "light"
-			| "dark"
-			| "system",
-		sidebarCollapsed: getSettingAsBoolean("sidebar_collapsed"),
-		compactMode: getSettingAsBoolean("compact_mode"),
-	};
+	const { settings } = useSettings();
+	const obj = useMemo(() => {
+		const getSetting = (key: string): string | undefined => {
+			return settings?.find((s) => s.key === key)?.value;
+		};
+
+		const getSettingAsBoolean = (key: string): boolean => {
+			const value = getSetting(key);
+			return value === "true";
+		};
+
+		return {
+			themeMode: (getSetting("theme_mode") || "light") as
+				| "light"
+				| "dark"
+				| "system",
+			sidebarCollapsed: getSettingAsBoolean("sidebar_collapsed"),
+			compactMode: getSettingAsBoolean("compact_mode"),
+		};
+	}, [settings]);
+	return obj;
 }
 
 export function useSecuritySettings() {
-	const { getSettingAsNumber, getSettingAsBoolean } = useSettings({
-		includePrivate: true,
-	});
-	return {
-		sessionTimeout: getSettingAsNumber("session_timeout") || 30,
-		passwordMinLength: getSettingAsNumber("password_min_length") || 8,
-	};
+	const { settings } = useSettings({ includePrivate: true });
+	const securitySettings = useMemo(() => {
+		const getSetting = (key: string): string | undefined => {
+			return settings?.find((s) => s.key === key)?.value;
+		};
+
+		const getSettingAsNumber = (key: string): number | undefined => {
+			const value = getSetting(key);
+			if (value === undefined) return undefined;
+			const num = parseInt(value, 10);
+			return isNaN(num) ? undefined : num;
+		};
+
+		return {
+			sessionTimeout: getSettingAsNumber("session_timeout") || 30,
+			passwordMinLength: getSettingAsNumber("password_min_length") || 8,
+		};
+	}, [settings]);
+	return securitySettings;
 }
 
 export function useNotificationSettings() {
-	const { getSettingAsBoolean } = useSettings({ includePrivate: true });
-	return {
-		emailNotifications: getSettingAsBoolean("email_notifications"),
-		appointmentReminders: getSettingAsBoolean("appointment_reminders"),
-	};
+	const { settings } = useSettings({ includePrivate: true });
+	const notificationSettings = useMemo(() => {
+		const getSetting = (key: string): string | undefined => {
+			return settings?.find((s) => s.key === key)?.value;
+		};
+
+		const getSettingAsBoolean = (key: string): boolean => {
+			const value = getSetting(key);
+			return value === "true";
+		};
+
+		return {
+			emailNotifications: getSettingAsBoolean("email_notifications"),
+			appointmentReminders: getSettingAsBoolean("appointment_reminders"),
+		};
+	}, [settings]);
+	return notificationSettings;
 }
 
 export function useDemoCredentials() {
-	const { getSetting } = useSettings();
-	const demoEmail = getSetting("demo_email") || "admin@clinic.local";
-	const demoPassword = getSetting("demo_password") || "admin123";
+	const { settings } = useSettings();
+	const demoCredentials = useMemo(() => {
+		const getSetting = (key: string): string | undefined => {
+			return settings?.find((s) => s.key === key)?.value;
+		};
 
-	// Check if demo credentials are still default
-	const hasDefaultCredentials =
-		demoEmail === "admin@clinic.local" && demoPassword === "admin123";
+		const demoEmail = getSetting("demo_email") || "admin@clinic.local";
+		const demoPassword = getSetting("demo_password") || "admin123";
 
-	return {
-		demoEmail,
-		demoPassword,
-		hasDefaultCredentials,
-	};
+		// Check if demo credentials are still default
+		const hasDefaultCredentials =
+			demoEmail === "admin@clinic.local" && demoPassword === "admin123";
+
+		return {
+			demoEmail,
+			demoPassword,
+			hasDefaultCredentials,
+		};
+	}, [settings]);
+	return demoCredentials;
 }

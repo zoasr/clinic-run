@@ -12,6 +12,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { useLoaderData } from "@tanstack/react-router";
 
 interface SessionManagerProps {
 	children: React.ReactNode;
@@ -19,13 +20,15 @@ interface SessionManagerProps {
 
 export function SessionManager({ children }: SessionManagerProps) {
 	const { logout, refreshAuth, isAuthenticated } = useAuth();
-	const sessionTimeoutMinutes = useSessionTimeout();
 	const [showWarning, setShowWarning] = useState(false);
 	const [timeRemaining, setTimeRemaining] = useState(60); // 60 seconds warning
 	const lastActivityRef = useRef(Date.now());
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const countdownRef = useRef<NodeJS.Timeout | null>(null);
+	const { sessionTimeout: sessionTimeoutMinutes } = useLoaderData({
+		from: "/_authenticated",
+	});
 
 	// Convert minutes to milliseconds
 	const sessionTimeoutMs = sessionTimeoutMinutes * 60 * 1000;
@@ -95,8 +98,9 @@ export function SessionManager({ children }: SessionManagerProps) {
 		const checkTimeout = () => {
 			const now = Date.now();
 			const timeSinceActivity = now - lastActivityRef.current;
-			const timeUntilTimeout = sessionTimeoutMs - timeSinceActivity;
-			const timeUntilWarning = timeUntilTimeout - warningTimeMs;
+			const timeUntilTimeout =
+				sessionTimeoutMs - timeSinceActivity + warningTimeMs;
+			const timeUntilWarning = timeUntilTimeout - warningTimeMs; // padded with 1 minute
 
 			// Clear existing timeouts
 			if (timeoutRef.current) clearTimeout(timeoutRef.current);

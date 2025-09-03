@@ -4,7 +4,6 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { trpc } from "@/lib/trpc-client";
-import { useTheme } from "@/contexts/ThemeContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -125,6 +124,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 						"clinic_email",
 						"working_hours",
 						"theme_mode",
+						"session_timeout",
 						"sidebar_collapsed",
 						"compact_mode",
 					].includes(key),

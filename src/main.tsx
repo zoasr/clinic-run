@@ -10,6 +10,8 @@ import "./index.css";
 // Create a new router instance
 const router = createRouter({
 	routeTree,
+	context: { auth: {} as AuthContextType },
+	defaultStaleTime: 1000 * 60,
 });
 
 // Register the router instance for type safety

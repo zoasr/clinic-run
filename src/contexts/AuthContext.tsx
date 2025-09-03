@@ -1,5 +1,5 @@
 import { authClient, User, type Session } from "@/lib/auth";
-import { redirect, useRouter } from "@tanstack/react-router";
+import { redirect } from "@tanstack/react-router";
 import type React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 import { PageLoading } from "@/components/ui/loading";
@@ -124,8 +124,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			toast.error("Login failed. Please check your credentials.");
 			return false;
 		} catch (error) {
-			console.error("💥 Login failed with exception:", error);
-			toast.error("Login failed. Please try again.");
+			if (error instanceof Error) {
+				console.error("💥 Login failed with exception:", error.message);
+				toast.error("Login failed. Please try again.");
+			}
 			return false;
 		}
 	};
@@ -158,17 +160,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				search: { redirect: window.location.pathname },
 			});
 		} catch (error) {
-			console.error("Logout error:", error);
-			toast.error("Logout completed with some issues.");
+			if (error instanceof Error) {
+				console.error("Logout error:", error.message);
+				toast.error("Logout completed with some issues.");
+			}
 			// Even if logout fails, clear local state
 			setUser(null);
 			setSession(null);
 			setIsAuthenticated(false);
 			queryClient.clear();
-			throw redirect({
-				to: "/login",
-				search: { redirect: window.location.pathname },
-			});
+			try {
+				throw redirect({
+					to: "/login",
+					search: { redirect: window.location.pathname },
+				});
+			} catch (error) {
+				if (error instanceof Error) {
+					console.error("Logout error:", error.message);
+					toast.error("Logout completed with some issues.");
+				}
+			}
 		}
 	};
 

@@ -13,6 +13,8 @@ import { useDoctors } from "@/hooks/useUsers";
 import { type Doctor } from "@/lib/schema-types";
 import { User } from "lucide-react";
 import { Input } from "./ui/input";
+import { trpc } from "@/lib/trpc-client";
+import { useQuery } from "@tanstack/react-query";
 
 const Doctor = ({
 	doctor,
@@ -55,9 +57,7 @@ export default function DoctorsDialog({
 	const [open, setOpen] = useState(false);
 	const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
 	const [search, setSearch] = useState("");
-	const { data: doctors } = useDoctors({
-		search,
-	});
+	const { data: doctors } = useQuery(trpc.users.getDoctors.queryOptions());
 	const doctor = doctors?.find((d) => d.id === doctorId);
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
