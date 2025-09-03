@@ -15,7 +15,7 @@ await $`bun run db:seed`;
 
 console.log(`Building server executable...`);
 await Bun.build({
-	entrypoints: ["./server.ts"],
+	entrypoints: ["./lib/server.ts"],
 	external: ["better-sqlite3"],
 	outdir: "./dist",
 	// @ts-ignore
