@@ -9,7 +9,11 @@ export default defineConfig({
 		tanstackRouter({
 			autoCodeSplitting: true,
 		}),
-		react(),
+		react({
+			babel: {
+				plugins: ["babel-plugin-react-compiler"],
+			},
+		}),
 		tailwindcss(),
 	],
 	resolve: {
