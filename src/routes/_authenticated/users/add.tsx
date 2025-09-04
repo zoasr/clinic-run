@@ -18,7 +18,10 @@ import { toast } from "sonner";
 
 const userFormSchema = z.object({
 	username: z.string().min(3, "Username must be at least 3 characters"),
-	email: z.email(),
+	email: z.email().refine((email) => !email.endsWith("@clinic.local"), {
+		message:
+			"Emails ending with @clinic.local are not allowed, (they're reserved for demo purposes only) please choose another email",
+	}),
 	password: z.string().min(8, "Password must be at least 8 characters"),
 	firstName: z.string().min(1, "First name is required"),
 	lastName: z.string().min(1, "Last name is required"),
