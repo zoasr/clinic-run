@@ -36,6 +36,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import NotFound from "./not-found";
 
 interface PatientDetailProps {
 	patient: Patient;
@@ -45,10 +46,10 @@ interface PatientDetailProps {
 
 export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 	const { data: appointments = [], isLoading: isLoadingAppointments } =
-		usePatientAppointments(patient.id);
+		usePatientAppointments(patient?.id ?? 0);
 	const { data: medicalRecords = [], isLoading: isLoadingRecords } =
 		useMedicalRecords({
-			patientId: patient.id,
+			patientId: patient?.id ?? 0,
 			limit: 10,
 		});
 
@@ -65,10 +66,10 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 	});
 
 	const handleDeletePatient = () => {
-		deletePatient({ id: patient.id });
+		deletePatient({ id: patient?.id ?? 0 });
 	};
 
-	const calculateAge = (dateOfBirth: string) => {
+	const calculateAge = (dateOfBirth: Date) => {
 		const today = new Date();
 		const birthDate = new Date(dateOfBirth);
 		let age = today.getFullYear() - birthDate.getFullYear();
@@ -94,6 +95,10 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 				<div className="h-64 w-full bg-muted animate-pulse rounded-md" />
 			</div>
 		);
+	}
+
+	if (!patient) {
+		return <NotFound />;
 	}
 
 	return (
@@ -354,7 +359,12 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 							) : appointments.length > 0 ? (
 								<div className="space-y-4">
 									{appointments.map((appointment) => (
-										<div
+										<Link
+											to="/appointments/$appointmentId"
+											params={{
+												appointmentId:
+													appointment.id.toString(),
+											}}
 											key={appointment.id}
 											className="flex items-center justify-between p-4 border rounded-lg"
 										>
@@ -378,7 +388,7 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 											>
 												{appointment.status}
 											</Badge>
-										</div>
+										</Link>
 									))}
 								</div>
 							) : (
@@ -406,11 +416,16 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 							) : medicalRecords.length > 0 ? (
 								<div className="space-y-4">
 									{medicalRecords.map((record) => (
-										<div
+										<Link
+											to="/medical-records/$medicalRecordId"
+											params={{
+												medicalRecordId:
+													record.id.toString(),
+											}}
 											key={record.id}
-											className="p-4 border rounded-lg"
+											className="flex items-center justify-between p-4 border rounded-lg"
 										>
-											<div className="flex justify-between items-start mb-2">
+											<div className="flex justify-between gap-4 items-start mb-2">
 												<h4 className="font-medium">
 													{record.diagnosis ||
 														"General Visit"}
@@ -433,7 +448,7 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 													{record.notes}
 												</p>
 											)}
-										</div>
+										</Link>
 									))}
 								</div>
 							) : (

@@ -23,6 +23,7 @@ import { trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import type { Prescription } from "@/hooks/usePrescriptions";
+import NotFound from "./not-found";
 
 interface PrescriptionDetailProps {
 	prescription: Prescription;
@@ -47,10 +48,14 @@ export function PrescriptionDetail({
 				toast.success("Prescription marked as dispensed");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(error.message || "Failed to dispense prescription");
+				toast.error(`Failed to mark as dispensed: ${error.message}`);
 			},
 		})
 	);
+
+	if (!prescription) {
+		return <NotFound />;
+	}
 
 	const handleDispense = () => {
 		if (prescription.id) {
