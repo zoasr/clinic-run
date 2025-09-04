@@ -35,7 +35,10 @@ const t = initTRPC.context<typeof createContext>().create({
 const isAuthed = t.middleware(({ ctx, next }) => {
 	if (!ctx.session) {
 		console.log("No session found in middleware");
-		throw new TRPCError({ code: "UNAUTHORIZED" });
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Not authenticated",
+		});
 	}
 
 	// Check if session is still valid
@@ -70,7 +73,7 @@ const extractRoles = (user: any): string[] => {
 };
 
 // Middleware to check if user has at least one required role
-const hasAnyRole = (...required: string[]) =>
+const hasAnyRole = (required: string[]) =>
 	t.middleware(({ ctx, next }) => {
 		const roles = extractRoles((ctx as any).session?.user);
 		// If checking for doctor, allow admin as well
@@ -81,7 +84,10 @@ const hasAnyRole = (...required: string[]) =>
 		);
 		const ok = roles.some((r) => needed.has(r));
 		if (!ok) {
-			throw new TRPCError({ code: "FORBIDDEN" });
+			throw new TRPCError({
+				code: "UNAUTHORIZED",
+				message: `Not authorized to perform this action your role is: ${roles}, required roles: ${required}`,
+			});
 		}
 		return next();
 	});
@@ -89,9 +95,12 @@ const hasAnyRole = (...required: string[]) =>
 export const router = t.router;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(isAuthed);
+export const authorizedProcedure = t.procedure
+	.use(isAuthed)
+	.use(hasAnyRole(["admin", "doctor"]));
 export const adminProcedure = t.procedure
 	.use(isAuthed)
-	.use(hasAnyRole("admin"));
+	.use(hasAnyRole(["admin"]));
 export const doctorProcedure = t.procedure
 	.use(isAuthed)
-	.use(hasAnyRole("doctor"));
+	.use(hasAnyRole(["doctor"]));

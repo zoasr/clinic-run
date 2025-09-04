@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc.js";
+import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
 import { eq, and, desc, like, or, lt } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -170,7 +170,7 @@ export const invoicesRouter = router({
 			return invoices;
 		}),
 
-	create: protectedProcedure
+	create: authorizedProcedure
 		.input(invoiceInputSchema)
 		.mutation(async ({ input, ctx }) => {
 			// Generate invoice number
@@ -193,7 +193,7 @@ export const invoicesRouter = router({
 			return newInvoice[0];
 		}),
 
-	update: protectedProcedure
+	update: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),
@@ -217,7 +217,7 @@ export const invoicesRouter = router({
 			return updatedInvoice[0];
 		}),
 
-	delete: protectedProcedure
+	delete: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),
@@ -236,7 +236,7 @@ export const invoicesRouter = router({
 			return { success: true };
 		}),
 
-	markAsPaid: protectedProcedure
+	markAsPaid: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),

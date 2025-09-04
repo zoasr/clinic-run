@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc.js";
-import { eq, and, asc, lt, between, sql, or, like } from "drizzle-orm";
+import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
+import { eq, and, asc, lt, between, or, like } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import { createInsertSchema } from "drizzle-zod";
@@ -251,7 +251,7 @@ export const appointmentsRouter = router({
 			return appointments;
 		}),
 
-	create: protectedProcedure
+	create: authorizedProcedure
 		.input(appointmentInputSchema)
 		.mutation(async ({ input, ctx }) => {
 			const newAppointment = await ctx.db
@@ -262,7 +262,7 @@ export const appointmentsRouter = router({
 			return newAppointment[0];
 		}),
 
-	update: protectedProcedure
+	update: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),
@@ -286,7 +286,7 @@ export const appointmentsRouter = router({
 			return updatedAppointment[0];
 		}),
 
-	delete: protectedProcedure
+	delete: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),

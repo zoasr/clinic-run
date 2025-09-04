@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc.js";
+import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
 import { eq, and, desc, like, or, lt } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
@@ -20,7 +20,8 @@ export const labTestsRouter = router({
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { search, status, patientId, testType, limit, cursor } = input;
+			const { search, status, patientId, testType, limit, cursor } =
+				input;
 			const whereConditions = [];
 
 			if (cursor) {
@@ -207,7 +208,7 @@ export const labTestsRouter = router({
 			return labTests;
 		}),
 
-	create: protectedProcedure
+	create: authorizedProcedure
 		.input(labTestInputSchema)
 		.mutation(async ({ input, ctx }) => {
 			const newLabTest = await ctx.db
@@ -218,31 +219,31 @@ export const labTestsRouter = router({
 			return newLabTest[0];
 		}),
 
- 	update: protectedProcedure
- 		.input(
- 			z.object({
- 				id: z.number(),
- 				data: labTestInputSchema.partial(),
- 			})
- 		)
- 		.mutation(async ({ input, ctx }) => {
- 			const updatedLabTest = await ctx.db
- 				.update(schema.labTests)
- 				.set({
- 					...input.data,
- 					updatedAt: new Date(),
- 				})
- 				.where(eq(schema.labTests.id, input.id))
- 				.returning();
+	update: authorizedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				data: labTestInputSchema.partial(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const updatedLabTest = await ctx.db
+				.update(schema.labTests)
+				.set({
+					...input.data,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.labTests.id, input.id))
+				.returning();
 
- 			if (updatedLabTest.length === 0) {
- 				throw new Error("Lab test not found");
- 			}
+			if (updatedLabTest.length === 0) {
+				throw new Error("Lab test not found");
+			}
 
- 			return updatedLabTest[0];
- 		}),
+			return updatedLabTest[0];
+		}),
 
-	delete: protectedProcedure
+	delete: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),
@@ -261,41 +262,41 @@ export const labTestsRouter = router({
 			return { success: true };
 		}),
 
- 	updateStatus: protectedProcedure
- 		.input(
- 			z.object({
- 				id: z.number(),
- 				status: z.enum(["ordered", "in-progress", "completed"]),
- 				results: z.string().optional(),
- 				completedDate: z.date().optional(),
- 			})
- 		)
- 		.mutation(async ({ input, ctx }) => {
- 			const updateData: any = {
- 				status: input.status,
- 				updatedAt: new Date(),
- 			};
+	updateStatus: authorizedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				status: z.enum(["ordered", "in-progress", "completed"]),
+				results: z.string().optional(),
+				completedDate: z.date().optional(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const updateData: any = {
+				status: input.status,
+				updatedAt: new Date(),
+			};
 
- 			if (input.results) {
- 				updateData.results = input.results;
- 			}
+			if (input.results) {
+				updateData.results = input.results;
+			}
 
- 			if (input.status === "completed" && input.completedDate) {
- 				updateData.completedDate = input.completedDate;
- 			} else if (input.status === "completed") {
- 				updateData.completedDate = new Date();
- 			}
+			if (input.status === "completed" && input.completedDate) {
+				updateData.completedDate = input.completedDate;
+			} else if (input.status === "completed") {
+				updateData.completedDate = new Date();
+			}
 
- 			const updatedLabTest = await ctx.db
- 				.update(schema.labTests)
- 				.set(updateData)
- 				.where(eq(schema.labTests.id, input.id))
- 				.returning();
+			const updatedLabTest = await ctx.db
+				.update(schema.labTests)
+				.set(updateData)
+				.where(eq(schema.labTests.id, input.id))
+				.returning();
 
- 			if (updatedLabTest.length === 0) {
- 				throw new Error("Lab test not found");
- 			}
+			if (updatedLabTest.length === 0) {
+				throw new Error("Lab test not found");
+			}
 
- 			return updatedLabTest[0];
- 		}),
+			return updatedLabTest[0];
+		}),
 });

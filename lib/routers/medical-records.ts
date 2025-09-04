@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc.js";
+import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
 import { eq, and, desc, or, like, lt } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
@@ -217,7 +217,7 @@ export const medicalRecordsRouter = router({
 			return record[0];
 		}),
 
-	create: protectedProcedure
+	create: authorizedProcedure
 		.input(medicalRecordInputSchema)
 		.mutation(async ({ input, ctx }) => {
 			const newRecord = await ctx.db
@@ -228,31 +228,31 @@ export const medicalRecordsRouter = router({
 			return newRecord[0];
 		}),
 
- 	update: protectedProcedure
- 		.input(
- 			z.object({
- 				id: z.number(),
- 				data: medicalRecordInputSchema.partial(),
- 			})
- 		)
- 		.mutation(async ({ input, ctx }) => {
- 			const updatedRecord = await ctx.db
- 				.update(schema.medicalRecords)
- 				.set({
- 					...input.data,
- 					updatedAt: new Date(),
- 				})
- 				.where(eq(schema.medicalRecords.id, input.id))
- 				.returning();
+	update: authorizedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				data: medicalRecordInputSchema.partial(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const updatedRecord = await ctx.db
+				.update(schema.medicalRecords)
+				.set({
+					...input.data,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.medicalRecords.id, input.id))
+				.returning();
 
- 			if (updatedRecord.length === 0) {
- 				throw new Error("Medical record not found");
- 			}
+			if (updatedRecord.length === 0) {
+				throw new Error("Medical record not found");
+			}
 
- 			return updatedRecord[0];
- 		}),
+			return updatedRecord[0];
+		}),
 
-	delete: protectedProcedure
+	delete: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),

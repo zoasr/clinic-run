@@ -344,7 +344,7 @@ export const usersRouter = router({
 				isActive: authSchema.user.isActive,
 			})
 			.from(authSchema.user)
-			.where(eq(authSchema.user.email, "admin@clinic.local"))
+			.where(like(authSchema.user.email, "%admin%@clinic.local"))
 			.limit(1);
 
 		return {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc.js";
+import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
 import { eq, and, desc, lt, or } from "drizzle-orm";
 import * as schema from "../db/schema/schema.js";
 import * as authSchema from "../db/schema/auth-schema.js";
@@ -241,7 +241,7 @@ export const prescriptionsRouter = router({
 			return prescriptions;
 		}),
 
-	create: protectedProcedure
+	create: authorizedProcedure
 		.input(prescriptionInputSchema)
 		.mutation(async ({ input, ctx }) => {
 			const newPrescription = await ctx.db
@@ -252,31 +252,31 @@ export const prescriptionsRouter = router({
 			return newPrescription[0];
 		}),
 
- 	update: protectedProcedure
- 		.input(
- 			z.object({
- 				id: z.number(),
- 				data: prescriptionInputSchema.partial(),
- 			})
- 		)
- 		.mutation(async ({ input, ctx }) => {
- 			const updatedPrescription = await ctx.db
- 				.update(schema.prescriptions)
- 				.set({
- 					...input.data,
- 					updatedAt: new Date(),
- 				})
- 				.where(eq(schema.prescriptions.id, input.id))
- 				.returning();
+	update: authorizedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				data: prescriptionInputSchema.partial(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const updatedPrescription = await ctx.db
+				.update(schema.prescriptions)
+				.set({
+					...input.data,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.prescriptions.id, input.id))
+				.returning();
 
- 			if (updatedPrescription.length === 0) {
- 				throw new Error("Prescription not found");
- 			}
+			if (updatedPrescription.length === 0) {
+				throw new Error("Prescription not found");
+			}
 
- 			return updatedPrescription[0];
- 		}),
+			return updatedPrescription[0];
+		}),
 
-	delete: protectedProcedure
+	delete: authorizedProcedure
 		.input(
 			z.object({
 				id: z.number(),
@@ -295,26 +295,26 @@ export const prescriptionsRouter = router({
 			return { success: true };
 		}),
 
- 	dispense: protectedProcedure
- 		.input(
- 			z.object({
- 				id: z.number(),
- 			})
- 		)
- 		.mutation(async ({ input, ctx }) => {
- 			const dispensedPrescription = await ctx.db
- 				.update(schema.prescriptions)
- 				.set({
- 					isDispensed: true,
- 					updatedAt: new Date(),
- 				})
- 				.where(eq(schema.prescriptions.id, input.id))
- 				.returning();
+	dispense: authorizedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const dispensedPrescription = await ctx.db
+				.update(schema.prescriptions)
+				.set({
+					isDispensed: true,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.prescriptions.id, input.id))
+				.returning();
 
- 			if (dispensedPrescription.length === 0) {
- 				throw new Error("Prescription not found");
- 			}
+			if (dispensedPrescription.length === 0) {
+				throw new Error("Prescription not found");
+			}
 
- 			return dispensedPrescription[0];
- 		}),
+			return dispensedPrescription[0];
+		}),
 });
