@@ -5,13 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
 	Card,
 	CardContent,
 	CardDescription,
@@ -21,15 +14,12 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Patient, usePatients } from "@/hooks/usePatients";
-import { useMedications } from "@/hooks/useMedications";
+import { Patient } from "@/hooks/usePatients";
 import { trpc } from "@/lib/trpc-client";
-import { useQuery } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import SearchPatientsDialog from "./search-patients-dialog";
 import DoctorsDialog from "./search-doctors-dialog";
-import { Doctor } from "@/lib/schema-types";
 import SearchMedicationsDialog from "./search-medications-dialog";
 
 // Infer types from tRPC
@@ -52,15 +42,6 @@ export function PrescriptionForm({
 	onCancel,
 }: PrescriptionFormProps) {
 	const queryClient = useQueryClient();
-
-	// Fetch patients, medications, and doctors for dropdowns
-	const { data: patientsData, isLoading: patientsLoading } = usePatients();
-	const { data: medicationsData } = useMedications();
-	const { data: doctors = [] } = useQuery(
-		trpc.users.getDoctors.queryOptions()
-	);
-	const patients = patientsData?.data || [];
-	const medications = medicationsData?.data || [];
 
 	const defaultValues: PrescriptionFormValues = {
 		patientId: prescription?.patientId ?? 0,
@@ -101,7 +82,7 @@ export function PrescriptionForm({
 				toast.success("Prescription updated successfully");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(error.message || "Failed to update prescription");
+				toast.error(`Failed to update prescription: ${error.message}`);
 			},
 		})
 	);

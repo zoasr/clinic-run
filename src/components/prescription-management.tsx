@@ -14,7 +14,6 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-	usePrescriptions,
 	useDeletePrescription,
 	type Prescription,
 } from "@/hooks/usePrescriptions";
@@ -23,7 +22,7 @@ import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import LoadMore from "./load-more";
 import ErrorComponent from "./error";
-import { Loading, LoadingCards } from "./ui/loading";
+import { LoadingCards } from "./ui/loading";
 import { trpc } from "@/lib/trpc-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 

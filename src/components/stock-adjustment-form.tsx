@@ -25,6 +25,8 @@ import { type Medication } from "@/lib/schema-types";
 import { useMutation } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TRPCClientErrorLike } from "@trpc/client";
+import { type AppRouter } from "@/lib/trpc";
 
 interface StockAdjustmentFormProps {
 	medication: Medication;
@@ -37,9 +39,11 @@ export function StockAdjustmentForm({
 	onSave,
 	onCancel,
 }: StockAdjustmentFormProps) {
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
+	// const [loading, setLoading] = useState(false);
+	// const [error, setError] = useState("");
 
+	const { mutate, isPending, error, isError } = useMutation(
+		trpc.medications.update.mutationOptions({
 			onSuccess: () => {
 				toast.success("Stock adjusted successfully!");
 				onSave();
@@ -73,27 +77,17 @@ export function StockAdjustmentForm({
 				return;
 			}
 
-			try {
-				const newQuantity = calculateNewQuantity(
-					value.adjustmentType,
-					value.adjustmentQuantity
-				);
-				if (medication.id) {
-					updateMutation.mutate({
-						id: medication.id,
-						data: {
-							quantity: newQuantity,
-						},
-					});
-				}
-				toast.success("Stock adjusted successfully!");
-				onSave();
-			} catch (err: any) {
-				const errorMessage = err.message || "Failed to adjust stock";
-				setError(errorMessage);
-				toast.error(errorMessage);
-			} finally {
-				setLoading(false);
+			const newQuantity = calculateNewQuantity(
+				value.adjustmentType,
+				value.adjustmentQuantity
+			);
+			if (medication.id) {
+				mutate({
+					id: medication.id,
+					data: {
+						quantity: newQuantity,
+					},
+				});
 			}
 		},
 	});
@@ -174,7 +168,13 @@ export function StockAdjustmentForm({
 				</CardContent>
 			</Card>
 
-			<form onSubmit={form.handleSubmit} className="space-y-6">
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					form.handleSubmit();
+				}}
+				className="space-y-6"
+			>
 				{/* Adjustment Details */}
 				<Card>
 					<CardHeader>
@@ -591,9 +591,11 @@ export function StockAdjustmentForm({
 					</CardContent>
 				</Card>
 
-				{error && (
+				{isError && (
 					<Alert variant="destructive">
-						<AlertDescription>{error}</AlertDescription>
+						<AlertDescription>
+							Couldn't adjust stock: {error.message}
+						</AlertDescription>
 					</Alert>
 				)}
 
@@ -610,6 +612,7 @@ export function StockAdjustmentForm({
 									adjustmentType: state.values.adjustmentType,
 									adjustmentQuantity:
 										state.values.adjustmentQuantity,
+									canSubmit: state.canSubmit,
 								})}
 								children={(formState) => {
 									const isValidQuantity =
@@ -623,12 +626,12 @@ export function StockAdjustmentForm({
 										<Button
 											type="submit"
 											disabled={
-												loading ||
+												!formState.canSubmit ||
 												!isValidQuantity ||
 												!isValidOperation
 											}
 										>
-											{loading
+											{isPending
 												? "Applying..."
 												: "Apply Adjustment"}
 										</Button>

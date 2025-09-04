@@ -18,7 +18,16 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, User, Calendar, Activity, Trash2 } from "lucide-react";
+import {
+	Plus,
+	Search,
+	User,
+	Calendar,
+	Activity,
+	Trash2,
+	Heart,
+	Flame,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
 	useMedicalRecordsInfinite,
@@ -163,9 +172,21 @@ function MedicalRecordsPage() {
 												}}
 											>
 												<div className="cursor-pointer hover:text-primary transition-colors">
-													Dr.{" "}
-													{record.doctor?.firstName}{" "}
-													{record.doctor?.lastName}
+													{record.doctor ? (
+														<>
+															Dr.{" "}
+															{
+																record.doctor
+																	?.firstName
+															}{" "}
+															{
+																record.doctor
+																	?.lastName
+															}
+														</>
+													) : (
+														"N/A"
+													)}
 												</div>
 											</Link>
 										</TableCell>
@@ -216,13 +237,15 @@ function MedicalRecordsPage() {
 														)?.bloodPressure ||
 															"N/A"}
 													</div>
-													<div>
+													<div className="flex items-center">
+														<Heart className="h-3 w-3 mr-1" />
 														HR:{" "}
 														{vitalSigns(
 															record.vitalSigns
-														)?.heartRate || "N/A"}
+														)?.pulse || "N/A"}
 													</div>
-													<div>
+													<div className="flex items-center">
+														<Flame className="h-3 w-3 mr-1" />
 														Temp:{" "}
 														{vitalSigns(
 															record.vitalSigns
@@ -239,7 +262,7 @@ function MedicalRecordsPage() {
 														record.id.toString(),
 												}}
 											>
-												<div className="cursor-pointer hover:text-primary transition-colors">
+												<div className="cursor-pointer hover:text-primary transition-colors truncate">
 													{record.treatment}
 												</div>
 											</Link>

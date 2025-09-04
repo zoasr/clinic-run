@@ -24,16 +24,11 @@ import {
 	Pill,
 	Trash2,
 } from "lucide-react";
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-	useInfiniteQuery,
-} from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { Medication } from "@/lib/schema-types";
 import { useDeleteMedication } from "@/hooks/useMedications";
 import { toast } from "sonner";
-import { LoadingCards, TableLoading } from "@/components/ui/loading";
+import { LoadingCards } from "@/components/ui/loading";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -61,7 +56,6 @@ export function InventoryManagement() {
 	const {
 		data,
 		isLoading: loading,
-		error,
 		refetch,
 		fetchNextPage,
 		hasNextPage,
@@ -115,7 +109,7 @@ export function InventoryManagement() {
 		return { status: "in-stock", color: "bg-green-100 text-green-800" };
 	};
 
-	const getExpiryStatus = (expiryDate: string | null) => {
+	const getExpiryStatus = (expiryDate: Date | null) => {
 		if (!expiryDate) return null;
 
 		const today = new Date();
