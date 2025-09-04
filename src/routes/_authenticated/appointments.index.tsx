@@ -68,7 +68,9 @@ const AppointmentCard = memo(
 						"Failed to update appointment status:",
 						error
 					);
-					toast.error("Failed to update appointment status");
+					toast.error(
+						`Failed to update appointment status: ${error.message}`
+					);
 				},
 			});
 
@@ -91,7 +93,9 @@ const AppointmentCard = memo(
 				},
 				onError: (error: Error) => {
 					console.error("Failed to delete appointment:", error);
-					toast.error("Failed to delete appointment");
+					toast.error(
+						`Failed to delete appointment: ${error.message}`
+					);
 				},
 			});
 

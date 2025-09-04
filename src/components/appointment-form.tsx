@@ -126,6 +126,7 @@ export function AppointmentForm({
 			},
 			onError: (error) => {
 				console.error("Failed to update appointment:", error);
+				toast.error(`Failed to update appointment: ${error.message}`);
 			},
 		})
 	);
@@ -138,7 +139,7 @@ export function AppointmentForm({
 			},
 			onError: (error: Error) => {
 				console.error("Failed to delete appointment:", error);
-				toast.error("Failed to delete appointment");
+				toast.error(`Failed to delete appointment: ${error.message}`);
 			},
 		});
 

@@ -85,7 +85,7 @@ export function PrescriptionForm({
 				toast.success("Prescription created successfully");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(error.message || "Failed to create prescription");
+				toast.error(`Failed to create prescription: ${error.message}`);
 			},
 		})
 	);

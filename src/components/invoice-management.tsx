@@ -28,11 +28,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Link } from "@tanstack/react-router";
-import {
-	useQuery,
-	useInfiniteQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
 import ErrorComponent from "./error";
 
@@ -81,7 +77,7 @@ export function InvoiceManagement() {
 		},
 		onError: (error: Error) => {
 			console.error("Failed to delete invoice:", error);
-			toast.error("Failed to delete invoice");
+			toast.error(`Failed to delete invoice: ${error.message}`);
 		},
 	});
 

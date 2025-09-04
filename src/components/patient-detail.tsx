@@ -60,7 +60,7 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 		},
 		onError: (error: Error) => {
 			console.error("Failed to delete patient:", error);
-			toast.error("Failed to delete patient");
+			toast.error(`Failed to delete patient: ${error.message}`);
 		},
 	});
 

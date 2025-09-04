@@ -59,7 +59,9 @@ export function MedicalRecordForm({
 				toast.success("Medical record created successfully");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(error.message);
+				toast.error(
+					`Failed to create medical record: ${error.message}`
+				);
 			},
 		})
 	);
@@ -71,7 +73,9 @@ export function MedicalRecordForm({
 				toast.success("Medical record updated successfully");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(error.message);
+				toast.error(
+					`Failed to update medical record: ${error.message}`
+				);
 			},
 		})
 	);
@@ -139,7 +143,6 @@ export function MedicalRecordForm({
 				} else {
 					create(recordData);
 				}
-				onSave();
 			} catch (err: any) {
 				setError(err.message || "Failed to save medical record");
 			}
@@ -602,16 +605,6 @@ export function MedicalRecordForm({
 							</Button>
 						)}
 					/>
-					{/* <Button
-						type="submit"
-						disabled={createPending || updatePending}
-					>
-						{createPending || updatePending
-							? "Saving..."
-							: record
-								? "Update Record"
-								: "Create Record"}
-					</Button> */}
 				</div>
 			</form>
 		</div>

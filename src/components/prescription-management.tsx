@@ -75,7 +75,7 @@ export function PrescriptionManagement() {
 					},
 					onError: (error) => {
 						toast.error(
-							error.message || "Failed to delete prescription"
+							`Failed to delete prescription: ${error.message}`
 						);
 					},
 				}

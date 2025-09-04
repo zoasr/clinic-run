@@ -62,7 +62,9 @@ function MedicalRecordsPage() {
 			},
 			onError: (error: Error) => {
 				console.error("Failed to delete medical record:", error);
-				toast.error("Failed to delete medical record");
+				toast.error(
+					`Failed to delete medical record: ${error.message}`
+				);
 			},
 		});
 

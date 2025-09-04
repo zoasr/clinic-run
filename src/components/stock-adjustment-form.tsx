@@ -40,8 +40,17 @@ export function StockAdjustmentForm({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	const updateMutation = useMutation(
-		trpc.medications.update.mutationOptions()
+			onSuccess: () => {
+				toast.success("Stock adjusted successfully!");
+				onSave();
+			},
+			onError: (error: TRPCClientErrorLike<AppRouter>) => {
+				toast.error(
+					`Failed to adjust stock: ${error.message}` ||
+						"Failed to adjust stock"
+				);
+			},
+		})
 	);
 
 	const form = useForm({
@@ -51,12 +60,8 @@ export function StockAdjustmentForm({
 			reason: "",
 		},
 		onSubmit: async ({ value }) => {
-			setLoading(true);
-			setError("");
-
 			if (value.adjustmentQuantity < 0) {
-				setError("Adjustment quantity cannot be negative");
-				setLoading(false);
+				toast.error("Adjustment quantity cannot be negative");
 				return;
 			}
 
@@ -64,8 +69,7 @@ export function StockAdjustmentForm({
 				value.adjustmentType === "remove" &&
 				value.adjustmentQuantity > (medication.quantity ?? 0)
 			) {
-				setError("Cannot remove more than current stock");
-				setLoading(false);
+				toast.error("Cannot remove more than current stock");
 				return;
 			}
 

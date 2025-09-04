@@ -41,7 +41,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { LoadingCards, TableLoading } from "@/components/ui/loading";
+import { LoadingCards } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/_authenticated/lab-tests/")({
 	loader: () => ({
@@ -58,7 +58,6 @@ export function LabTestManagement() {
 	const {
 		data,
 		isLoading: loading,
-		error,
 		refetch,
 		fetchNextPage,
 		hasNextPage,
@@ -87,7 +86,7 @@ export function LabTestManagement() {
 		},
 		onError: (error: Error) => {
 			console.error("Failed to delete lab test:", error);
-			toast.error("Failed to delete lab test");
+			toast.error(`Failed to delete lab test: ${error.message}`);
 		},
 	});
 

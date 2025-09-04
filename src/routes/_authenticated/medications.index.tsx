@@ -96,7 +96,7 @@ export function InventoryManagement() {
 			},
 			onError: (error: Error) => {
 				console.error("Failed to delete medication:", error);
-				toast.error("Failed to delete medication");
+				toast.error(`Failed to delete medication: ${error.message}`);
 			},
 		});
 
