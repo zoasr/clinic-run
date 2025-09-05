@@ -82,7 +82,7 @@ export default function SearchMedicationsDialog({
 						<span className="font-semibold">{medication.name}</span>
 					</Button>
 				) : (
-					<Button type="button">Select Patient</Button>
+					<Button type="button">Select Medication</Button>
 				)}
 			</DialogTrigger>
 			<DialogContent>
