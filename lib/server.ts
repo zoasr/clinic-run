@@ -8,6 +8,7 @@ import { auth } from "./auth.js";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./index.js";
 import { createContext } from "./trpc.js";
+import path from "node:path";
 
 const app = new Hono();
 const PORT = Number(process.env["BACKEND_PORT"]) || 3031;
@@ -41,7 +42,7 @@ app.use("*", async (c, next) => {
 });
 
 // Auth routes
-app.on(["POST", "GET"], "/api/auth/**", (c) => {
+app.on(["POST", "GET"], "/api/auth/*", (c) => {
 	return auth.handler(c.req.raw);
 });
 
@@ -69,12 +70,17 @@ app.all("/api/trpc/*", async (c) => {
 });
 
 // Serve static files
-app.use("/static/*", serveStatic({ root: "./dist" }));
-app.use(
+const exeDir = process.cwd();
+const root =
+	process.env.NODE_ENV === "production" ? exeDir : path.join(exeDir, "dist");
+
+app.get("/assets/*", serveStatic({ root: root }));
+app.get("/:file{.+\.(ico|png|jpg|jpeg|svg)}", serveStatic({ root: root }));
+app.get(
 	"/*",
 	serveStatic({
-		root: process.env.NODE_ENV === "production" ? "." : "./dist",
-		rewriteRequestPath: (path) => (path === "/" ? "/index.html" : path),
+		root: root,
+		rewriteRequestPath: () => "/index.html",
 	})
 );
 
