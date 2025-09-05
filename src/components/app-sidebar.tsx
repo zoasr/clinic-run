@@ -14,11 +14,23 @@ import {
 	TestTube,
 	Shield,
 	Activity,
+	ChevronUp,
+	ChevronDown,
+	ChevronsUpDown,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	Sidebar,
 	SidebarContent,
@@ -29,10 +41,12 @@ import {
 	SidebarMenuItem,
 	SidebarHeader,
 	SidebarFooter,
+	SidebarRail,
+	SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "@tanstack/react-router";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { cva } from "class-variance-authority";
 
 const navItems = [
@@ -161,21 +175,25 @@ const NavItem = memo(
 
 		return (
 			<SidebarMenuItem key={item.href}>
-				<Link
-					to={item.href}
-					className={navItemVariants({ variant })}
-					title={item.title}
-				>
-					<Icon className={navItemIconVariants({ variant })} />
-					<span className="group-[&.active]:font-bold">
-						{item.name}
-					</span>
-					<div
-						className={`ml-auto h-1.5 w-1.5 rounded-full animate-pulse group-[&.active]:block hidden ${
-							variant === "admin" ? "bg-orange-500" : "bg-primary"
-						}`}
-					/>
-				</Link>
+				<SidebarMenuButton asChild key={item.href}>
+					<Link
+						to={item.href}
+						className={navItemVariants({ variant })}
+						title={item.title}
+					>
+						<Icon className={navItemIconVariants({ variant })} />
+						<span className="group-[&.active]:font-bold">
+							{item.name}
+						</span>
+						<div
+							className={`ml-auto h-1.5 w-1.5 rounded-full animate-pulse group-[&.active]:block hidden ${
+								variant === "admin"
+									? "bg-orange-500"
+									: "bg-primary"
+							}`}
+						/>
+					</Link>
+				</SidebarMenuButton>
 			</SidebarMenuItem>
 		);
 	}
@@ -185,6 +203,7 @@ export const AppSidebar = memo(
 		const navigate = useNavigate();
 		const { user, logout } = useAuth();
 		const { clinicInfo } = useLoaderData({ from: "/_authenticated" });
+		const [isFooterOpen, setIsFooterOpen] = useState(true);
 
 		const isAdmin = user?.role === "admin";
 		const isDoctor = user?.role === "doctor";
@@ -202,48 +221,35 @@ export const AppSidebar = memo(
 
 		const publicNavItemsEls = useMemo(() => {
 			return publicNavItems.map((item) => (
-				<NavItem
-					key={item.href}
-					item={item}
-					// active={isActive(matches, item.href)}
-					variant="public"
-				/>
+				<NavItem key={item.href} item={item} variant="public" />
 			));
 		}, [publicNavItems]);
 
 		const adminNavItemsEls = useMemo(() => {
 			return adminNavItems.map((item) => (
-				<NavItem
-					key={item.href}
-					item={item}
-					// active={isActive(matches, item.href)}
-					variant="admin"
-				/>
+				<NavItem key={item.href} item={item} variant="admin" />
 			));
 		}, [adminNavItems]);
 
 		return (
-			<Sidebar
-				{...props}
-				className="border-r-2 border-gradient-to-b from-primary/20 to-transparent"
-			>
-				<SidebarHeader className="border-b border-border/50 bg-gradient-to-r from-primary/10 to-secondary/10 p-6">
-					<div className="flex items-center gap-3">
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-							<Activity className="h-6 w-6 text-primary" />
-						</div>
-						<div>
-							<h2 className="text-lg font-semibold text-foreground">
-								{clinicInfo.name}
-							</h2>
-							<p className="text-xs text-muted-foreground">
-								Medical Management
-							</p>
-						</div>
-					</div>
+			<Sidebar {...props} collapsible="icon">
+				<SidebarHeader className="items-center justify-center border-b border-border/50 bg-gradient-to-r from-primary/10 to-secondary/10  h-16 transition-[padding]">
+					<SidebarMenuButton size="lg" className="!bg-transparent">
+						<Link to="/" className="flex items-center gap-3 h-full">
+							<Activity className="text-sidebar-primary flex aspect-square size-8 items-center justify-center" />
+							<div className="">
+								<h2 className="text-lg font-semibold text-foreground">
+									{clinicInfo.name}
+								</h2>
+								<p className="text-xs text-muted-foreground">
+									Medical Management
+								</p>
+							</div>
+						</Link>
+					</SidebarMenuButton>
 				</SidebarHeader>
 
-				<SidebarContent className="px-3 py-4">
+				<SidebarContent className="">
 					{/* Main Navigation */}
 					<SidebarGroup>
 						<SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -278,91 +284,129 @@ export const AppSidebar = memo(
 					)}
 				</SidebarContent>
 
-				{/* User Profile Section */}
-				<SidebarFooter className="border-t border-border/50 bg-gradient-to-r from-muted/30 to-muted/10 p-4">
-					<div className="flex items-center gap-3 mb-4">
-						<Avatar className="h-10 w-10 ring-2 ring-primary/20">
-							<AvatarFallback className="bg-primary/10 text-primary font-semibold">
-								{user?.name
-									.split(" ")
-									.map((n) => n[0])
-									.join("")}
-							</AvatarFallback>
-						</Avatar>
-						<div className="flex-1 min-w-0">
-							<p className="font-medium text-sm truncate">
-								{user?.name}
-							</p>
-							<div className="flex items-center gap-2">
-								<Badge
-									variant={
-										isAdmin
-											? "default"
-											: isDoctor
-												? "secondary"
-												: "outline"
-									}
-									className={`text-xs ${
-										isAdmin
-											? "bg-orange-100 text-orange-700 hover:bg-orange-200"
-											: isDoctor
-												? "bg-blue-100 text-blue-700"
-												: "bg-gray-100 text-gray-700"
-									}`}
+				<SidebarFooter>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<SidebarMenuButton
+										size="lg"
+										className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:p-0"
+									>
+										<Avatar className="size-8 rounded-full text-primary ">
+											<AvatarImage
+												src={
+													user?.image
+														? user.image
+														: ""
+												}
+												alt={user?.name}
+											/>
+											<AvatarFallback className="rounded-lg bg-primary/20">
+												{user?.name
+													?.split(" ")
+													.map((n) => n[0])
+													.join("")
+													.toUpperCase()}
+											</AvatarFallback>
+										</Avatar>
+										<div className="grid flex-1 text-left text-sm leading-tight">
+											<span className="truncate font-semibold">
+												{user?.name}
+											</span>
+											<span className="truncate text-xs">
+												{user?.email}{" "}
+												<Badge
+													variant={
+														user?.role as
+															| "admin"
+															| "doctor"
+															| "staff"
+													}
+												>
+													{user?.role}
+												</Badge>
+											</span>
+										</div>
+										<ChevronsUpDown className="ml-auto size-4" />
+									</SidebarMenuButton>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+									side="bottom"
+									align="end"
+									sideOffset={4}
 								>
-									{user?.role || "staff"}
-								</Badge>
-							</div>
-						</div>
-					</div>
-
-					{/* Bottom Navigation */}
-					<div className="flex items-center justify-between">
-						<Button
-							variant="ghost"
-							size="sm"
-							className="flex-1 justify-start gap-2 h-9 rounded-lg hover:bg-accent/50"
-							asChild
-						>
-							<Link to="/profile" title="Profile">
-								<User className="h-4 w-4" />
-								<span className="text-sm">Profile</span>
-							</Link>
-						</Button>
-
-						{isAdmin && (
-							<Button
-								variant="ghost"
-								size="sm"
-								className="flex-1 justify-start gap-2 h-9 rounded-lg hover:bg-accent/50"
-								asChild
-							>
-								<Link to="/settings" title="Settings">
-									<Settings className="h-4 w-4" />
-									<span className="text-sm">Settings</span>
-								</Link>
-							</Button>
-						)}
-
-						<Button
-							variant="ghost"
-							size="sm"
-							className="justify-center h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive"
-							onClick={() => {
-								logout();
-								navigate({
-									to: "/login",
-									search: {
-										redirect: location.pathname,
-									},
-								});
-							}}
-							title="Logout"
-						>
-							<LogOut className="h-4 w-4" />
-						</Button>
-					</div>
+									<DropdownMenuLabel className="p-0 font-normal">
+										<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+											<Avatar className="size-8 rounded-full text-primary ">
+												<AvatarImage
+													src={
+														user?.image
+															? user.image
+															: ""
+													}
+													alt={user?.name}
+												/>
+												<AvatarFallback className="rounded-lg bg-primary/20">
+													{user?.name
+														?.split(" ")
+														.map((n) => n[0])
+														.join("")
+														.toUpperCase()}
+												</AvatarFallback>
+											</Avatar>
+											<div className="grid flex-1 text-left text-sm leading-tight">
+												<span className="truncate font-semibold">
+													{user?.name}
+												</span>
+												<span className="truncate text-xs">
+													{user?.email}
+												</span>
+											</div>
+										</div>
+									</DropdownMenuLabel>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<Link to="/profile">
+											<User className="size-4" />
+											Profile
+										</Link>
+									</DropdownMenuItem>
+									{isAdmin && (
+										<DropdownMenuItem asChild>
+											<Link to="/settings">
+												<Settings className="size-4" />
+												Settings
+											</Link>
+										</DropdownMenuItem>
+									)}
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<Button
+											onClick={() => {
+												logout();
+												navigate({
+													to: "/login",
+													search: {
+														redirect:
+															location.pathname,
+													},
+												});
+											}}
+											variant="destructive"
+											className="w-full"
+										>
+											<LogOut className="size-4 text-white" />
+											Log out
+										</Button>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</SidebarMenuItem>
+					</SidebarMenu>
 				</SidebarFooter>
+				<SidebarRail />
 			</Sidebar>
 		);
 	}

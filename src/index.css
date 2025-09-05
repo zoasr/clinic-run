@@ -76,6 +76,8 @@
 		sans-serif;
 	--font-serif: "Playfair Display Variable", serif;
 	--font-mono: "IBM Plex Mono", monospace;
+
+	--ease-spring: cubic-bezier(0.66, 0, 0.34, 1);
 }
 
 :root {
