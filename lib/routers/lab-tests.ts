@@ -213,7 +213,11 @@ export const labTestsRouter = router({
 		.mutation(async ({ input, ctx }) => {
 			const newLabTest = await ctx.db
 				.insert(schema.labTests)
-				.values(input)
+				.values({
+					...input,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				})
 				.returning();
 
 			return newLabTest[0];

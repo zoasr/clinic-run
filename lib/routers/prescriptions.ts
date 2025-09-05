@@ -246,7 +246,11 @@ export const prescriptionsRouter = router({
 		.mutation(async ({ input, ctx }) => {
 			const newPrescription = await ctx.db
 				.insert(schema.prescriptions)
-				.values(input)
+				.values({
+					...input,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				})
 				.returning();
 
 			return newPrescription[0];

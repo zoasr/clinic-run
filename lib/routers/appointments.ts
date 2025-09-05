@@ -256,7 +256,11 @@ export const appointmentsRouter = router({
 		.mutation(async ({ input, ctx }) => {
 			const newAppointment = await ctx.db
 				.insert(schema.appointments)
-				.values(input)
+				.values({
+					...input,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				})
 				.returning();
 
 			return newAppointment[0];

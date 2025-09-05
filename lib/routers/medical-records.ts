@@ -222,7 +222,11 @@ export const medicalRecordsRouter = router({
 		.mutation(async ({ input, ctx }) => {
 			const newRecord = await ctx.db
 				.insert(schema.medicalRecords)
-				.values(input)
+				.values({
+					...input,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				})
 				.returning();
 
 			return newRecord[0];

@@ -63,6 +63,8 @@ export const systemSettingsRouter = router({
 					category: input.category,
 					isPublic: input.isPublic || false,
 					updatedBy: ctx.user.id,
+					createdAt: new Date(),
+					updatedAt: new Date(),
 				})
 				.returning();
 
@@ -218,6 +220,8 @@ export const systemSettingsRouter = router({
 					.values({
 						...setting,
 						updatedBy: ctx.user.id,
+						createdAt: new Date(),
+						updatedAt: new Date(),
 					})
 					.returning();
 				results.push(newSetting[0]);

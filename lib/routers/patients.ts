@@ -99,6 +99,8 @@ export const patientsRouter = router({
 				.values({
 					...input,
 					patientId,
+					createdAt: new Date(),
+					updatedAt: new Date(),
 				})
 				.returning();
 

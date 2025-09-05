@@ -187,6 +187,8 @@ export const invoicesRouter = router({
 				.values({
 					...input,
 					invoiceNumber,
+					createdAt: new Date(),
+					updatedAt: new Date(),
 				})
 				.returning();
 
