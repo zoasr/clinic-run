@@ -1,20 +1,21 @@
 import { db as testDb } from "./index";
 import * as schema from "./schema/schema";
+import * as authSchema from "./schema/auth-schema";
 import { faker } from "@faker-js/faker";
 import { auth } from "../auth";
+import { eq } from "drizzle-orm";
 
 // Configuration for data generation
 const CONFIG = {
 	patients: 3000, // 3k patients
 	doctors: 30, // 30 doctors
 	admins: 10, // 10 admins
-	receptionists: 25, // 25 receptionists
-	appointments: 5000, // 50k appointments
-	medicalRecords: 3000, // 30k medical records
+	appointments: 5000, // 5k appointments
+	medicalRecords: 3000, // 3k medical records
 	medications: 1000, // 1k medications
-	prescriptions: 2500, // 25k prescriptions
-	invoices: 2000, // 20k invoices
-	labTests: 1500, // 15k lab tests
+	prescriptions: 2500, // 2.5k prescriptions
+	invoices: 2000, // 2k invoices
+	labTests: 1500, // 1.5k lab tests
 };
 
 // Utility functions for generating fake data
@@ -270,16 +271,17 @@ export async function seedPerformanceData() {
 		console.log(`📊 Creating ${CONFIG.appointments} appointments...`);
 		const appointments = [];
 
+		const doctors = await testDb
+			.select()
+			.from(authSchema.user)
+			.where(eq(authSchema.user.role, "doctor"));
 		for (let i = 0; i < CONFIG.appointments; i++) {
 			const patientId = faker.number.int({
 				min: 1,
 				max: CONFIG.patients,
 			});
-			const doctorIndex = faker.number.int({
-				min: 0,
-				max: CONFIG.doctors - 1,
-			});
-			const doctorId = `doctor-${doctorIndex + 1}`;
+			const doctor = faker.helpers.arrayElement(doctors);
+			const doctorId = doctor.id;
 
 			appointments.push({
 				patientId,
@@ -333,11 +335,8 @@ export async function seedPerformanceData() {
 				min: 1,
 				max: CONFIG.patients,
 			});
-			const doctorIndex = faker.number.int({
-				min: 0,
-				max: CONFIG.doctors - 1,
-			});
-			const doctorId = `doctor-${doctorIndex + 1}`;
+			const doctor = faker.helpers.arrayElement(doctors);
+			const doctorId = doctor.id;
 			const appointmentId = faker.helpers.maybe(
 				() => faker.number.int({ min: 1, max: CONFIG.appointments }),
 				{ probability: 0.7 }
@@ -388,11 +387,8 @@ export async function seedPerformanceData() {
 				min: 1,
 				max: CONFIG.patients,
 			});
-			const doctorIndex = faker.number.int({
-				min: 0,
-				max: CONFIG.doctors - 1,
-			});
-			const doctorId = `doctor-${doctorIndex + 1}`;
+			const doctor = faker.helpers.arrayElement(doctors);
+			const doctorId = doctor.id;
 			const medicationId = faker.number.int({
 				min: 1,
 				max: CONFIG.medications,
@@ -492,10 +488,8 @@ export async function seedPerformanceData() {
 				min: 1,
 				max: CONFIG.patients,
 			});
-			const doctorIndex = faker.number.int({
-				min: 0,
-				max: CONFIG.doctors - 1,
-			});
+			const doctor = faker.helpers.arrayElement(doctors);
+			const doctorIndex = doctors.indexOf(doctor);
 			const doctorId = `doctor-${doctorIndex + 1}`;
 
 			labTests.push({
@@ -559,20 +553,6 @@ export async function seedPerformanceData() {
 				category: "clinic",
 				isPublic: true,
 			},
-			{
-				key: "max_appointments_per_day",
-				value: "50",
-				description: "Maximum appointments per day",
-				category: "clinic",
-				isPublic: false,
-			},
-			{
-				key: "notification_email",
-				value: "admin@clinic.local",
-				description: "Email for notifications",
-				category: "notifications",
-				isPublic: false,
-			},
 		]);
 		console.log("✅ Created system settings");
 
@@ -590,10 +570,6 @@ export async function seedPerformanceData() {
 		console.log("\n🔐 Test Login Credentials:");
 		console.log("   Admin: admin@clinic.local / admin123");
 		console.log("   Doctors: [username]@clinic.local / doctor123");
-		console.log("   Nurses: [username]@clinic.local / nurse123");
-		console.log(
-			"   Receptionists: [username]@clinic.local / receptionist123"
-		);
 	} catch (error) {
 		console.error("❌ Failed to seed performance data:", error);
 		throw error;
