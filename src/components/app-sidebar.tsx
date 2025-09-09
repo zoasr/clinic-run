@@ -241,9 +241,6 @@ export const AppSidebar = memo(
 								<h2 className="text-lg font-semibold text-foreground">
 									{clinicInfo.name}
 								</h2>
-								<p className="text-xs text-muted-foreground">
-									Medical Management
-								</p>
 							</div>
 						</Link>
 					</SidebarMenuButton>
