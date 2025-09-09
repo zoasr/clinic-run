@@ -16,6 +16,7 @@ export function useAppointments(params: AppointmentListParams) {
 				cursor: params.cursor,
 				limit: params.limit,
 				status: params.status,
+				search: params.search,
 			},
 			{
 				getNextPageParam: (lastPage) =>

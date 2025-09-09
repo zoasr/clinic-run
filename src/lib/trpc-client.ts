@@ -50,6 +50,10 @@ export const queryKeys = {
 		all: () => trpc.medications.getAll.queryKey(),
 		getById: (id: number) => trpc.medications.getById.queryKey({ id }),
 	},
+	prescriptions: {
+		all: () => trpc.prescriptions.getAll.queryKey(),
+		getById: () => trpc.prescriptions.getById.queryKey(),
+	},
 	invoices: {
 		all: () => trpc.invoices.getAll.queryKey(),
 		getById: (id: number) => trpc.invoices.getById.queryKey({ id }),
