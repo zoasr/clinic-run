@@ -65,7 +65,7 @@ function PatientManagement() {
 
 			{/* Search */}
 			<Card>
-				<CardContent className="pt-6">
+				<CardContent>
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
 						<Input
@@ -117,9 +117,9 @@ function PatientManagement() {
 						!!patient ? (
 							<Card
 								key={patient.id}
-								className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-border/50 hover:border-primary/20"
+								className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20"
 							>
-								<CardContent className="p-6">
+								<CardContent className=" flex flex-col justify-between items-start gap-4 h-full *:w-full">
 									<div className="flex items-start justify-between mb-4">
 										<Link
 											className="flex items-center gap-3 flex-1"
@@ -143,20 +143,6 @@ function PatientManagement() {
 													ID: {patient.patientId}
 												</p>
 											</div>
-										</Link>
-										<Link
-											to="/patients/$patientId"
-											params={{
-												patientId: `${patient.id}`,
-											}}
-										>
-											<Button
-												variant="ghost"
-												size="sm"
-												className="opacity-20 group-hover:opacity-100 transition-all"
-											>
-												View
-											</Button>
 										</Link>
 									</div>
 
@@ -221,6 +207,16 @@ function PatientManagement() {
 											</div>
 										)}
 									</div>
+									<Link
+										to="/patients/$patientId"
+										params={{
+											patientId: `${patient.id}`,
+										}}
+									>
+										<Button size="sm" className="w-full">
+											View
+										</Button>
+									</Link>
 								</CardContent>
 							</Card>
 						) : null

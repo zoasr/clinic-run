@@ -25,7 +25,7 @@ import {
 	Clock,
 	XCircle,
 } from "lucide-react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { LabTest } from "@/lib/schema-types";
 import { useDeleteLabTest } from "@/hooks/useLabTests";
 import { toast } from "sonner";
@@ -248,7 +248,7 @@ export function LabTestManagement() {
 
 			{/* Filters */}
 			<Card>
-				<CardContent className="pt-6">
+				<CardContent>
 					<div className="flex flex-col sm:flex-row gap-4">
 						<div className="relative flex-1">
 							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -332,15 +332,15 @@ export function LabTestManagement() {
 									return (
 										<Card
 											key={labTest.id}
-											className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-border/50 hover:border-primary/20 ${
+											className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20 ${
 												isUrgent
-													? "opacity-75 bg-red-50/30 dark:bg-red-950/10"
+													? " bg-red-100/30 dark:bg-red-800/10"
 													: isPending
-														? "bg-orange-50/30 dark:bg-orange-950/10"
+														? "bg-orange-100/30 dark:bg-orange-800/10"
 														: ""
 											}`}
 										>
-											<CardContent className="p-6">
+											<CardContent className="flex flex-col items-center justify-between h-full *:w-full">
 												{/* Header */}
 												<div className="flex items-start justify-between mb-4">
 													<div className="flex items-center gap-3 flex-1">
@@ -508,9 +508,8 @@ export function LabTestManagement() {
 														className="flex-1"
 													>
 														<Button
-															variant="ghost"
 															size="sm"
-															className="w-full opacity-20 group-hover:opacity-100 transition-all"
+															className="w-full transition-all"
 														>
 															View Details
 														</Button>
@@ -524,8 +523,7 @@ export function LabTestManagement() {
 													>
 														<Button
 															variant="outline"
-															size="sm"
-															className="opacity-20 group-hover:opacity-100 transition-all"
+															className="transition-all"
 														>
 															Edit Test
 														</Button>
@@ -535,9 +533,8 @@ export function LabTestManagement() {
 															asChild
 														>
 															<Button
-																variant="outline"
+																variant="destructive"
 																size="sm"
-																className="opacity-20 group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
 																disabled={
 																	isDeleting
 																}
@@ -714,7 +711,7 @@ export function LabTestManagement() {
 							<Card>
 								<CardContent className="p-6">
 									<div className="flex items-center gap-3 mb-4">
-										<Clock className="h-6 w-6 text-blue-500" />
+										<Clock className="h-6 w-6 text-primary" />
 										<div>
 											<h3 className="font-semibold text-foreground">
 												Tests In Progress
@@ -735,7 +732,7 @@ export function LabTestManagement() {
 											.map((labTest) => (
 												<div
 													key={labTest.id}
-													className="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
+													className="flex items-center justify-between p-3 bg-blue-500/20 border rounded-lg"
 												>
 													<div>
 														<p className="font-medium">

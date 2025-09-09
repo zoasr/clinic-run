@@ -19,7 +19,7 @@ import {
 	Edit,
 } from "lucide-react";
 import { toast } from "sonner";
-import { trpc } from "@/lib/trpc-client";
+import { queryKeys, trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import type { Prescription } from "@/hooks/usePrescriptions";
@@ -42,13 +42,28 @@ export function PrescriptionDetail({
 		trpc.prescriptions.dispense.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
-					queryKey: ["prescriptions"],
+					queryKey: queryKeys.prescriptions.getById(),
 					refetchType: "active",
 				});
 				toast.success("Prescription marked as dispensed");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(`Failed to mark as dispensed: ${error.message}`);
+			},
+		})
+	);
+
+	const indespenseMutation = useMutation(
+		trpc.prescriptions.inDispense.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.prescriptions.getById(),
+					refetchType: "active",
+				});
+				toast.success("Prescription marked as pending");
+			},
+			onError: (error: TRPCClientErrorLike<AppRouter>) => {
+				toast.error(`Failed to mark as pending: ${error.message}`);
 			},
 		})
 	);
@@ -82,15 +97,6 @@ export function PrescriptionDetail({
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back
 					</Button>
-					<div>
-						<h1 className="text-2xl font-display font-bold text-foreground">
-							Prescription Details
-						</h1>
-						<p className="text-muted-foreground">
-							Prescription for {prescription.patient?.firstName}{" "}
-							{prescription.patient?.lastName}
-						</p>
-					</div>
 				</div>
 
 				<div className="flex items-center gap-2">
@@ -103,7 +109,7 @@ export function PrescriptionDetail({
 						Edit
 					</Button>
 
-					{!prescription.isDispensed && (
+					{!prescription.isDispensed ? (
 						<Button
 							onClick={handleDispense}
 							disabled={dispenseMutation.isPending}
@@ -114,13 +120,34 @@ export function PrescriptionDetail({
 								? "Dispensing..."
 								: "Mark as Dispensed"}
 						</Button>
+					) : (
+						<Button
+							onClick={() =>
+								indespenseMutation.mutate({
+									id: prescription.id,
+								})
+							}
+							disabled={indespenseMutation.isPending}
+						>
+							<CheckCircle className="h-4 w-4" />
+							Mark as Pending
+						</Button>
 					)}
 				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-display font-bold text-foreground">
+					Prescription Details
+				</h1>
+				<p className="text-muted-foreground">
+					Prescription for {prescription.patient?.firstName}{" "}
+					{prescription.patient?.lastName}
+				</p>
 			</div>
 
 			{/* Status Banner */}
 			<Card>
-				<CardContent className="pt-6">
+				<CardContent>
 					<div className="flex items-center gap-3">
 						<StatusIcon className="h-6 w-6 text-muted-foreground" />
 						<div>

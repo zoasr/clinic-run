@@ -25,6 +25,7 @@ import ErrorComponent from "./error";
 import { LoadingCards } from "./ui/loading";
 import { trpc } from "@/lib/trpc-client";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 export function PrescriptionManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -110,7 +111,7 @@ export function PrescriptionManagement() {
 
 			{/* Search */}
 			<Card>
-				<CardContent className="pt-6">
+				<CardContent>
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
 						<Input
@@ -161,13 +162,15 @@ export function PrescriptionManagement() {
 						return (
 							<Card
 								key={prescription.id}
-								className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-border/50 hover:border-primary/20 ${
+								className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20 ${
 									isPending
-										? "bg-orange-50/30 dark:bg-orange-950/10"
-										: "bg-green-50/30 dark:bg-green-950/10"
-								}`}
+										? "bg-orange-100/30 dark:bg-orange-800/10"
+										: "bg-green-100/30 dark:bg-green-800/10"
+								} ${cn({
+									"bg-green-100/30": isDispensed,
+								})}`}
 							>
-								<CardContent className="p-6">
+								<CardContent className="flex flex-col items-center justify-between h-full *:w-full">
 									{/* Header */}
 									<div className="flex items-start justify-between mb-4">
 										<Link
@@ -314,11 +317,11 @@ export function PrescriptionManagement() {
 												prescriptionId:
 													prescription.id.toString(),
 											}}
+											className="flex-1"
 										>
 											<Button
-												variant="ghost"
 												size="sm"
-												className="flex-1 opacity-20 group-hover:opacity-100 transition-all"
+												className="w-full transition-all"
 											>
 												View Details
 											</Button>
@@ -332,16 +335,15 @@ export function PrescriptionManagement() {
 										>
 											<Button
 												variant="outline"
-												size="sm"
-												className="opacity-20 group-hover:opacity-100 transition-all"
+												className="transition-all"
 											>
 												Edit
 											</Button>
 										</Link>
 										<Button
-											variant="outline"
+											variant="destructive"
 											size="sm"
-											className="opacity-20 group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
+											className="transition-all"
 											onClick={(e) => {
 												e.stopPropagation();
 												handleDeletePrescription(

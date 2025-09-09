@@ -95,14 +95,6 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back to Patients
 					</Button>
-					<div>
-						<h1 className="text-2xl font-serif font-bold text-foreground">
-							{patient.firstName} {patient.lastName}
-						</h1>
-						<p className="text-muted-foreground">
-							Patient ID: {patient.patientId}
-						</p>
-					</div>
 				</div>
 				<div className="flex items-center gap-2">
 					<Link
@@ -150,6 +142,15 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 						</AlertDialogContent>
 					</AlertDialog>
 				</div>
+			</div>
+
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{patient.firstName} {patient.lastName}
+				</h1>
+				<p className="text-muted-foreground">
+					Patient ID: {patient.patientId}
+				</p>
 			</div>
 
 			{/* Patient Overview */}

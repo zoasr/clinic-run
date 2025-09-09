@@ -140,7 +140,7 @@ export function InvoiceManagement() {
 
 			{/* Search */}
 			<Card>
-				<CardContent className="pt-6">
+				<CardContent>
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
 						<Input
@@ -197,15 +197,15 @@ export function InvoiceManagement() {
 									key={invoice.id}
 									className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-border/50 hover:border-primary/20 ${
 										isOverdue
-											? "opacity-75 bg-red-50/30 dark:bg-red-950/10"
+											? "bg-red-50/30 dark:bg-red-800/10"
 											: isPending
-												? "bg-yellow-50/30 dark:bg-yellow-950/10"
+												? "bg-yellow-50/30 dark:bg-yellow-800/10"
 												: hasOutstanding
-													? "bg-orange-50/30 dark:bg-orange-950/10"
+													? "bg-orange-100/30 dark:bg-orange-800/10"
 													: ""
 									}`}
 								>
-									<CardContent className="p-6 grid">
+									<CardContent className="flex flex-col items-center justify-between h-full *:w-full">
 										{/* Header */}
 										<div className="flex items-start justify-between mb-4">
 											<div className="flex items-center gap-3 flex-1">
@@ -359,12 +359,9 @@ export function InvoiceManagement() {
 													invoiceId:
 														invoice.id.toString(),
 												}}
+												className="flex-1"
 											>
-												<Button
-													variant="ghost"
-													size="sm"
-													className="opacity-20 group-hover:opacity-100 transition-all"
-												>
+												<Button className="transition-all w-full">
 													View Details
 												</Button>
 											</Link>
@@ -377,8 +374,7 @@ export function InvoiceManagement() {
 											>
 												<Button
 													variant="outline"
-													size="sm"
-													className="opacity-20 group-hover:opacity-100 transition-all"
+													className="transition-all"
 												>
 													Edit Invoice
 												</Button>
@@ -386,9 +382,8 @@ export function InvoiceManagement() {
 											<AlertDialog>
 												<AlertDialogTrigger asChild>
 													<Button
-														variant="outline"
+														variant="destructive"
 														size="sm"
-														className="opacity-20 group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
 														disabled={isDeleting}
 														onClick={(e) =>
 															e.stopPropagation()

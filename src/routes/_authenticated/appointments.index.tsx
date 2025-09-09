@@ -37,6 +37,7 @@ import {
 import { LoadingCards } from "@/components/ui/loading";
 import LoadMore from "@/components/load-more";
 import ErrorComponent from "@/components/error";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/appointments/")({
 	component: AppointmentManagement,
@@ -147,9 +148,9 @@ const AppointmentCard = memo(
 				key={appointment.id}
 				className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20 ${
 					isToday ? "ring-2 ring-primary/20 bg-primary/5" : ""
-				} ${isPast && appointment.status === "scheduled" ? "opacity-75" : ""}`}
+				}`}
 			>
-				<CardContent className="p-6">
+				<CardContent className=" flex flex-col items-center justify-between *:w-full">
 					{/* Header with Patient Info */}
 					<div className="flex items-start justify-between mb-4">
 						<div className="flex items-center gap-3 flex-1">
@@ -268,29 +269,27 @@ const AppointmentCard = memo(
 					</div>
 
 					{/* Actions */}
-					<div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50">
-						<div className="flex items-center gap-2">
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => {
-									navigate({
-										to: `/appointments/$appointmentId`,
-										params: {
-											appointmentId: `${appointment.id}`,
-										},
-									});
+					<div className="flex items-center justify-between gap-2 pt-4 mt-4 border-t border-border/50">
+						<div className="flex items-center gap-2 flex-1">
+							<Link
+								to="/appointments/$appointmentId"
+								params={{
+									appointmentId: `${appointment.id}`,
 								}}
-								className="opacity-20 cursor-pointer group-hover:opacity-100 transition-all"
+								className="flex-1"
 							>
-								View Details
-							</Button>
+								<Button
+									size="sm"
+									className="transition-all w-full"
+								>
+									View Details
+								</Button>
+							</Link>
 							<AlertDialog>
 								<AlertDialogTrigger asChild>
 									<Button
-										variant="ghost"
+										variant="destructive"
 										size="sm"
-										className="opacity-20 cursor-pointer group-hover:opacity-100 transition-all text-red-600 hover:text-red-700 hover:bg-red-50"
 										disabled={isDeleting}
 									>
 										<Trash2 className="h-4 w-4" />
@@ -311,15 +310,15 @@ const AppointmentCard = memo(
 										<AlertDialogCancel>
 											Cancel
 										</AlertDialogCancel>
-										<AlertDialogAction
-											onClick={() =>
-												handleDeleteAppointment(
-													appointment.id
-												)
-											}
-											asChild
-										>
-											<Button variant="destructive">
+										<AlertDialogAction asChild>
+											<Button
+												onClick={() =>
+													handleDeleteAppointment(
+														appointment.id
+													)
+												}
+												variant={"destructive"}
+											>
 												Delete
 											</Button>
 										</AlertDialogAction>
@@ -429,7 +428,7 @@ export function AppointmentManagement() {
 
 			{/* Filters */}
 			<Card>
-				<CardContent className="pt-6">
+				<CardContent>
 					<div className="flex flex-col sm:flex-row gap-4">
 						<div className="relative flex-1">
 							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -437,14 +436,14 @@ export function AppointmentManagement() {
 								placeholder="Search by patient name or ID..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
-								className="pl-10"
+								className="pl-10 w-full"
 							/>
 						</div>
 						<Select
 							value={statusFilter}
 							onValueChange={setStatusFilter}
 						>
-							<SelectTrigger className="w-full sm:w-48">
+							<SelectTrigger className="flex-1 sm:w-48">
 								<SelectValue placeholder="Filter by status" />
 							</SelectTrigger>
 							<SelectContent>
@@ -471,7 +470,7 @@ export function AppointmentManagement() {
 							mode="single"
 							captionLayout="dropdown"
 							placeholder="Filter by date"
-							className="w-full "
+							className="flex-1"
 						/>
 					</div>
 				</CardContent>

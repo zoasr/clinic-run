@@ -25,7 +25,7 @@ import {
 	Edit,
 } from "lucide-react";
 import { toast } from "sonner";
-import { trpc } from "@/lib/trpc-client";
+import { queryKeys, trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import type { LabTest } from "@/hooks/useLabTests";
@@ -47,7 +47,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 		trpc.labTests.updateStatus.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
-					queryKey: ["labTests"],
+					queryKey: queryKeys.labTests.getById(labTest?.id ?? 0),
 					refetchType: "active",
 				});
 				toast.success("Lab test status updated successfully");
@@ -115,15 +115,6 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back
 					</Button>
-					<div>
-						<h1 className="text-2xl font-display font-bold text-foreground">
-							{labTest.testName}
-						</h1>
-						<p className="text-muted-foreground">
-							Lab test for {labTest.patient?.firstName}{" "}
-							{labTest.patient?.lastName}
-						</p>
-					</div>
 				</div>
 
 				<Link
@@ -140,10 +131,20 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 				</Link>
 			</div>
 
+			<div>
+				<h1 className="text-2xl font-display font-bold text-foreground">
+					{labTest.testName}
+				</h1>
+				<p className="text-muted-foreground">
+					Lab test for {labTest.patient?.firstName}{" "}
+					{labTest.patient?.lastName}
+				</p>
+			</div>
+
 			{/* Status Banner */}
 			<Card>
-				<CardContent className="pt-6">
-					<div className="flex items-center justify-between">
+				<CardContent>
+					<div className="flex items-center justify-between gap-4 flex-wrap">
 						<div className="flex items-center gap-3">
 							<StatusIcon className="h-6 w-6 text-muted-foreground" />
 							<div>
@@ -175,7 +176,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 									}
 									disabled={updateStatusMutation.isPending}
 									variant="outline"
-									size="sm"
+									size="lg"
 								>
 									Start Test
 								</Button>
@@ -186,7 +187,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 										handleStatusUpdate("completed")
 									}
 									disabled={updateStatusMutation.isPending}
-									size="sm"
+									size="lg"
 								>
 									Complete Test
 								</Button>

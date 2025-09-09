@@ -174,88 +174,35 @@ export function AppointmentCalendar({
 						const dayAppointments = getAppointmentsForDate(date);
 
 						return (
-							<>
-								<Popover key={day}>
-									<PopoverTrigger>
-										<div
-											className={`p-1 size-full  border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
-												isToday(day)
-													? "bg-secondary/20 border-secondary"
-													: "border-border"
-											}`}
-											// onClick={() =>
-											// 	onDateClick(dateString)
-											// }
-										>
-											<div className="flex justify-between items-start mb-1">
-												<span
-													className={`text-sm font-medium ${isToday(day) ? "text-secondary" : "text-foreground"}`}
+							<Popover key={day}>
+								<PopoverTrigger>
+									<div
+										className={`p-1 size-full  border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
+											isToday(day)
+												? "bg-secondary/20 border-secondary"
+												: "border-border"
+										}`}
+									>
+										<div className="flex justify-between items-start mb-1">
+											<span
+												className={`text-sm font-medium ${isToday(day) ? "text-secondary" : "text-foreground"}`}
+											>
+												{day}
+											</span>
+											{dayAppointments.length > 0 && (
+												<Badge
+													variant="secondary"
+													className="text-xs px-1 py-0"
 												>
-													{day}
-												</span>
-												{dayAppointments.length > 0 && (
-													<Badge
-														variant="secondary"
-														className="text-xs px-1 py-0"
-													>
-														{dayAppointments.length}
-													</Badge>
-												)}
-											</div>
-
-											<div className="space-y-2">
-												{dayAppointments
-													.slice(0, 2)
-													.map((appointment) => (
-														<div
-															key={appointment.id}
-															className="text-xs p-1 rounded cursor-pointer hover:opacity-80 border bg-accent"
-															style={{
-																backgroundColor: `${getStatusColor(appointment.status)}20`,
-															}}
-															onClick={(e) => {
-																e.stopPropagation();
-																onAppointmentClick(
-																	appointment
-																);
-															}}
-														>
-															<div className="flex items-center gap-1">
-																<div
-																	className={`w-2 h-2 rounded-full ${getStatusColor(appointment.status)}`}
-																></div>
-																<span className="truncate">
-																	{
-																		appointment.appointmentTime
-																	}{" "}
-																	{
-																		appointment
-																			.patient
-																			?.firstName
-																	}
-																</span>
-															</div>
-														</div>
-													))}
-												{dayAppointments.length > 2 && (
-													<Button
-														variant="outline"
-														className="text-xs text-muted-foreground text-center p-1 w-full"
-													>
-														+
-														{dayAppointments.length -
-															2}{" "}
-														more{" "}
-														<ChevronDownCircle />
-													</Button>
-												)}
-											</div>
+													{dayAppointments.length}
+												</Badge>
+											)}
 										</div>
-									</PopoverTrigger>
-									<PopoverContent>
-										<div className="space-y-4">
-											{dayAppointments.map(
-												(appointment) => (
+
+										<div className="space-y-2">
+											{dayAppointments
+												.slice(0, 2)
+												.map((appointment) => (
 													<div
 														key={appointment.id}
 														className="text-xs p-1 rounded cursor-pointer hover:opacity-80 border bg-accent"
@@ -285,21 +232,62 @@ export function AppointmentCalendar({
 															</span>
 														</div>
 													</div>
-												)
+												))}
+											{dayAppointments.length > 2 && (
+												<Button
+													variant="outline"
+													className="text-xs text-muted-foreground text-center p-1 w-full"
+												>
+													+
+													{dayAppointments.length - 2}{" "}
+													more <ChevronDownCircle />
+												</Button>
 											)}
-											<Button
-												onClick={() =>
-													onDateClick(date)
-												}
-												className="w-full"
-											>
-												Create new appointment
-												<Plus />
-											</Button>
 										</div>
-									</PopoverContent>
-								</Popover>
-							</>
+									</div>
+								</PopoverTrigger>
+								<PopoverContent>
+									<div className="space-y-4">
+										{dayAppointments.map((appointment) => (
+											<div
+												key={appointment.id}
+												className="text-xs p-1 rounded cursor-pointer hover:opacity-80 border bg-accent"
+												style={{
+													backgroundColor: `${getStatusColor(appointment.status)}20`,
+												}}
+												onClick={(e) => {
+													e.stopPropagation();
+													onAppointmentClick(
+														appointment
+													);
+												}}
+											>
+												<div className="flex items-center gap-1">
+													<div
+														className={`w-2 h-2 rounded-full ${getStatusColor(appointment.status)}`}
+													></div>
+													<span className="truncate">
+														{
+															appointment.appointmentTime
+														}{" "}
+														{
+															appointment.patient
+																?.firstName
+														}
+													</span>
+												</div>
+											</div>
+										))}
+										<Button
+											onClick={() => onDateClick(date)}
+											className="w-full"
+										>
+											Create new appointment
+											<Plus />
+										</Button>
+									</div>
+								</PopoverContent>
+							</Popover>
 						);
 					})}
 				</div>

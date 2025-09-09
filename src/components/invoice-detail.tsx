@@ -148,7 +148,7 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 
 			{/* Status Banner */}
 			<Card>
-				<CardContent className="pt-6">
+				<CardContent>
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
 							<StatusIcon className="h-6 w-6 text-muted-foreground" />
