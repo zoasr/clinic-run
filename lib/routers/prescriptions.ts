@@ -321,4 +321,26 @@ export const prescriptionsRouter = router({
 
 			return dispensedPrescription[0];
 		}),
+	inDispense: authorizedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const dispensedPrescription = await ctx.db
+				.update(schema.prescriptions)
+				.set({
+					isDispensed: false,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.prescriptions.id, input.id))
+				.returning();
+
+			if (dispensedPrescription.length === 0) {
+				throw new Error("Prescription not found");
+			}
+
+			return dispensedPrescription[0];
+		}),
 });
