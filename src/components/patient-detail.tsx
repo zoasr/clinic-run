@@ -37,6 +37,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import NotFound from "./not-found";
+import { formatAge } from "@/lib/utils";
 
 interface PatientDetailProps {
 	patient: Patient;
@@ -69,22 +70,6 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 		deletePatient({ id: patient?.id ?? 0 });
 	};
 
-	const calculateAge = (dateOfBirth: Date) => {
-		const today = new Date();
-		const birthDate = new Date(dateOfBirth);
-		let age = today.getFullYear() - birthDate.getFullYear();
-		const monthDiff = today.getMonth() - birthDate.getMonth();
-
-		if (
-			monthDiff < 0 ||
-			(monthDiff === 0 && today.getDate() < birthDate.getDate())
-		) {
-			age--;
-		}
-
-		return age;
-	};
-
 	const isLoading = isLoadingAppointments || isLoadingRecords;
 
 	if (isLoading) {
@@ -104,7 +89,7 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 	return (
 		<div className="space-y-6 p-6">
 			{/* Header */}
-			<div className="flex items-center justify-between">
+			<div className="flex items-center justify-between flex-wrap gap-4">
 				<div className="flex items-center gap-4">
 					<Button variant="outline" size="sm" onClick={onBack}>
 						<ArrowLeft className="h-4 w-4 mr-2" />
@@ -183,7 +168,7 @@ export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
 									Age:
 								</span>
 								<span className="text-sm font-medium">
-									{calculateAge(patient.dateOfBirth)} years
+									{formatAge(patient.dateOfBirth)}
 								</span>
 							</div>
 							<div className="flex justify-between">

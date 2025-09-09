@@ -6,6 +6,26 @@ import { type AppRouter } from "./trpc";
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
+
+export const formatAge = (date: Date) => {
+	const now = new Date();
+	const ageInYears = now.getFullYear() - date.getFullYear();
+	const month =
+		now.getFullYear() === date.getFullYear()
+			? now.getMonth() - date.getMonth()
+			: 11;
+	const days =
+		now.getFullYear() === date.getFullYear() &&
+		now.getMonth() === date.getMonth()
+			? now.getDate() - date.getDate()
+			: 30 - date.getDate() + now.getDate();
+
+	if (ageInYears === 0 && month === 0 && days === 0) return "Newborn";
+	if (ageInYears === 0 && month === 0) return `${days} days old`;
+	if (ageInYears === 0) return `${month} months old`;
+	return `${ageInYears} years old`;
+};
+
 type SystemSetting =
 	AppRouter["systemSettings"]["getPublic"]["_def"]["$types"]["output"][number];
 let settings: SystemSetting[] | null = null;

@@ -10,6 +10,7 @@ import { LoadingCards } from "@/components/ui/loading";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
 import ErrorComponent from "@/components/error";
+import { formatAge } from "@/lib/utils";
 
 function PatientManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -40,22 +41,6 @@ function PatientManagement() {
 		setSearchTerm(value);
 		// Reset the infinite query when search changes
 		// This will be handled automatically by React Query's key invalidation
-	};
-
-	const calculateAge = (dateOfBirth: Date) => {
-		const today = new Date();
-		const birthDate = new Date(dateOfBirth);
-		let age = today.getFullYear() - birthDate.getFullYear();
-		const monthDiff = today.getMonth() - birthDate.getMonth();
-
-		if (
-			monthDiff < 0 ||
-			(monthDiff === 0 && today.getDate() < birthDate.getDate())
-		) {
-			age--;
-		}
-
-		return age;
 	};
 
 	return (
@@ -182,10 +167,9 @@ function PatientManagement() {
 											<div className="flex items-center gap-2">
 												<User className="h-4 w-4 text-muted-foreground" />
 												<span className="text-sm text-muted-foreground">
-													{calculateAge(
+													{formatAge(
 														patient.dateOfBirth
-													)}{" "}
-													old
+													)}
 												</span>
 											</div>
 											<Badge

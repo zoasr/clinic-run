@@ -246,6 +246,11 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 															)
 														: undefined
 												}
+												disabled={(date) => {
+													const today = new Date();
+													today.setHours(0, 0, 0, 0);
+													return date > today;
+												}}
 												onSelect={(
 													value: Date | undefined
 												) => {
@@ -561,7 +566,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 						Cancel
 					</Button>
 					<Button type="submit" disabled={isPending}>
-						{isPending && <ButtonLoading className="mr-2" />}
+						{isPending && <ButtonLoading />}
 						{isPending ? "Saving..." : "Save Patient"}
 					</Button>
 				</div>
