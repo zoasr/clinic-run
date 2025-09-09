@@ -201,7 +201,6 @@ function MedicalRecordsPage() {
 												<div className="flex items-center text-sm cursor-pointer hover:text-primary transition-colors">
 													<Calendar className="h-3 w-3 mr-1" />
 													{record.visitDate.toLocaleDateString()}
-													{record.visitDate.toLocaleTimeString()}
 												</div>
 											</Link>
 										</TableCell>

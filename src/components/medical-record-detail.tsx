@@ -115,6 +115,16 @@ export function MedicalRecordDetail({
 							</div>
 							<div className="flex justify-between">
 								<span className="text-sm text-muted-foreground">
+									Time
+								</span>
+								<span className="text-sm font-medium">
+									{new Date(
+										record.visitDate
+									).toLocaleTimeString()}
+								</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-sm text-muted-foreground">
 									Doctor:
 								</span>
 								<span className="text-sm font-medium">
