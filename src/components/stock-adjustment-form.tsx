@@ -161,7 +161,10 @@ export function StockAdjustmentForm({
 								Unit Price
 							</p>
 							<p className="text-2xl font-bold">
-								EGP{medication.unitPrice?.toFixed(2)}
+								{Intl.NumberFormat("en-US", {
+									style: "currency",
+									currency: "EGP",
+								}).format(medication.unitPrice ?? 0)}
 							</p>
 						</div>
 					</div>

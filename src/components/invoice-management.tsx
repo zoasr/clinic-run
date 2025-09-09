@@ -112,9 +112,9 @@ export function InvoiceManagement() {
 	};
 
 	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat("en-US", {
+		return new Intl.NumberFormat("en-us", {
 			style: "currency",
-			currency: "USD",
+			currency: "EGP",
 		}).format(amount);
 	};
 

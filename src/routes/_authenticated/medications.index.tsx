@@ -412,9 +412,15 @@ export function InventoryManagement() {
 															Price
 														</p>
 														<p className="text-lg font-bold">
-															$
-															{medication.unitPrice.toFixed(
-																2
+															{Intl.NumberFormat(
+																"en-us",
+																{
+																	style: "currency",
+																	currency:
+																		"EGP",
+																}
+															).format(
+																medication.unitPrice
 															)}
 														</p>
 													</div>

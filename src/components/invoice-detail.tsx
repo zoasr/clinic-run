@@ -103,7 +103,7 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 	};
 
 	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat("ar-EG", {
+		return new Intl.NumberFormat("en-us", {
 			style: "currency",
 			currency: "EGP",
 		}).format(amount);
@@ -317,25 +317,30 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 				<CardContent>
 					{invoice.items ? (
 						<div className="space-y-3">
-							{JSON.parse(invoice.items).map(
-								(item: any, index: number) => (
-									<div
-										key={index}
-										className="flex justify-between items-center py-2 border-b border-border/50 last:border-0"
-									>
-										<span className="text-sm">
-											{item.description || "Service"}
-										</span>
-										<span className="font-medium">
-											{formatCurrency(item.amount || 0)}
-										</span>
-									</div>
-								)
-							)}
+							<div className="space-y-2 divide-y divide-border/50">
+								{JSON.parse(invoice.items).map(
+									(item: any, index: number) => (
+										<div
+											key={index}
+											className="flex justify-between items-center py-2"
+										>
+											<span className="text-sm">
+												{item.description || "Service"}
+											</span>
+											<span className="font-medium text-destructive">
+												-
+												{formatCurrency(
+													item.amount || 0
+												)}
+											</span>
+										</div>
+									)
+								)}
+							</div>
 							<div className="flex justify-between items-center pt-3 border-t border-border font-semibold">
 								<span>Total</span>
-								<span>
-									{formatCurrency(invoice.totalAmount)}
+								<span className="text-destructive">
+									-{formatCurrency(invoice.totalAmount)}
 								</span>
 							</div>
 						</div>
