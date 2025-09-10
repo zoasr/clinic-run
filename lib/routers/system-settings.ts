@@ -90,10 +90,49 @@ export const systemSettingsRouter = router({
 				.returning();
 
 			if (updatedSetting.length === 0) {
-				throw new Error("Setting not found");
+				await ctx.db.insert(schema.systemSettings).values([
+					{
+						key: input.key,
+						value: input.data.value || "",
+						description: input.data.description || "",
+						category: input.data.category,
+						isPublic: input.data.isPublic || false,
+						updatedBy: ctx.user.id,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				]);
+				throw new Error(
+					`Setting with key "${input.key}" not found, Setting is getting created with the value provided`
+				);
 			}
 
 			return updatedSetting[0];
+		}),
+
+	updateAll: adminProcedure
+		.input(z.array(settingInputSchema))
+		.mutation(async ({ input, ctx }) => {
+			let allUpdatedSettings = [];
+			for (const setting of input) {
+				const updatedSetting = await ctx.db
+					.update(schema.systemSettings)
+					.set({
+						...setting,
+						updatedBy: ctx.user.id,
+						updatedAt: new Date(),
+					})
+					.where(eq(schema.systemSettings.key, setting.key))
+					.returning();
+				if (updatedSetting.length === 0) {
+					throw new Error(
+						`Setting with key "${setting.key}" not found`
+					);
+				}
+				allUpdatedSettings.push(updatedSetting[0]);
+			}
+
+			return allUpdatedSettings;
 		}),
 
 	delete: adminProcedure
@@ -109,7 +148,7 @@ export const systemSettingsRouter = router({
 				.returning();
 
 			if (deletedSetting.length === 0) {
-				throw new Error("Setting not found");
+				throw new Error(`Setting with key "${input.key}" not found`);
 			}
 
 			return { success: true };
@@ -120,7 +159,7 @@ export const systemSettingsRouter = router({
 		const defaultSettings = [
 			{
 				key: "clinic_name",
-				value: "Clinic Management System",
+				value: "Clinic Run",
 				description: "Name of the clinic",
 				category: "clinic",
 				isPublic: true,
@@ -129,6 +168,14 @@ export const systemSettingsRouter = router({
 				key: "clinic_address",
 				value: "",
 				description: "Clinic address",
+				category: "clinic",
+				isPublic: true,
+			},
+			{
+				key: "currency",
+				value: "USD",
+				description:
+					"Default currency for invoices and medicine prices",
 				category: "clinic",
 				isPublic: true,
 			},
@@ -187,20 +234,6 @@ export const systemSettingsRouter = router({
 				description: "Use compact layout for better space utilization",
 				category: "appearance",
 				isPublic: true,
-			},
-			{
-				key: "demo_email",
-				value: "admin@clinic.local",
-				description: "Demo user email for login page",
-				category: "demo",
-				isPublic: true,
-			},
-			{
-				key: "demo_password",
-				value: "admin123",
-				description: "Demo user password for login page",
-				category: "demo",
-				isPublic: false,
 			},
 		];
 

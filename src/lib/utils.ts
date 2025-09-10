@@ -26,16 +26,24 @@ export const formatAge = (date: Date) => {
 	return `${ageInYears} years old`;
 };
 
+export const formatCurrency = (amount: number) => {
+	return new Intl.NumberFormat("en-us", {
+		style: "currency",
+		currencyDisplay: "narrowSymbol",
+		currency: getSetting("currency") || "usd",
+	}).format(amount);
+};
+
 type SystemSetting =
 	AppRouter["systemSettings"]["getPublic"]["_def"]["$types"]["output"][number];
 let settings: SystemSetting[] | null = null;
 
-const setSettings = async () => {
+export const setSettings = async () => {
 	settings = await trpcClient.systemSettings.getPublic.query();
 };
 setSettings();
 
-const getSetting = async (key: string) => {
+const getSetting = (key: string) => {
 	// const settings = await trpcClient.systemSettings.getPublic.query();
 	return settings?.find((s) => s.key === key)?.value;
 };
@@ -75,4 +83,8 @@ export const getAppearanceSettings = async () => {
 export const getSessionTimeout = async () => {
 	const sessionTimeout = await getSettingAsNumber("session_timeout");
 	return sessionTimeout || 30; // Default to 30 minutes
+};
+
+export const getCurrency = async () => {
+	return getSetting("currency")?.toLocaleLowerCase() || "usd";
 };

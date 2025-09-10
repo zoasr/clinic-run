@@ -6,7 +6,6 @@ export type ThemeMode = "light" | "dark" | "system";
 
 interface ThemeContextType {
 	theme: ThemeMode;
-	primaryColor: string;
 	sidebarCollapsed: boolean;
 	compactMode: boolean;
 	setTheme: (theme: ThemeMode) => void;
@@ -34,7 +33,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 	const [theme, setThemeState] = useState<ThemeMode>(
 		appearanceSettings.themeMode
 	);
-	const [primaryColor, setPrimaryColorState] = useState("#3b82f6");
 	const [sidebarCollapsed, setSidebarCollapsedState] = useState(
 		appearanceSettings.sidebarCollapsed
 	);
@@ -116,7 +114,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
 	const value: ThemeContextType = {
 		theme,
-		primaryColor,
 		sidebarCollapsed,
 		compactMode,
 		setTheme,

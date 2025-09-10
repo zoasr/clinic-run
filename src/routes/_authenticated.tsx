@@ -24,6 +24,7 @@ import { SessionManager } from "@/components/SessionManager";
 import {
 	getAppearanceSettings,
 	getClinicInfo,
+	getCurrency,
 	getSessionTimeout,
 } from "@/lib/utils";
 import { memo } from "react";
@@ -44,10 +45,12 @@ export const Route = createFileRoute("/_authenticated")({
 		const appearanceSettings = await getAppearanceSettings();
 		const clinicInfo = await getClinicInfo();
 		const sessionTimeout = await getSessionTimeout();
+		const currency = await getCurrency();
 		return {
 			appearanceSettings,
 			clinicInfo,
 			sessionTimeout,
+			currency,
 			crumb: "",
 		};
 	},

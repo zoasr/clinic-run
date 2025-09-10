@@ -30,6 +30,7 @@ import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import type { Invoice } from "@/hooks/useInvoices";
 import ErrorComponent from "./error";
+import { formatCurrency } from "@/lib/utils";
 
 interface InvoiceDetailProps {
 	invoice: Invoice;
@@ -100,13 +101,6 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 			default:
 				return Receipt;
 		}
-	};
-
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat("en-us", {
-			style: "currency",
-			currency: "EGP",
-		}).format(amount);
 	};
 
 	if (!invoice) {

@@ -40,6 +40,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { formatCurrency } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/medications/")({
 	loader: () => ({
@@ -412,14 +413,7 @@ export function InventoryManagement() {
 															Price
 														</p>
 														<p className="text-lg font-bold">
-															{Intl.NumberFormat(
-																"en-us",
-																{
-																	style: "currency",
-																	currency:
-																		"EGP",
-																}
-															).format(
+															{formatCurrency(
 																medication.unitPrice
 															)}
 														</p>

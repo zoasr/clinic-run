@@ -23,7 +23,7 @@ import { trpc } from "@/lib/trpc-client";
 import { ArrowLeft, Package } from "lucide-react";
 import { type Medication } from "@/lib/schema-types";
 import { useMutation } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 import { TRPCClientErrorLike } from "@trpc/client";
 import { type AppRouter } from "@/lib/trpc";
@@ -161,10 +161,7 @@ export function StockAdjustmentForm({
 								Unit Price
 							</p>
 							<p className="text-2xl font-bold">
-								{Intl.NumberFormat("en-US", {
-									style: "currency",
-									currency: "EGP",
-								}).format(medication.unitPrice ?? 0)}
+								{formatCurrency(medication.unitPrice ?? 0)}
 							</p>
 						</div>
 					</div>

@@ -27,6 +27,7 @@ import { queryKeys, trpc } from "@/lib/trpc-client";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
 import SearchPatientsDialog from "./search-patients-dialog";
+import { formatCurrency } from "@/lib/utils";
 
 // Infer types from tRPC
 type InvoiceInput = AppRouter["invoices"]["create"]["_def"]["$types"]["input"];
@@ -149,13 +150,6 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 			}
 		},
 	});
-
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat("ar-EG", {
-			style: "currency",
-			currency: "EGP",
-		}).format(amount);
-	};
 
 	return (
 		<div className="space-y-6 p-6">

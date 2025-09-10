@@ -31,6 +31,7 @@ import { Link } from "@tanstack/react-router";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
 import ErrorComponent from "./error";
+import { formatCurrency } from "@/lib/utils";
 
 export function InvoiceManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -109,13 +110,6 @@ export function InvoiceManagement() {
 			default:
 				return Receipt;
 		}
-	};
-
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat("en-us", {
-			style: "currency",
-			currency: "EGP",
-		}).format(amount);
 	};
 
 	return (

@@ -26,6 +26,12 @@ export const systemSettingsSchema = z.object({
 	clinic_address: z.string().optional(),
 	clinic_phone: z.string().optional(),
 	clinic_email: z.string().optional(),
+	currency: z
+		.string()
+		.refine(
+			(arg) => Intl.supportedValuesOf("currency").includes(arg),
+			"Invalid currency code"
+		),
 	working_hours: z.string().optional(),
 	session_timeout: z
 		.number()
@@ -90,25 +96,26 @@ function useSettings(options?: {
 		[getSetting]
 	);
 
-	// Subscribe to settings changes for real-time updates
-	useEffect(() => {
-		// Invalidate queries when settings are updated
-		const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-			if (
-				event?.query?.queryKey?.[0] === "systemSettings" &&
-				event.type === "updated"
-			) {
-				// Only refetch if the data has actually changed
-				queryClient.invalidateQueries({
-					queryKey: trpc.systemSettings.getAll.queryKey(),
-				});
-			}
-		});
+	// // Subscribe to settings changes for real-time updates
+	// useEffect(() => {
+	// 	// Invalidate queries when settings are updated
+	// 	const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+	// 		if (
+	// 			event?.query?.queryKey?.[0] ===
+	// 				trpc.systemSettings.getPublic.queryKey() &&
+	// 			event.type === "updated"
+	// 		) {
+	// 			// Only refetch if the data has actually changed
+	// 			queryClient.invalidateQueries({
+	// 				queryKey: trpc.systemSettings.getPublic.queryKey(),
+	// 			});
+	// 		}
+	// 	});
 
-		return () => {
-			unsubscribe();
-		};
-	}, [queryClient]);
+	// 	return () => {
+	// 		unsubscribe();
+	// 	};
+	// }, [queryClient]);
 
 	return {
 		// @ts-ignore

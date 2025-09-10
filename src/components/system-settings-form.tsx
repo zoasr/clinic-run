@@ -1,5 +1,4 @@
-// Enhanced TanStack Form implementation with complete settings and live updates
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -25,8 +24,26 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+
+import { cn, setSettings } from "@/lib/utils";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+
 import { toast } from "sonner";
 import { systemSettingsSchema } from "@/hooks/useSettings";
+import $ from "currency-symbol-map";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 
 interface SystemSetting {
 	id: number;
@@ -44,8 +61,84 @@ interface SystemSettingsFormProps {
 	settings: SystemSetting[];
 }
 
+const currencies = Intl.supportedValuesOf("currency");
+
+const CurrencySelector = ({
+	onChange,
+	value,
+}: {
+	onChange: (value: string) => void;
+	value?: string;
+}) => {
+	const [open, setOpen] = useState(false);
+	const [currencyValue, setCurrencyValue] = useState(value || "USD");
+
+	const getDisplayName = (currency: string) => {
+		const dsiplayName = new Intl.DisplayNames(["en"], {
+			type: "currency",
+		}).of(currency);
+		return dsiplayName;
+	};
+
+	const currencyItems = useMemo(() => {
+		return currencies.map((c) => {
+			const dsiplayName = getDisplayName(c);
+			return (
+				<CommandItem
+					key={c}
+					value={dsiplayName}
+					onSelect={(currentValue) => {
+						setCurrencyValue(currentValue === value ? "" : c);
+						onChange(c);
+						setOpen(false);
+					}}
+				>
+					<CheckIcon
+						className={cn(
+							"mr-2 h-4 w-4",
+							value === c ? "opacity-100" : "opacity-0"
+						)}
+					/>
+					<span className="font-bold text-primary">{$(c)} </span>
+					<span className="">{dsiplayName}</span>
+				</CommandItem>
+			);
+		});
+	}, []);
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<Button
+					variant="outline"
+					role="combobox"
+					aria-expanded={open}
+					className="w-full justify-between"
+				>
+					<div className="flex gap-2">
+						<span className="font-bold text-primary">
+							{$(currencyValue)}{" "}
+						</span>
+						<span className="">
+							{getDisplayName(currencyValue)}
+						</span>
+					</div>
+					<ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className="p-0">
+				<Command onValueChange={onChange}>
+					<CommandInput placeholder="Search currency..." />
+					<CommandList>
+						<CommandEmpty>No currency found.</CommandEmpty>
+						<CommandGroup>{currencyItems}</CommandGroup>
+					</CommandList>
+				</Command>
+			</PopoverContent>
+		</Popover>
+	);
+};
+
 export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
-	const [success, setSuccess] = useState("");
 	const queryClient = useQueryClient();
 
 	const getByKey = (key: string) => {
@@ -59,6 +152,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			clinic_address: getByKey("clinic_address") || "",
 			clinic_phone: getByKey("clinic_phone") || "",
 			clinic_email: getByKey("clinic_email") || "",
+			currency: getByKey("currency") || "USD",
 			working_hours: getByKey("working_hours") || "",
 			session_timeout: Number(getByKey("session_timeout")) || 24 * 60,
 			password_min_length: Number(getByKey("password_min_length")) || 8,
@@ -86,10 +180,21 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 		return formData;
 	}, [settings]);
 
-	const updateSettingMutation = useMutation(
-		trpc.systemSettings.update.mutationOptions({
+	// Group settings by category
+	const groupedSettings = useMemo(() => {
+		const groups: Record<string, SystemSetting[]> = {};
+		settings.forEach((setting) => {
+			if (!groups[setting.category]) {
+				groups[setting.category] = [];
+			}
+			groups[setting.category].push(setting);
+		});
+		return groups;
+	}, [settings]);
+
+	const updateSettingsMutation = useMutation(
+		trpc.systemSettings.updateAll.mutationOptions({
 			onSuccess: () => {
-				setSuccess("Settings updated successfully!");
 				// Invalidate both queries to ensure all components update
 				queryClient.invalidateQueries({
 					queryKey: trpc.systemSettings.getAll.queryKey(),
@@ -97,7 +202,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 				queryClient.invalidateQueries({
 					queryKey: trpc.systemSettings.getPublic.queryKey(),
 				});
-				setTimeout(() => setSuccess(""), 3000);
+				setSettings();
 			},
 			onError: (error: any) => {
 				toast.error(error.message || "Failed to update settings");
@@ -115,51 +220,31 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			// Update all settings
 			const updates = Object.entries(value).map(([key, val]) => ({
 				key,
-				data: {
-					value: String(val),
-					isPublic: [
-						"clinic_name",
-						"clinic_address",
-						"clinic_phone",
-						"clinic_email",
-						"working_hours",
-						"theme_mode",
-						"session_timeout",
-						"sidebar_collapsed",
-						"compact_mode",
-					].includes(key),
-				},
+				value: String(val),
+				isPublic: [
+					"clinic_name",
+					"clinic_address",
+					"clinic_phone",
+					"clinic_email",
+					"currency",
+					"working_hours",
+					"theme_mode",
+					"session_timeout",
+					"sidebar_collapsed",
+					"compact_mode",
+				].includes(key),
+				category:
+					settings.find((s) => s.key === key)?.category || "clinic",
 			}));
 
-			// Update settings one by one
-			for (const update of updates) {
-				await updateSettingMutation.mutateAsync(update);
-			}
+			await updateSettingsMutation.mutateAsync(updates);
 
 			toast.success("Settings updated successfully!");
 		},
 	});
 
-	// Group settings by category
-	const groupedSettings = useMemo(() => {
-		const groups: Record<string, SystemSetting[]> = {};
-		settings.forEach((setting) => {
-			if (!groups[setting.category]) {
-				groups[setting.category] = [];
-			}
-			groups[setting.category].push(setting);
-		});
-		return groups;
-	}, [settings]);
-
 	return (
 		<div className="space-y-6">
-			{success && (
-				<Alert>
-					<AlertDescription>{success}</AlertDescription>
-				</Alert>
-			)}
-
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
@@ -314,6 +399,31 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 											field.handleChange(e.target.value)
 										}
 										placeholder="e.g., 9:00 AM - 5:00 PM"
+									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-sm text-destructive">
+											{
+												field.state.meta.errors[0]
+													?.message
+											}
+										</p>
+									)}
+								</div>
+							)}
+						/>
+						<form.Field
+							name="currency"
+							children={(field) => (
+								<div className="space-y-2">
+									<Label htmlFor={field.name}>
+										Currency for invoices, and medication
+										prices
+									</Label>
+									<CurrencySelector
+										onChange={(val) =>
+											field.handleChange(val)
+										}
+										value={field.state.value}
 									/>
 									{field.state.meta.errors.length > 0 && (
 										<p className="text-sm text-destructive">
@@ -549,10 +659,10 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 				</div>
 			</form>
 
-			{updateSettingMutation.error && (
+			{updateSettingsMutation.error && (
 				<Alert variant="destructive">
 					<AlertDescription>
-						{updateSettingMutation.error.message}
+						{updateSettingsMutation.error.message}
 					</AlertDescription>
 				</Alert>
 			)}
