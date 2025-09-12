@@ -1,6 +1,6 @@
 # Clinic Run
 
-A comprehensive offline clinic management system built with React, Bun, and SQLite.
+An homage to the now discontinued [hospitalrun](https://github.com/hospitalrun) project, built with React, Bun, and SQLite, and works entirely offline.
 
 ## Tech Stack
 
