@@ -1,11 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { LabTestForm } from "@/components/lab-test-form";
-import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/lab-tests/edit/$labTestId"
+	"/_authenticated/lab-tests/edit/$labTestId",
 )({
 	loader: () => ({
 		crumb: "Edit Lab Test",
@@ -23,7 +23,7 @@ function RouteComponent() {
 	} = useQuery(
 		trpc.labTests.getById.queryOptions({
 			id: Number(labTestId),
-		})
+		}),
 	);
 
 	if (isLoading) {

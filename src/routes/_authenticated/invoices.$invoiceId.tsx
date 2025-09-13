@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { InvoiceDetail } from "@/components/invoice-detail";
-import { useInvoice } from "@/hooks/useInvoices";
-import { PageLoading } from "@/components/ui/loading";
 import ErrorComponent from "@/components/error";
+import { InvoiceDetail } from "@/components/invoice-detail";
+import { PageLoading } from "@/components/ui/loading";
+import { useInvoice } from "@/hooks/useInvoices";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
 	component: RouteComponent,

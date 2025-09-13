@@ -1,10 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { StockAdjustmentForm } from "@/components/stock-adjustment-form";
-import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/medications/stock/$medicationId"
+	"/_authenticated/medications/stock/$medicationId",
 )({
 	component: RouteComponent,
 });
@@ -15,7 +15,7 @@ function RouteComponent() {
 	const { data: medication } = useQuery(
 		trpc.medications.getById.queryOptions({
 			id: Number(medicationId),
-		})
+		}),
 	);
 	if (!medication)
 		return (

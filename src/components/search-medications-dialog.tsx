@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -6,12 +7,11 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { ScrollArea } from "./ui/scroll-area";
 import { useMedications } from "@/hooks/useMedications";
 import type { AppRouter } from "@/lib/trpc";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { ScrollArea } from "./ui/scroll-area";
 
 type Medication =
 	AppRouter["prescriptions"]["getAll"]["_def"]["$types"]["output"]["data"][number]["medication"];
@@ -27,7 +27,7 @@ const Medication = ({
 }) => {
 	return (
 		<>
-			{!!medication ? (
+			{medication ? (
 				<div
 					key={medication.id}
 					className="flex items-center p-4 cursor-pointer border border-accent bg-accent/20"
@@ -63,7 +63,7 @@ export default function SearchMedicationsDialog({
 		},
 		{
 			enabled: !!search,
-		}
+		},
 	);
 	const medications = data?.data;
 	return (
@@ -72,9 +72,7 @@ export default function SearchMedicationsDialog({
 				{selectedMedication ? (
 					<Button type="button" variant="outline">
 						<span className="mr-2">{selectedMedication.id}</span>
-						<span className="font-semibold">
-							{selectedMedication.name}
-						</span>
+						<span className="font-semibold">{selectedMedication.name}</span>
 					</Button>
 				) : medication ? (
 					<Button type="button" variant="outline">
@@ -88,9 +86,7 @@ export default function SearchMedicationsDialog({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Search Medications</DialogTitle>
-					<DialogDescription>
-						Search for medications by name
-					</DialogDescription>
+					<DialogDescription>Search for medications by name</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4">
 					<Input

@@ -1,13 +1,13 @@
-import { z } from "zod";
-import {
-	router,
-	protectedProcedure,
-	adminProcedure,
-	publicProcedure,
-} from "../trpc.js";
 import { and, eq, like } from "drizzle-orm";
-import * as authSchema from "../db/schema/auth-schema.js";
+import { z } from "zod";
 import { auth } from "../auth.js";
+import * as authSchema from "../db/schema/auth-schema.js";
+import {
+	adminProcedure,
+	protectedProcedure,
+	publicProcedure,
+	router,
+} from "../trpc.js";
 
 const userInputSchema = z.object({
 	username: z.string(),
@@ -44,7 +44,7 @@ export const usersRouter = router({
 		.input(
 			z.object({
 				id: z.string(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const user = await ctx.db
@@ -79,7 +79,7 @@ export const usersRouter = router({
 					z.literal("admin"),
 				]),
 				search: z.string().optional(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const whereConditions = [];
@@ -87,9 +87,7 @@ export const usersRouter = router({
 				whereConditions.push(eq(authSchema.user.role, input.role));
 			}
 			if (input.search !== "" && input.search !== undefined) {
-				whereConditions.push(
-					like(authSchema.user.name, `%${input.search}%`)
-				);
+				whereConditions.push(like(authSchema.user.name, `%${input.search}%`));
 			}
 			const users = await ctx.db
 				.select({
@@ -127,32 +125,30 @@ export const usersRouter = router({
 		return users;
 	}),
 
-	create: adminProcedure
-		.input(userInputSchema)
-		.mutation(async ({ input }) => {
-			const newUser = await auth.api.createUser({
-				body: {
-					name: input.firstName + " " + input.lastName,
-					email: input.email,
-					password: input.password,
-					role: input.role || "staff",
-					data: {
-						username: input.username,
-						firstName: input.firstName,
-						lastName: input.lastName,
-					},
+	create: adminProcedure.input(userInputSchema).mutation(async ({ input }) => {
+		const newUser = await auth.api.createUser({
+			body: {
+				name: `${input.firstName} ${input.lastName}`,
+				email: input.email,
+				password: input.password,
+				role: input.role || "staff",
+				data: {
+					username: input.username,
+					firstName: input.firstName,
+					lastName: input.lastName,
 				},
-			});
+			},
+		});
 
-			return newUser.user;
-		}),
+		return newUser.user;
+	}),
 
 	update: adminProcedure
 		.input(
 			z.object({
 				id: z.string(),
 				data: userInputSchema.partial().omit({ password: true }),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			if (input.data.role) {
@@ -170,7 +166,7 @@ export const usersRouter = router({
 					...input.data,
 					name:
 						input.data.firstName && input.data.lastName
-							? input.data.firstName + " " + input.data.lastName
+							? `${input.data.firstName} ${input.data.lastName}`
 							: undefined,
 					updatedAt: new Date(),
 				})
@@ -188,7 +184,7 @@ export const usersRouter = router({
 		.input(
 			z.object({
 				id: z.string(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deactivatedUser = await ctx.db
@@ -213,7 +209,7 @@ export const usersRouter = router({
 				id: z.string(),
 				currentPassword: z.string(),
 				newPassword: z.string(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			// Verify current password first
@@ -224,7 +220,7 @@ export const usersRouter = router({
 						password: input.currentPassword,
 					},
 				});
-			} catch (error) {
+			} catch (_error) {
 				throw new Error("Current password is incorrect");
 			}
 
@@ -258,10 +254,8 @@ export const usersRouter = router({
 				firstName: z.string().min(1, "First name is required"),
 				lastName: z.string().min(1, "Last name is required"),
 				email: z.string().email("Invalid email address"),
-				username: z
-					.string()
-					.min(3, "Username must be at least 3 characters"),
-			})
+				username: z.string().min(3, "Username must be at least 3 characters"),
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			// Users can only update their own profile, or admins can update any profile
@@ -291,7 +285,7 @@ export const usersRouter = router({
 		.input(
 			z.object({
 				id: z.string(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			// Prevent deleting self
@@ -348,7 +342,7 @@ export const usersRouter = router({
 			.limit(1);
 
 		return {
-			exists: demoUser.length > 0 && demoUser[0]?.isActive ? true : false,
+			exists: !!(demoUser.length > 0 && demoUser[0]?.isActive),
 			user: demoUser.length > 0 ? demoUser[0] : null,
 		};
 	}),

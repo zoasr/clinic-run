@@ -1,8 +1,8 @@
+import { eq } from "drizzle-orm";
 import { auth } from "../auth";
 import { db } from "./index";
 import * as authSchema from "./schema/auth-schema";
 import * as schema from "./schema/schema";
-import { eq } from "drizzle-orm";
 
 // Seed initial data
 export async function seedDatabase() {

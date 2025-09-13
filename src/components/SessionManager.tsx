@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { redirect, useLoaderData } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -10,8 +11,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import { redirect, useLoaderData } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "./ui/button";
 
 interface SessionManagerProps {
@@ -108,8 +108,7 @@ export function SessionManager({ children }: SessionManagerProps) {
 
 			// Clear existing timeouts
 			if (timeoutRef.current) clearTimeout(timeoutRef.current);
-			if (warningTimeoutRef.current)
-				clearTimeout(warningTimeoutRef.current);
+			if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
 
 			if (timeUntilTimeout <= 0) {
 				// Session has expired
@@ -165,15 +164,13 @@ export function SessionManager({ children }: SessionManagerProps) {
 			});
 
 			if (timeoutRef.current) clearTimeout(timeoutRef.current);
-			if (warningTimeoutRef.current)
-				clearTimeout(warningTimeoutRef.current);
+			if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
 			if (countdownRef.current) clearInterval(countdownRef.current);
 			clearInterval(intervalId);
 		};
 	}, [
 		isAuthenticated,
 		sessionTimeoutMs,
-		warningTimeMs,
 		handleActivity,
 		handleTimeout,
 		showWarning,
@@ -198,21 +195,15 @@ export function SessionManager({ children }: SessionManagerProps) {
 			<AlertDialog open={showWarning} onOpenChange={setShowWarning}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>
-							Session Expiring Soon
-						</AlertDialogTitle>
+						<AlertDialogTitle>Session Expiring Soon</AlertDialogTitle>
 						<AlertDialogDescription>
-							Your session will expire in {timeRemaining} seconds
-							due to inactivity. Would you like to continue
-							working?
+							Your session will expire in {timeRemaining} seconds due to
+							inactivity. Would you like to continue working?
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel asChild>
-							<Button
-								onClick={handleTimeout}
-								variant="destructive"
-							>
+							<Button onClick={handleTimeout} variant="destructive">
 								Log Out
 							</Button>
 						</AlertDialogCancel>
@@ -228,7 +219,7 @@ export function SessionManager({ children }: SessionManagerProps) {
 
 // Hook to programmatically reset activity (useful for API calls)
 export function useResetActivity() {
-	const [lastReset, setLastReset] = useState(Date.now());
+	const [_lastReset, setLastReset] = useState(Date.now());
 
 	const reset = useCallback(() => {
 		setLastReset(Date.now());

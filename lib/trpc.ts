@@ -1,9 +1,9 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import { type FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+import superjson from "superjson";
 import { auth } from "./auth.js";
 import { db } from "./db/index.js";
 import * as authSchema from "./db/schema/auth-schema.js";
-import superjson from "superjson";
 
 export type CreateContextOptions = FetchCreateContextFnOptions;
 
@@ -78,9 +78,7 @@ const hasAnyRole = (required: string[]) =>
 		const roles = extractRoles((ctx as any).session?.user);
 		// If checking for doctor, allow admin as well
 		const needed = new Set(
-			required.flatMap((r) =>
-				r === "doctor" ? ["doctor", "admin"] : [r]
-			)
+			required.flatMap((r) => (r === "doctor" ? ["doctor", "admin"] : [r])),
 		);
 		const ok = roles.some((r) => needed.has(r));
 		if (!ok) {

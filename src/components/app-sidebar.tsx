@@ -1,28 +1,28 @@
-import { Link, useLoaderData } from "@tanstack/react-router";
+import { Link, useLoaderData, useNavigate } from "@tanstack/react-router";
+import { cva } from "class-variance-authority";
 import {
-	Home,
-	User,
-	Calendar,
-	Stethoscope,
-	Pill,
-	FileText,
-	Settings,
-	LogOut,
-	Users,
-	ClipboardList,
-	Receipt,
-	TestTube,
-	Shield,
 	Activity,
-	ChevronUp,
+	Calendar,
 	ChevronDown,
 	ChevronsUpDown,
+	ChevronUp,
+	ClipboardList,
+	FileText,
+	Home,
+	LogOut,
+	Pill,
+	Receipt,
+	Settings,
+	Shield,
+	Stethoscope,
+	TestTube,
+	User,
+	Users,
 } from "lucide-react";
-
+import { memo, useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -34,20 +34,17 @@ import {
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
-	SidebarMenu,
-	SidebarMenuItem,
 	SidebarHeader,
-	SidebarFooter,
-	SidebarRail,
+	SidebarMenu,
 	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "@tanstack/react-router";
-import { memo, useMemo, useState } from "react";
-import { cva } from "class-variance-authority";
 
 const navItems = [
 	{
@@ -140,22 +137,26 @@ const navItemVariants = cva(
 	{
 		variants: {
 			variant: {
-				public: "[&.active]:bg-primary/15 [&.active]:text-primary [&.active]:shadow-sm [&.active]:border [&.active]:border-primary/20 text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm border-transparent",
-				admin: "[&.active]:bg-orange-100 [&.active]:text-orange-800 [&.active]:shadow-sm [&.active]:border-orange-200 text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100",
+				public:
+					"[&.active]:bg-primary/15 [&.active]:text-primary [&.active]:shadow-sm [&.active]:border [&.active]:border-primary/20 text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm border-transparent",
+				admin:
+					"[&.active]:bg-orange-100 [&.active]:text-orange-800 [&.active]:shadow-sm [&.active]:border-orange-200 text-muted-foreground hover:bg-orange-100 hover:text-orange-800 hover:shadow-sm border-transparent hover:border-orange-100",
 			},
 		},
 
 		defaultVariants: {
 			variant: "public",
 		},
-	}
+	},
 );
 
 const navItemIconVariants = cva("h-4 w-4 transition-colors", {
 	variants: {
 		variant: {
-			public: "group-[&.active]:text-primary text-muted-foreground group-hover:text-accent-foreground",
-			admin: "text-muted-foreground group-hover:text-orange-600 group-[&.active]:text-orange-600",
+			public:
+				"group-[&.active]:text-primary text-muted-foreground group-hover:text-accent-foreground",
+			admin:
+				"text-muted-foreground group-hover:text-orange-600 group-[&.active]:text-orange-600",
 		},
 	},
 	defaultVariants: {
@@ -182,41 +183,34 @@ const NavItem = memo(
 						title={item.title}
 					>
 						<Icon className={navItemIconVariants({ variant })} />
-						<span className="group-[&.active]:font-bold">
-							{item.name}
-						</span>
+						<span className="group-[&.active]:font-bold">{item.name}</span>
 						<div
 							className={`ml-auto h-1.5 w-1.5 rounded-full animate-pulse group-[&.active]:block hidden ${
-								variant === "admin"
-									? "bg-orange-500"
-									: "bg-primary"
+								variant === "admin" ? "bg-orange-500" : "bg-primary"
 							}`}
 						/>
 					</Link>
 				</SidebarMenuButton>
 			</SidebarMenuItem>
 		);
-	}
+	},
 );
 export const AppSidebar = memo(
 	({ ...props }: React.ComponentProps<typeof Sidebar>) => {
 		const navigate = useNavigate();
 		const { user, logout } = useAuth();
 		const { clinicInfo } = useLoaderData({ from: "/_authenticated" });
-		const [isFooterOpen, setIsFooterOpen] = useState(true);
 
 		const isAdmin = user?.role === "admin";
-		const isDoctor = user?.role === "doctor";
-		const isStaff = user?.role === "staff";
 
 		// Separate navigation items by access level
 		const publicNavItems = useMemo(
 			() => navItems.filter((item) => !item.adminOnly),
-			[navItems]
+			[],
 		);
 		const adminNavItems = useMemo(
 			() => navItems.filter((item) => item.adminOnly),
-			[navItems]
+			[],
 		);
 
 		const publicNavItemsEls = useMemo(() => {
@@ -292,11 +286,7 @@ export const AppSidebar = memo(
 									>
 										<Avatar className="size-8 rounded-full text-primary ">
 											<AvatarImage
-												src={
-													user?.image
-														? user.image
-														: ""
-												}
+												src={user?.image ? user.image : ""}
 												alt={user?.name}
 											/>
 											<AvatarFallback className="rounded-lg bg-primary/20">
@@ -314,12 +304,7 @@ export const AppSidebar = memo(
 											<span className="truncate text-xs">
 												{user?.email}{" "}
 												<Badge
-													variant={
-														user?.role as
-															| "admin"
-															| "doctor"
-															| "staff"
-													}
+													variant={user?.role as "admin" | "doctor" | "staff"}
 												>
 													{user?.role}
 												</Badge>
@@ -338,11 +323,7 @@ export const AppSidebar = memo(
 										<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 											<Avatar className="size-8 rounded-full text-primary ">
 												<AvatarImage
-													src={
-														user?.image
-															? user.image
-															: ""
-													}
+													src={user?.image ? user.image : ""}
 													alt={user?.name}
 												/>
 												<AvatarFallback className="rounded-lg bg-primary/20">
@@ -357,9 +338,7 @@ export const AppSidebar = memo(
 												<span className="truncate font-semibold">
 													{user?.name}
 												</span>
-												<span className="truncate text-xs">
-													{user?.email}
-												</span>
+												<span className="truncate text-xs">{user?.email}</span>
 											</div>
 										</div>
 									</DropdownMenuLabel>
@@ -386,8 +365,7 @@ export const AppSidebar = memo(
 												navigate({
 													to: "/login",
 													search: {
-														redirect:
-															location.pathname,
+														redirect: location.pathname,
 													},
 												});
 											}}
@@ -406,5 +384,5 @@ export const AppSidebar = memo(
 				<SidebarRail />
 			</Sidebar>
 		);
-	}
+	},
 );

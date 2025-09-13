@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { createFileRoute } from "@tanstack/react-router";
 import { ProfileForm } from "@/components/profile-form";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute("/_authenticated/profile")({
 	loader: () => ({

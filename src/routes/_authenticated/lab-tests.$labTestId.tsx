@@ -1,8 +1,8 @@
-import { LabTestDetail } from "@/components/lab-test-detail";
-import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { LabTestDetail } from "@/components/lab-test-detail";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute("/_authenticated/lab-tests/$labTestId")({
 	loader: ({ params }) => {
@@ -24,7 +24,7 @@ function RouteComponent() {
 	} = useQuery(
 		trpc.labTests.getById.queryOptions({
 			id: Number(params.labTestId),
-		})
+		}),
 	);
 
 	if (isLoading) {

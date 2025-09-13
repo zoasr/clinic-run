@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
 import { useCallback, useEffect, useMemo } from "react";
 import z from "zod";
+import { trpc } from "@/lib/trpc-client";
 
 interface SystemSetting {
 	key: string;
@@ -30,7 +30,7 @@ export const systemSettingsSchema = z.object({
 		.string()
 		.refine(
 			(arg) => Intl.supportedValuesOf("currency").includes(arg),
-			"Invalid currency code"
+			"Invalid currency code",
 		),
 	working_hours: z.string().optional(),
 	session_timeout: z
@@ -65,7 +65,7 @@ function useSettings(options?: {
 		isLoading,
 		error,
 		refetch,
-		// @ts-ignore
+		// @ts-expect-error
 	} = useQuery(queryOptions);
 
 	// Helper function to get a setting value by key
@@ -73,7 +73,7 @@ function useSettings(options?: {
 		(key: string): string | undefined => {
 			return settings?.find((s) => s.key === key)?.value;
 		},
-		[settings]
+		[settings],
 	);
 
 	// Helper function to get a setting value as a number
@@ -84,7 +84,7 @@ function useSettings(options?: {
 			const num = parseInt(value, 10);
 			return isNaN(num) ? undefined : num;
 		},
-		[getSetting]
+		[getSetting],
 	);
 
 	// Helper function to get a setting value as a boolean
@@ -93,7 +93,7 @@ function useSettings(options?: {
 			const value = getSetting(key);
 			return value === "true";
 		},
-		[getSetting]
+		[getSetting],
 	);
 
 	// // Subscribe to settings changes for real-time updates
@@ -118,7 +118,7 @@ function useSettings(options?: {
 	// }, [queryClient]);
 
 	return {
-		// @ts-ignore
+		// @ts-expect-error
 		settings,
 		getSetting,
 		getSettingAsNumber,

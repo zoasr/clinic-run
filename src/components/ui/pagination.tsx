@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface PaginationProps {
@@ -22,7 +22,7 @@ export function Pagination({
 	const getVisiblePages = () => {
 		const delta = Math.floor(showPages / 2);
 		let start = Math.max(1, currentPage - delta);
-		let end = Math.min(totalPages, start + showPages - 1);
+		const end = Math.min(totalPages, start + showPages - 1);
 
 		if (end - start + 1 < showPages) {
 			start = Math.max(1, end - showPages + 1);
@@ -33,10 +33,13 @@ export function Pagination({
 
 	const visiblePages = getVisiblePages();
 	const showStartEllipsis = visiblePages[0] > 2;
-	const showEndEllipsis = visiblePages[visiblePages.length - 1] < totalPages - 1;
+	const showEndEllipsis =
+		visiblePages[visiblePages.length - 1] < totalPages - 1;
 
 	return (
-		<div className={cn("flex items-center justify-center space-x-1", className)}>
+		<div
+			className={cn("flex items-center justify-center space-x-1", className)}
+		>
 			{/* Previous Button */}
 			<Button
 				variant="outline"

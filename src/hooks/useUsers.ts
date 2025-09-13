@@ -1,6 +1,6 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 // Infer types from tRPC
 type User = AppRouter["users"]["getById"]["_def"]["$types"]["output"];
@@ -19,22 +19,19 @@ export function useUsers(params?: UserListParams) {
 
 export function useUser(userId: string) {
 	return useQuery(
-		trpc.users.getById.queryOptions({ id: userId }, { enabled: !!userId })
+		trpc.users.getById.queryOptions({ id: userId }, { enabled: !!userId }),
 	);
 }
 
 export function useUsersByRole(role: string) {
 	return useQuery(
-		trpc.users.getByRole.queryOptions({ role }, { enabled: !!role })
+		trpc.users.getByRole.queryOptions({ role }, { enabled: !!role }),
 	);
 }
 
 export function useDoctors(params?: UserListParams, options?: any) {
 	return useQuery(
-		trpc.users.getByRole.queryOptions(
-			{ role: "doctor", ...params },
-			options
-		)
+		trpc.users.getByRole.queryOptions({ role: "doctor", ...params }, options),
 	);
 }
 

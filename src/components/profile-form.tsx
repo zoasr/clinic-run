@@ -1,10 +1,11 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
-import { trpc } from "@/lib/trpc-client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -13,12 +14,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "@tanstack/react-router";
-import { User } from "@/hooks/useUsers";
-import { toast } from "sonner";
+import type { User } from "@/hooks/useUsers";
+import { trpc } from "@/lib/trpc-client";
 
 const profileFormSchema = z.object({
 	firstName: z.string().min(1, "First name is required"),
@@ -52,7 +52,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 				setError(error.message || "Failed to update profile");
 				toast.error(error.message || "Failed to update profile");
 			},
-		})
+		}),
 	);
 
 	const changePasswordMutation = useMutation(
@@ -66,7 +66,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 				setError(error.message || "Failed to change password");
 				toast.error(error.message || "Failed to change password");
 			},
-		})
+		}),
 	);
 
 	const profileForm = useForm({
@@ -95,9 +95,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 		validators: {
 			onChange: z
 				.object({
-					currentPassword: z
-						.string()
-						.min(1, "Current password is required"),
+					currentPassword: z.string().min(1, "Current password is required"),
 					newPassword: z
 						.string()
 						.min(8, "New password must be at least 8 characters"),
@@ -152,27 +150,18 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 							>
 								{(field) => (
 									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											First Name
-										</Label>
+										<Label htmlFor={field.name}>First Name</Label>
 										<Input
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 										{field.state.meta.errors && (
 											<p className="text-sm text-red-600">
 												{field.state.meta.errors
-													.map(
-														(error) =>
-															error?.message
-													)
+													.map((error) => error?.message)
 													.join(", ")}
 											</p>
 										)}
@@ -188,27 +177,18 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 							>
 								{(field) => (
 									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											Last Name
-										</Label>
+										<Label htmlFor={field.name}>Last Name</Label>
 										<Input
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 										{field.state.meta.errors && (
 											<p className="text-sm text-red-600">
 												{field.state.meta.errors
-													.map(
-														(error) =>
-															error?.message
-													)
+													.map((error) => error?.message)
 													.join(", ")}
 											</p>
 										)}
@@ -232,9 +212,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 										type="email"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="text-sm text-red-600">
@@ -261,9 +239,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="text-sm text-red-600">
@@ -277,19 +253,11 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 						</profileForm.Field>
 
 						<profileForm.Subscribe
-							selector={(state) => [
-								state.canSubmit,
-								state.isSubmitting,
-							]}
+							selector={(state) => [state.canSubmit, state.isSubmitting]}
 						>
 							{([canSubmit, isSubmitting]) => (
-								<Button
-									type="submit"
-									disabled={!canSubmit || isSubmitting}
-								>
-									{isSubmitting
-										? "Updating..."
-										: "Update Profile"}
+								<Button type="submit" disabled={!canSubmit || isSubmitting}>
+									{isSubmitting ? "Updating..." : "Update Profile"}
 								</Button>
 							)}
 						</profileForm.Subscribe>
@@ -298,7 +266,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 			</Card>
 
 			{/* Account Information */}
-			{!!profile ? (
+			{profile ? (
 				<Card>
 					<CardHeader>
 						<CardTitle>Account Information</CardTitle>
@@ -309,35 +277,19 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 					<CardContent>
 						<div className="space-y-4">
 							<div className="flex justify-between items-center">
-								<span className="text-sm font-medium">
-									Role:
-								</span>
-								<Badge variant="secondary">
-									{profile.role}
-								</Badge>
+								<span className="text-sm font-medium">Role:</span>
+								<Badge variant="secondary">{profile.role}</Badge>
 							</div>
 							<div className="flex justify-between items-center">
-								<span className="text-sm font-medium">
-									Status:
-								</span>
-								<Badge
-									variant={
-										profile.isActive
-											? "default"
-											: "destructive"
-									}
-								>
+								<span className="text-sm font-medium">Status:</span>
+								<Badge variant={profile.isActive ? "default" : "destructive"}>
 									{profile.isActive ? "Active" : "Inactive"}
 								</Badge>
 							</div>
 							<div className="flex justify-between items-center">
-								<span className="text-sm font-medium">
-									Member since:
-								</span>
+								<span className="text-sm font-medium">Member since:</span>
 								<span className="text-sm text-muted-foreground">
-									{new Date(
-										profile.createdAt
-									).toLocaleDateString()}
+									{new Date(profile.createdAt).toLocaleDateString()}
 								</span>
 							</div>
 						</div>
@@ -365,18 +317,14 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 						<passwordForm.Field name="currentPassword">
 							{(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>
-										Current Password
-									</Label>
+									<Label htmlFor={field.name}>Current Password</Label>
 									<Input
 										id={field.name}
 										name={field.name}
 										type="password"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="text-sm text-red-600">
@@ -392,18 +340,14 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 						<passwordForm.Field name="newPassword">
 							{(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>
-										New Password
-									</Label>
+									<Label htmlFor={field.name}>New Password</Label>
 									<Input
 										id={field.name}
 										name={field.name}
 										type="password"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="text-sm text-red-600">
@@ -419,18 +363,14 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 						<passwordForm.Field name="confirmPassword">
 							{(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>
-										Confirm New Password
-									</Label>
+									<Label htmlFor={field.name}>Confirm New Password</Label>
 									<Input
 										id={field.name}
 										name={field.name}
 										type="password"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="text-sm text-red-600">
@@ -444,10 +384,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 						</passwordForm.Field>
 
 						<passwordForm.Subscribe
-							selector={(state) => [
-								state.canSubmit,
-								state.isSubmitting,
-							]}
+							selector={(state) => [state.canSubmit, state.isSubmitting]}
 						>
 							{([canSubmit, isSubmitting]) => (
 								<Button
@@ -455,9 +392,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 									disabled={!canSubmit || isSubmitting}
 									variant="outline"
 								>
-									{isSubmitting
-										? "Changing..."
-										: "Change Password"}
+									{isSubmitting ? "Changing..." : "Change Password"}
 								</Button>
 							)}
 						</passwordForm.Subscribe>

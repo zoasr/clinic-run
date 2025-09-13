@@ -1,9 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import {
+	AlertCircle,
+	ArrowLeft,
+	Calendar,
+	CheckCircle,
+	Clock,
+	Edit,
+	FileText,
+	TestTube,
+	User,
+} from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Card,
 	CardContent,
@@ -11,25 +24,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-	ArrowLeft,
-	TestTube,
-	User,
-	Calendar,
-	FileText,
-	CheckCircle,
-	Clock,
-	AlertCircle,
-	Edit,
-} from "lucide-react";
-import { toast } from "sonner";
-import { queryKeys, trpc } from "@/lib/trpc-client";
-import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { LabTest } from "@/hooks/useLabTests";
-import { Link } from "@tanstack/react-router";
+import type { AppRouter } from "@/lib/trpc";
+import { queryKeys, trpc } from "@/lib/trpc-client";
 
 interface LabTestDetailProps {
 	labTest: LabTest;
@@ -40,7 +40,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 	const queryClient = useQueryClient();
 	const [results, setResults] = useState(labTest?.results || "");
 	const [completedDate, setCompletedDate] = useState(
-		labTest?.completedDate || new Date()
+		labTest?.completedDate || new Date(),
 	);
 
 	const updateStatusMutation = useMutation(
@@ -53,15 +53,13 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 				toast.success("Lab test status updated successfully");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(
-					error.message || "Failed to update lab test status"
-				);
+				toast.error(error.message || "Failed to update lab test status");
 			},
-		})
+		}),
 	);
 
 	const handleStatusUpdate = (
-		newStatus: "ordered" | "in-progress" | "completed"
+		newStatus: "ordered" | "in-progress" | "completed",
 	) => {
 		const updateData: any = {
 			id: labTest?.id,
@@ -121,10 +119,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 					to="/lab-tests/edit/$labTestId"
 					params={{ labTestId: labTest.id.toString() }}
 				>
-					<Button
-						variant="outline"
-						className="flex items-center gap-2"
-					>
+					<Button variant="outline" className="flex items-center gap-2">
 						<Edit className="h-4 w-4" />
 						Edit Test
 					</Button>
@@ -136,8 +131,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 					{labTest.testName}
 				</h1>
 				<p className="text-muted-foreground">
-					Lab test for {labTest.patient?.firstName}{" "}
-					{labTest.patient?.lastName}
+					Lab test for {labTest.patient?.firstName} {labTest.patient?.lastName}
 				</p>
 			</div>
 
@@ -159,10 +153,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 											: "Test has been ordered and is pending"}
 								</p>
 							</div>
-							<Badge
-								variant={getStatusColor(labTest.status)}
-								className="ml-4"
-							>
+							<Badge variant={getStatusColor(labTest.status)} className="ml-4">
 								{labTest.status}
 							</Badge>
 						</div>
@@ -171,9 +162,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 						<div className="flex items-center gap-2">
 							{labTest.status === "ordered" && (
 								<Button
-									onClick={() =>
-										handleStatusUpdate("in-progress")
-									}
+									onClick={() => handleStatusUpdate("in-progress")}
 									disabled={updateStatusMutation.isPending}
 									variant="outline"
 									size="lg"
@@ -183,9 +172,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 							)}
 							{labTest.status === "in-progress" && (
 								<Button
-									onClick={() =>
-										handleStatusUpdate("completed")
-									}
+									onClick={() => handleStatusUpdate("completed")}
 									disabled={updateStatusMutation.isPending}
 									size="lg"
 								>
@@ -212,22 +199,12 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="completedDate">
-									Completed Date
-								</Label>
+								<Label htmlFor="completedDate">Completed Date</Label>
 								<Input
 									id="completedDate"
 									type="date"
-									value={
-										completedDate
-											.toISOString()
-											.split("T")[0]
-									}
-									onChange={(e) =>
-										setCompletedDate(
-											new Date(e.target.value)
-										)
-									}
+									value={completedDate.toISOString().split("T")[0]}
+									onChange={(e) => setCompletedDate(new Date(e.target.value))}
 								/>
 							</div>
 						</div>
@@ -243,10 +220,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 						</div>
 						<Button
 							onClick={() => handleStatusUpdate("completed")}
-							disabled={
-								updateStatusMutation.isPending ||
-								!results.trim()
-							}
+							disabled={updateStatusMutation.isPending || !results.trim()}
 							className="w-full"
 						>
 							{updateStatusMutation.isPending
@@ -269,12 +243,9 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 					</CardHeader>
 					<CardContent className="space-y-3">
 						<div>
-							<p className="text-sm text-muted-foreground">
-								Name
-							</p>
+							<p className="text-sm text-muted-foreground">Name</p>
 							<p className="font-medium">
-								{labTest.patient?.firstName}{" "}
-								{labTest.patient?.lastName}
+								{labTest.patient?.firstName} {labTest.patient?.lastName}
 							</p>
 							<p className="text-sm text-muted-foreground">
 								ID: {labTest.patient?.patientId}
@@ -293,12 +264,9 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 					</CardHeader>
 					<CardContent className="space-y-3">
 						<div>
-							<p className="text-sm text-muted-foreground">
-								Name
-							</p>
+							<p className="text-sm text-muted-foreground">Name</p>
 							<p className="font-medium">
-								Dr. {labTest.doctor?.firstName}{" "}
-								{labTest.doctor?.lastName}
+								Dr. {labTest.doctor?.firstName} {labTest.doctor?.lastName}
 							</p>
 						</div>
 					</CardContent>
@@ -320,54 +288,34 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="space-y-3">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Test Name
-								</p>
-								<p className="font-medium">
-									{labTest.testName}
-								</p>
+								<p className="text-sm text-muted-foreground">Test Name</p>
+								<p className="font-medium">{labTest.testName}</p>
 							</div>
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Test Type
-								</p>
-								<p className="font-medium">
-									{labTest.testType}
-								</p>
+								<p className="text-sm text-muted-foreground">Test Type</p>
+								<p className="font-medium">{labTest.testType}</p>
 							</div>
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Order Date
-								</p>
+								<p className="text-sm text-muted-foreground">Order Date</p>
 								<p className="font-medium">
-									{new Date(
-										labTest.orderDate
-									).toLocaleDateString()}
+									{new Date(labTest.orderDate).toLocaleDateString()}
 								</p>
 							</div>
 						</div>
 
 						<div className="space-y-3">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Completed Date
-								</p>
+								<p className="text-sm text-muted-foreground">Completed Date</p>
 								<p className="font-medium">
 									{labTest.completedDate
-										? new Date(
-												labTest.completedDate
-											).toLocaleDateString()
+										? new Date(labTest.completedDate).toLocaleDateString()
 										: "Not completed"}
 								</p>
 							</div>
 							{labTest.normalRange && (
 								<div>
-									<p className="text-sm text-muted-foreground">
-										Normal Range
-									</p>
-									<p className="font-medium">
-										{labTest.normalRange}
-									</p>
+									<p className="text-sm text-muted-foreground">Normal Range</p>
+									<p className="font-medium">{labTest.normalRange}</p>
 								</div>
 							)}
 						</div>
@@ -383,15 +331,11 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 							<FileText className="h-5 w-5" />
 							Test Results
 						</CardTitle>
-						<CardDescription>
-							Laboratory findings and results
-						</CardDescription>
+						<CardDescription>Laboratory findings and results</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<div className="p-4 bg-muted/50 rounded-md">
-							<p className="text-sm whitespace-pre-wrap">
-								{labTest.results}
-							</p>
+							<p className="text-sm whitespace-pre-wrap">{labTest.results}</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -408,9 +352,7 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 					</CardHeader>
 					<CardContent>
 						<div className="p-4 bg-muted/50 rounded-md">
-							<p className="text-sm whitespace-pre-wrap">
-								{labTest.notes}
-							</p>
+							<p className="text-sm whitespace-pre-wrap">{labTest.notes}</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -427,31 +369,17 @@ export function LabTestDetail({ labTest, onBack }: LabTestDetailProps) {
 				<CardContent>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div>
-							<p className="text-sm text-muted-foreground">
-								Created
-							</p>
+							<p className="text-sm text-muted-foreground">Created</p>
 							<p className="font-medium">
-								{new Date(
-									labTest.createdAt
-								).toLocaleDateString()}{" "}
-								at{" "}
-								{new Date(
-									labTest.createdAt
-								).toLocaleTimeString()}
+								{new Date(labTest.createdAt).toLocaleDateString()} at{" "}
+								{new Date(labTest.createdAt).toLocaleTimeString()}
 							</p>
 						</div>
 						<div>
-							<p className="text-sm text-muted-foreground">
-								Last Updated
-							</p>
+							<p className="text-sm text-muted-foreground">Last Updated</p>
 							<p className="font-medium">
-								{new Date(
-									labTest.updatedAt
-								).toLocaleDateString()}{" "}
-								at{" "}
-								{new Date(
-									labTest.updatedAt
-								).toLocaleTimeString()}
+								{new Date(labTest.updatedAt).toLocaleDateString()} at{" "}
+								{new Date(labTest.updatedAt).toLocaleTimeString()}
 							</p>
 						</div>
 					</div>

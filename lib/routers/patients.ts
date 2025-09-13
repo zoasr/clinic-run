@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { createInsertSchema } from "drizzle-zod";
-import * as schema from "../db/schema/schema.js";
-import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
 import { and, desc, eq, like, lt, or } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import * as schema from "../db/schema/schema.js";
+import { authorizedProcedure, protectedProcedure, router } from "../trpc.js";
 
 const patientInputSchema = createInsertSchema(schema.patients).omit({
 	patientId: true,
@@ -15,7 +15,7 @@ export const patientsRouter = router({
 				search: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				cursor: z.number().optional(), // For infinite queries
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { search, limit, cursor } = input;
@@ -23,19 +23,13 @@ export const patientsRouter = router({
 			const whereConditions = [];
 
 			if (search) {
-				let [firstName, lastName] = search.split(" ");
+				const [firstName, lastName] = search.split(" ");
 				whereConditions.push(
 					or(
-						like(
-							schema.patients.firstName,
-							`%${firstName ? firstName : ""}%`
-						),
-						like(
-							schema.patients.lastName,
-							`%${lastName ? lastName : ""}%`
-						),
-						like(schema.patients.patientId, `%${search}%`)
-					)
+						like(schema.patients.firstName, `%${firstName ? firstName : ""}%`),
+						like(schema.patients.lastName, `%${lastName ? lastName : ""}%`),
+						like(schema.patients.patientId, `%${search}%`),
+					),
 				);
 			}
 
@@ -66,7 +60,7 @@ export const patientsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const patient = await ctx.db
@@ -112,7 +106,7 @@ export const patientsRouter = router({
 			z.object({
 				id: z.number(),
 				data: patientInputSchema.partial(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedPatient = await ctx.db
@@ -135,7 +129,7 @@ export const patientsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedPatient = await ctx.db

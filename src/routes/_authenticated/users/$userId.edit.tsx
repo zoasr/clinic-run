@@ -1,19 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
-import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { trpc, trpcClient } from "@/lib/trpc-client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Role, roles, roleSchema } from "@/lib/auth";
 import {
 	Card,
 	CardContent,
@@ -21,9 +12,18 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { PageLoading } from "@/components/ui/loading";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { type Role, roleSchema, roles } from "@/lib/auth";
+import { trpc, trpcClient } from "@/lib/trpc-client";
 
 const userFormSchema = z.object({
 	username: z.string().min(3, "Username must be at least 3 characters"),
@@ -70,7 +70,7 @@ function EditUserComponent() {
 			onError: (error: any) => {
 				toast.error(error.message || "Failed to update user");
 			},
-		})
+		}),
 	);
 
 	const form = useForm({
@@ -128,9 +128,7 @@ function EditUserComponent() {
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="mt-2 text-sm text-red-600">
@@ -158,9 +156,7 @@ function EditUserComponent() {
 										type="email"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="mt-2 text-sm text-red-600">
@@ -181,17 +177,13 @@ function EditUserComponent() {
 						>
 							{(field) => (
 								<div>
-									<Label htmlFor={field.name}>
-										First Name
-									</Label>
+									<Label htmlFor={field.name}>First Name</Label>
 									<Input
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="mt-2 text-sm text-red-600">
@@ -212,17 +204,13 @@ function EditUserComponent() {
 						>
 							{(field) => (
 								<div>
-									<Label htmlFor={field.name}>
-										Last Name
-									</Label>
+									<Label htmlFor={field.name}>Last Name</Label>
 									<Input
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 									/>
 									{field.state.meta.errors && (
 										<p className="mt-2 text-sm text-red-600">
@@ -245,19 +233,14 @@ function EditUserComponent() {
 									<Select
 										value={field.state.value}
 										defaultValue={field.state.value}
-										onValueChange={(value: Role) =>
-											field.handleChange(value)
-										}
+										onValueChange={(value: Role) => field.handleChange(value)}
 									>
 										<SelectTrigger>
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
 											{roles.map((role) => (
-												<SelectItem
-													key={role}
-													value={role}
-												>
+												<SelectItem key={role} value={role}>
 													{role}
 												</SelectItem>
 											))}
@@ -285,10 +268,7 @@ function EditUserComponent() {
 								Cancel
 							</Button>
 							<form.Subscribe
-								selector={(state) => [
-									state.canSubmit,
-									state.isSubmitting,
-								]}
+								selector={(state) => [state.canSubmit, state.isSubmitting]}
 							>
 								{([canSubmit, isSubmitting]) => (
 									<Button
@@ -296,9 +276,7 @@ function EditUserComponent() {
 										disabled={!canSubmit || isSubmitting}
 										className="flex-1"
 									>
-										{isSubmitting
-											? "Updating..."
-											: "Update User"}
+										{isSubmitting ? "Updating..." : "Update User"}
 									</Button>
 								)}
 							</form.Subscribe>

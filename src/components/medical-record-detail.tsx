@@ -1,3 +1,13 @@
+import {
+	ArrowLeft,
+	Calendar,
+	Edit,
+	FileText,
+	Pill,
+	Stethoscope,
+	User,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -6,17 +16,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-	ArrowLeft,
-	Edit,
-	User,
-	Calendar,
-	Stethoscope,
-	FileText,
-	Pill,
-} from "lucide-react";
-import { MedicalRecord } from "@/hooks/useMedicalRecords";
+import type { MedicalRecord } from "@/hooks/useMedicalRecords";
 
 interface MedicalRecordDetailProps {
 	record: MedicalRecord;
@@ -58,8 +58,7 @@ export function MedicalRecordDetail({
 							Medical Record
 						</h1>
 						<p className="text-muted-foreground">
-							{record.patient?.firstName}{" "}
-							{record.patient?.lastName} -{" "}
+							{record.patient?.firstName} {record.patient?.lastName} -{" "}
 							{new Date(record.visitDate).toLocaleDateString()}
 						</p>
 					</div>
@@ -83,8 +82,7 @@ export function MedicalRecordDetail({
 						<div className="space-y-2">
 							<div>
 								<p className="font-semibold">
-									{record.patient?.firstName}{" "}
-									{record.patient?.lastName}
+									{record.patient?.firstName} {record.patient?.lastName}
 								</p>
 								<p className="text-sm text-muted-foreground">
 									ID: {record.patient?.patientId}
@@ -96,40 +94,27 @@ export function MedicalRecordDetail({
 
 				<Card>
 					<CardHeader className="flex flex-row items-center space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">
-							Visit Details
-						</CardTitle>
+						<CardTitle className="text-sm font-medium">Visit Details</CardTitle>
 						<Calendar className="h-4 w-4 ml-auto text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
 						<div className="space-y-2">
 							<div className="flex justify-between">
-								<span className="text-sm text-muted-foreground">
-									Date:
-								</span>
+								<span className="text-sm text-muted-foreground">Date:</span>
 								<span className="text-sm font-medium">
-									{new Date(
-										record.visitDate
-									).toLocaleDateString()}
+									{new Date(record.visitDate).toLocaleDateString()}
 								</span>
 							</div>
 							<div className="flex justify-between">
-								<span className="text-sm text-muted-foreground">
-									Time
-								</span>
+								<span className="text-sm text-muted-foreground">Time</span>
 								<span className="text-sm font-medium">
-									{new Date(
-										record.visitDate
-									).toLocaleTimeString()}
+									{new Date(record.visitDate).toLocaleTimeString()}
 								</span>
 							</div>
 							<div className="flex justify-between">
-								<span className="text-sm text-muted-foreground">
-									Doctor:
-								</span>
+								<span className="text-sm text-muted-foreground">Doctor:</span>
 								<span className="text-sm font-medium">
-									Dr. {record.doctor?.firstName}{" "}
-									{record.doctor?.lastName}
+									Dr. {record.doctor?.firstName} {record.doctor?.lastName}
 								</span>
 							</div>
 						</div>
@@ -138,9 +123,7 @@ export function MedicalRecordDetail({
 
 				<Card>
 					<CardHeader className="flex flex-row items-center space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">
-							Record Status
-						</CardTitle>
+						<CardTitle className="text-sm font-medium">Record Status</CardTitle>
 						<FileText className="h-4 w-4 ml-auto text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
@@ -150,8 +133,7 @@ export function MedicalRecordDetail({
 							</Badge>
 							{record.appointmentId && (
 								<p className="text-xs text-muted-foreground">
-									Linked to appointment #
-									{record.appointmentId}
+									Linked to appointment #{record.appointmentId}
 								</p>
 							)}
 						</div>
@@ -175,29 +157,19 @@ export function MedicalRecordDetail({
 									<p className="text-sm text-muted-foreground">
 										Blood Pressure
 									</p>
-									<p className="font-semibold">
-										{vitalSigns.bloodPressure}
-									</p>
+									<p className="font-semibold">{vitalSigns.bloodPressure}</p>
 								</div>
 							)}
 							{vitalSigns.temperature && (
 								<div className="text-center p-3 bg-muted/50 rounded-lg">
-									<p className="text-sm text-muted-foreground">
-										Temperature
-									</p>
-									<p className="font-semibold">
-										{vitalSigns.temperature}°C
-									</p>
+									<p className="text-sm text-muted-foreground">Temperature</p>
+									<p className="font-semibold">{vitalSigns.temperature}°C</p>
 								</div>
 							)}
 							{vitalSigns.pulse && (
 								<div className="text-center p-3 bg-muted/50 rounded-lg">
-									<p className="text-sm text-muted-foreground">
-										Pulse
-									</p>
-									<p className="font-semibold">
-										{vitalSigns.pulse} bpm
-									</p>
+									<p className="text-sm text-muted-foreground">Pulse</p>
+									<p className="font-semibold">{vitalSigns.pulse} bpm</p>
 								</div>
 							)}
 							{vitalSigns.respiratoryRate && (
@@ -205,29 +177,19 @@ export function MedicalRecordDetail({
 									<p className="text-sm text-muted-foreground">
 										Respiratory Rate
 									</p>
-									<p className="font-semibold">
-										{vitalSigns.respiratoryRate}
-									</p>
+									<p className="font-semibold">{vitalSigns.respiratoryRate}</p>
 								</div>
 							)}
 							{vitalSigns.weight && (
 								<div className="text-center p-3 bg-muted/50 rounded-lg">
-									<p className="text-sm text-muted-foreground">
-										Weight
-									</p>
-									<p className="font-semibold">
-										{vitalSigns.weight} kg
-									</p>
+									<p className="text-sm text-muted-foreground">Weight</p>
+									<p className="font-semibold">{vitalSigns.weight} kg</p>
 								</div>
 							)}
 							{vitalSigns.height && (
 								<div className="text-center p-3 bg-muted/50 rounded-lg">
-									<p className="text-sm text-muted-foreground">
-										Height
-									</p>
-									<p className="font-semibold">
-										{vitalSigns.height} cm
-									</p>
+									<p className="text-sm text-muted-foreground">Height</p>
+									<p className="font-semibold">{vitalSigns.height} cm</p>
 								</div>
 							)}
 						</div>
@@ -243,9 +205,7 @@ export function MedicalRecordDetail({
 						<Card>
 							<CardHeader>
 								<CardTitle>Chief Complaint</CardTitle>
-								<CardDescription>
-									Patient's primary concern
-								</CardDescription>
+								<CardDescription>Patient's primary concern</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<p className="text-sm leading-relaxed">
@@ -259,9 +219,7 @@ export function MedicalRecordDetail({
 						<Card>
 							<CardHeader>
 								<CardTitle>Diagnosis</CardTitle>
-								<CardDescription>
-									Clinical diagnosis
-								</CardDescription>
+								<CardDescription>Clinical diagnosis</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<Badge variant="outline" className="text-sm">
@@ -297,9 +255,7 @@ export function MedicalRecordDetail({
 									<Pill className="h-4 w-4" />
 									Prescription
 								</CardTitle>
-								<CardDescription>
-									Medications prescribed
-								</CardDescription>
+								<CardDescription>Medications prescribed</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<p className="text-sm leading-relaxed whitespace-pre-wrap">

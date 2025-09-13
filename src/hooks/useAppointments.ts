@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 // Infer types from tRPC
 export type AppointmentListParams =
@@ -19,10 +19,9 @@ export function useAppointments(params: AppointmentListParams) {
 				search: params.search,
 			},
 			{
-				getNextPageParam: (lastPage) =>
-					lastPage.nextCursor ?? undefined,
-			}
-		)
+				getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+			},
+		),
 	);
 }
 export function useAppointmentMonth(date: Date) {
@@ -40,7 +39,5 @@ export function useDeleteAppointment(options) {
 }
 
 export function usePatientAppointments(patientId: number) {
-	return useQuery(
-		trpc.appointments.getByPatientId.queryOptions({ patientId })
-	);
+	return useQuery(trpc.appointments.getByPatientId.queryOptions({ patientId }));
 }

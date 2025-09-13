@@ -1,10 +1,14 @@
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen";
-import { AuthContextType, AuthProvider, useAuth } from "./contexts/AuthContext";
+import {
+	type AuthContextType,
+	AuthProvider,
+	useAuth,
+} from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TRPCProviderWrapper } from "./lib/trpc-provider";
+import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
 // Create a new router instance

@@ -1,13 +1,13 @@
-import { useMemo, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import $ from "currency-symbol-map";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
-import { trpc } from "@/lib/trpc-client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
 	Card,
 	CardContent,
@@ -15,17 +15,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-
-import { cn, setSettings } from "@/lib/utils";
 import {
 	Command,
 	CommandEmpty,
@@ -34,16 +23,25 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-
-import { toast } from "sonner";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { systemSettingsSchema } from "@/hooks/useSettings";
-import $ from "currency-symbol-map";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { trpc } from "@/lib/trpc-client";
+import { cn, setSettings } from "@/lib/utils";
 
 interface SystemSetting {
 	id: number;
@@ -96,7 +94,7 @@ const CurrencySelector = ({
 					<CheckIcon
 						className={cn(
 							"mr-2 h-4 w-4",
-							value === c ? "opacity-100" : "opacity-0"
+							value === c ? "opacity-100" : "opacity-0",
 						)}
 					/>
 					<span className="font-bold text-primary">{$(c)} </span>
@@ -115,12 +113,8 @@ const CurrencySelector = ({
 					className="w-full justify-between"
 				>
 					<div className="flex gap-2">
-						<span className="font-bold text-primary">
-							{$(currencyValue)}{" "}
-						</span>
-						<span className="">
-							{getDisplayName(currencyValue)}
-						</span>
+						<span className="font-bold text-primary">{$(currencyValue)} </span>
+						<span className="">{getDisplayName(currencyValue)}</span>
 					</div>
 					<ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
@@ -207,7 +201,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			onError: (error: any) => {
 				toast.error(error.message || "Failed to update settings");
 			},
-		})
+		}),
 	);
 
 	const form = useForm({
@@ -233,8 +227,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					"sidebar_collapsed",
 					"compact_mode",
 				].includes(key),
-				category:
-					settings.find((s) => s.key === key)?.category || "clinic",
+				category: settings.find((s) => s.key === key)?.category || "clinic",
 			}));
 
 			await updateSettingsMutation.mutateAsync(updates);
@@ -269,29 +262,20 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 						<form.Field
 							name="clinic_name"
 							validators={{
-								onChange: z
-									.string()
-									.min(1, "Clinic name is required"),
+								onChange: z.string().min(1, "Clinic name is required"),
 							}}
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>
-										Clinic Name
-									</Label>
+									<Label htmlFor={field.name}>Clinic Name</Label>
 									<Input
 										id={field.name}
 										value={field.state.value || ""}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Enter clinic name"
 									/>
 									{field.state.meta.errors.length > 0 && (
 										<p className="text-sm text-destructive">
-											{
-												field.state.meta.errors[0]
-													?.message
-											}
+											{field.state.meta.errors[0]?.message}
 										</p>
 									)}
 								</div>
@@ -306,18 +290,13 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 									<Textarea
 										id={field.name}
 										value={field.state.value || ""}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Enter clinic address"
 										rows={3}
 									/>
 									{field.state.meta.errors.length > 0 && (
 										<p className="text-sm text-destructive">
-											{
-												field.state.meta.errors[0]
-													?.message
-											}
+											{field.state.meta.errors[0]?.message}
 										</p>
 									)}
 								</div>
@@ -329,25 +308,16 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 								name="clinic_phone"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											Phone
-										</Label>
+										<Label htmlFor={field.name}>Phone</Label>
 										<Input
 											id={field.name}
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="Enter phone number"
 										/>
 										{field.state.meta.errors.length > 0 && (
 											<p className="text-sm text-destructive">
-												{
-													field.state.meta.errors[0]
-														?.message
-												}
+												{field.state.meta.errors[0]?.message}
 											</p>
 										)}
 									</div>
@@ -358,26 +328,17 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 								name="clinic_email"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											Email
-										</Label>
+										<Label htmlFor={field.name}>Email</Label>
 										<Input
 											id={field.name}
 											type="email"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="Enter email address"
 										/>
 										{field.state.meta.errors.length > 0 && (
 											<p className="text-sm text-destructive">
-												{
-													field.state.meta.errors[0]
-														?.message
-												}
+												{field.state.meta.errors[0]?.message}
 											</p>
 										)}
 									</div>
@@ -389,23 +350,16 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 							name="working_hours"
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>
-										Working Hours
-									</Label>
+									<Label htmlFor={field.name}>Working Hours</Label>
 									<Input
 										id={field.name}
 										value={field.state.value || ""}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="e.g., 9:00 AM - 5:00 PM"
 									/>
 									{field.state.meta.errors.length > 0 && (
 										<p className="text-sm text-destructive">
-											{
-												field.state.meta.errors[0]
-													?.message
-											}
+											{field.state.meta.errors[0]?.message}
 										</p>
 									)}
 								</div>
@@ -416,21 +370,15 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 							children={(field) => (
 								<div className="space-y-2">
 									<Label htmlFor={field.name}>
-										Currency for invoices, and medication
-										prices
+										Currency for invoices, and medication prices
 									</Label>
 									<CurrencySelector
-										onChange={(val) =>
-											field.handleChange(val)
-										}
+										onChange={(val) => field.handleChange(val)}
 										value={field.state.value}
 									/>
 									{field.state.meta.errors.length > 0 && (
 										<p className="text-sm text-destructive">
-											{
-												field.state.meta.errors[0]
-													?.message
-											}
+											{field.state.meta.errors[0]?.message}
 										</p>
 									)}
 								</div>
@@ -456,9 +404,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 							<form.Field
 								name="session_timeout"
 								validators={{
-									onChange: z
-										.number()
-										.min(1, "Must be at least 1 minute"),
+									onChange: z.number().min(1, "Must be at least 1 minute"),
 								}}
 								children={(field) => (
 									<div className="space-y-2">
@@ -470,19 +416,13 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 											type="number"
 											value={field.state.value || ""}
 											onChange={(e) =>
-												field.handleChange(
-													parseInt(e.target.value) ||
-														0
-												)
+												field.handleChange(parseInt(e.target.value) || 0)
 											}
 											min="1"
 										/>
 										{field.state.meta.errors.length > 0 && (
 											<p className="text-sm text-destructive">
-												{
-													field.state.meta.errors[0]
-														?.message
-												}
+												{field.state.meta.errors[0]?.message}
 											</p>
 										)}
 									</div>
@@ -492,36 +432,23 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 							<form.Field
 								name="password_min_length"
 								validators={{
-									onChange: z
-										.number()
-										.min(
-											6,
-											"Must be at least 6 characters"
-										),
+									onChange: z.number().min(6, "Must be at least 6 characters"),
 								}}
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											Minimum Password Length
-										</Label>
+										<Label htmlFor={field.name}>Minimum Password Length</Label>
 										<Input
 											id={field.name}
 											type="number"
 											value={field.state.value || ""}
 											onChange={(e) =>
-												field.handleChange(
-													parseInt(e.target.value) ||
-														0
-												)
+												field.handleChange(parseInt(e.target.value) || 0)
 											}
 											min="6"
 										/>
 										{field.state.meta.errors.length > 0 && (
 											<p className="text-sm text-destructive">
-												{
-													field.state.meta.errors[0]
-														?.message
-												}
+												{field.state.meta.errors[0]?.message}
 											</p>
 										)}
 									</div>
@@ -551,9 +478,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 							}}
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>
-										Theme Mode
-									</Label>
+									<Label htmlFor={field.name}>Theme Mode</Label>
 									<Select
 										value={field.state.value || "light"}
 										onValueChange={field.handleChange}
@@ -562,23 +487,14 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 											<SelectValue placeholder="Select theme mode" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="light">
-												Light
-											</SelectItem>
-											<SelectItem value="dark">
-												Dark
-											</SelectItem>
-											<SelectItem value="system">
-												System
-											</SelectItem>
+											<SelectItem value="light">Light</SelectItem>
+											<SelectItem value="dark">Dark</SelectItem>
+											<SelectItem value="system">System</SelectItem>
 										</SelectContent>
 									</Select>
 									{field.state.meta.errors.length > 0 && (
 										<p className="text-sm text-destructive">
-											{
-												field.state.meta.errors[0]
-													?.message
-											}
+											{field.state.meta.errors[0]?.message}
 										</p>
 									)}
 								</div>
@@ -591,12 +507,9 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 								children={(field) => (
 									<div className="flex items-center justify-between">
 										<div className="space-y-0.5">
-											<Label htmlFor={field.name}>
-												Collapsed Sidebar
-											</Label>
+											<Label htmlFor={field.name}>Collapsed Sidebar</Label>
 											<p className="text-sm text-muted-foreground">
-												Keep sidebar collapsed by
-												default
+												Keep sidebar collapsed by default
 											</p>
 										</div>
 										<Switch
@@ -613,12 +526,9 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 								children={(field) => (
 									<div className="flex items-center justify-between">
 										<div className="space-y-0.5">
-											<Label htmlFor={field.name}>
-												Compact Mode
-											</Label>
+											<Label htmlFor={field.name}>Compact Mode</Label>
 											<p className="text-sm text-muted-foreground">
-												Use compact layout for better
-												space utilization
+												Use compact layout for better space utilization
 											</p>
 										</div>
 										<Switch
@@ -643,15 +553,9 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 						Reset
 					</Button>
 					<form.Subscribe
-						selector={(state) => [
-							state.canSubmit,
-							state.isSubmitting,
-						]}
+						selector={(state) => [state.canSubmit, state.isSubmitting]}
 						children={([canSubmit, isSubmitting]) => (
-							<Button
-								type="submit"
-								disabled={!canSubmit || isSubmitting}
-							>
+							<Button type="submit" disabled={!canSubmit || isSubmitting}>
 								{isSubmitting ? "Saving..." : "Save Settings"}
 							</Button>
 						)}

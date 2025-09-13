@@ -1,5 +1,5 @@
-import { Search } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
+import { Search } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import {
@@ -46,9 +46,7 @@ export function SearchForm({ onSearch, ...props }: SearchFormProps) {
 									placeholder="Search the docs..."
 									className="pl-8"
 									value={field.state.value}
-									onChange={(e) =>
-										field.handleChange(e.target.value)
-									}
+									onChange={(e) => field.handleChange(e.target.value)}
 								/>
 							</>
 						)}

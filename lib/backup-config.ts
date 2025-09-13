@@ -1,5 +1,5 @@
-import path from "path";
 import { readdir } from "node:fs/promises";
+import path from "node:path";
 
 export interface BackupConfig {
 	enabled: boolean;
@@ -39,11 +39,7 @@ export class BackupManager {
 
 		// 1. Try %LOCALAPPDATA%\ClinicSystem\Backups (most common for user data)
 		if (process.env["LOCALAPPDATA"]) {
-			return path.join(
-				process.env["LOCALAPPDATA"],
-				"ClinicSystem",
-				"Backups"
-			);
+			return path.join(process.env["LOCALAPPDATA"], "ClinicSystem", "Backups");
 		}
 
 		// 2. Try %APPDATA%\ClinicSystem\Backups
@@ -58,13 +54,13 @@ export class BackupManager {
 				"AppData",
 				"Local",
 				"ClinicSystem",
-				"Backups"
+				"Backups",
 			);
 		}
 
 		// 4. Fallback to current directory (might not work in Program Files)
 		console.warn(
-			"Could not find user data directory, falling back to current directory"
+			"Could not find user data directory, falling back to current directory",
 		);
 		return path.join(process.cwd(), "backups");
 	}
@@ -79,7 +75,7 @@ export class BackupManager {
 		}
 
 		console.log(
-			`Starting automatic backups every ${this.config.intervalHours} hours`
+			`Starting automatic backups every ${this.config.intervalHours} hours`,
 		);
 
 		// Clear any existing timer
@@ -132,7 +128,7 @@ export class BackupManager {
 		newestBackup: Date | null;
 	}> {
 		try {
-			const path = await import("path");
+			const path = await import("node:path");
 
 			const backupDir = path.join(process.cwd(), this.config.backupDir);
 
@@ -143,7 +139,7 @@ export class BackupManager {
 					stderr: "pipe",
 				});
 				await mkdirProcess.exited;
-			} catch (error) {
+			} catch (_error) {
 				// Directory might already exist
 			}
 
@@ -165,26 +161,19 @@ export class BackupManager {
 						const filePath = path.join(backupDir, fileName);
 
 						// Get file stats using stat command
-						const statProcess = Bun.spawn(
-							["stat", "-c", "%s %Y", filePath],
-							{
-								stdout: "pipe",
-								stderr: "pipe",
-							}
-						);
+						const statProcess = Bun.spawn(["stat", "-c", "%s %Y", filePath], {
+							stdout: "pipe",
+							stderr: "pipe",
+						});
 
-						const statOutput = await new Response(
-							statProcess.stdout
-						).text();
+						const statOutput = await new Response(statProcess.stdout).text();
 						const statExitCode = await statProcess.exited;
 
 						if (statExitCode === 0) {
-							const [sizeStr, mtimeStr] = statOutput
-								.trim()
-								.split(" ");
-							const size = parseInt(sizeStr!);
+							const [sizeStr, mtimeStr] = statOutput.trim().split(" ");
+							const size = parseInt(sizeStr ? sizeStr : "0");
 							const modified = new Date(
-								parseInt(mtimeStr!) * 1000
+								parseInt(mtimeStr ? mtimeStr : "0") * 1000,
 							);
 
 							backupFiles.push({
@@ -208,19 +197,15 @@ export class BackupManager {
 
 			const fileStats = backupFiles;
 
-			const totalSize = fileStats.reduce(
-				(sum, file) => sum + file.size,
-				0
-			);
+			const totalSize = fileStats.reduce((sum, file) => sum + file.size, 0);
 			const sortedByDate = fileStats.sort(
-				(a, b) => b.modified.getTime() - a.modified.getTime()
+				(a, b) => b.modified.getTime() - a.modified.getTime(),
 			);
 
 			return {
 				totalBackups: backupFiles.length,
 				totalSize,
-				oldestBackup:
-					sortedByDate[sortedByDate.length - 1]?.modified || null,
+				oldestBackup: sortedByDate[sortedByDate.length - 1]?.modified || null,
 				newestBackup: sortedByDate[0]?.modified || null,
 			};
 		} catch (error) {
@@ -246,7 +231,7 @@ export class BackupManager {
 		}>
 	> {
 		try {
-			const path = await import("path");
+			const path = await import("node:path");
 
 			const backupDir = path.join(process.cwd(), this.config.backupDir);
 
@@ -270,27 +255,18 @@ export class BackupManager {
 						const filePath = path.join(backupDir, fileName);
 
 						// Get file stats using stat command
-						const statProcess = Bun.spawn(
-							["stat", "-c", "%s %Y", filePath],
-							{
-								stdout: "pipe",
-								stderr: "pipe",
-							}
-						);
+						const statProcess = Bun.spawn(["stat", "-c", "%s %Y", filePath], {
+							stdout: "pipe",
+							stderr: "pipe",
+						});
 
-						const statOutput = await new Response(
-							statProcess.stdout
-						).text();
+						const statOutput = await new Response(statProcess.stdout).text();
 						const statExitCode = await statProcess.exited;
 
 						if (statExitCode === 0) {
-							const [sizeStr, mtimeStr] = statOutput
-								.trim()
-								.split(" ");
-							const size = parseInt(sizeStr!);
-							const created = new Date(
-								parseInt(mtimeStr!) * 1000
-							);
+							const [sizeStr, mtimeStr] = statOutput.trim().split(" ");
+							const size = parseInt(sizeStr || "0");
+							const created = new Date(parseInt(mtimeStr || "0") * 1000);
 
 							backups.push({
 								name: fileName,
@@ -304,9 +280,7 @@ export class BackupManager {
 			}
 
 			// Sort by creation date (newest first)
-			return backups.sort(
-				(a, b) => b.created.getTime() - a.created.getTime()
-			);
+			return backups.sort((a, b) => b.created.getTime() - a.created.getTime());
 		} catch (error) {
 			console.error("Failed to list backups:", error);
 			return [];
@@ -318,7 +292,7 @@ export class BackupManager {
 	 */
 	async restoreFromBackup(backupPath: string): Promise<void> {
 		try {
-			const path = await import("path");
+			const path = await import("node:path");
 
 			// Validate backup file exists using Bun
 			const backupFile = Bun.file(backupPath);
@@ -335,7 +309,7 @@ export class BackupManager {
 			const currentBackupPath = path.join(
 				process.cwd(),
 				this.config.backupDir,
-				currentBackupName
+				currentBackupName,
 			);
 
 			try {
@@ -347,14 +321,10 @@ export class BackupManager {
 					// Copy current database to backup location using Bun
 					const destFile = Bun.file(currentBackupPath);
 					await Bun.write(destFile, currentDbFile);
-					console.log(
-						`Current database backed up to: ${currentBackupPath}`
-					);
+					console.log(`Current database backed up to: ${currentBackupPath}`);
 				}
-			} catch (error) {
-				console.log(
-					"Could not backup current database (might not exist)"
-				);
+			} catch (_error) {
+				console.log("Could not backup current database (might not exist)");
 			}
 
 			// Restore from backup using Bun

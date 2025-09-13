@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
+	ArrowDownIcon,
+	Calendar,
+	ChevronDownCircle,
 	ChevronLeft,
 	ChevronRight,
-	Calendar,
 	Plus,
-	ArrowDownIcon,
-	ChevronDownCircle,
 } from "lucide-react";
-import { Appointment, useAppointmentMonth } from "@/hooks/useAppointments";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type Appointment, useAppointmentMonth } from "@/hooks/useAppointments";
 import { LoadingCards } from "./ui/loading";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface AppointmentCalendarProps {
 	// appointments: Appointment[];
@@ -124,8 +124,7 @@ export function AppointmentCalendar({
 				<div className="flex items-center justify-between">
 					<CardTitle className="flex items-center gap-2">
 						<Calendar className="h-5 w-5" />
-						{monthNames[currentDate.getMonth()]}{" "}
-						{currentDate.getFullYear()}
+						{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
 					</CardTitle>
 					<div className="flex gap-2">
 						<Button
@@ -169,7 +168,7 @@ export function AppointmentCalendar({
 						const date = new Date(
 							currentDate.getFullYear(),
 							currentDate.getMonth(),
-							day
+							day,
 						);
 						const dayAppointments = getAppointmentsForDate(date);
 
@@ -200,47 +199,43 @@ export function AppointmentCalendar({
 										</div>
 
 										<div className="space-y-2">
-											{dayAppointments
-												.slice(0, 2)
-												.map((appointment) => (
-													<div
-														key={appointment.id}
-														className="text-xs p-1 rounded cursor-pointer hover:opacity-80 border bg-accent"
-														style={{
-															backgroundColor: `${getStatusColor(appointment.status)}20`,
-														}}
-														onClick={(e) => {
+											{dayAppointments.slice(0, 2).map((appointment) => (
+												<div
+													key={appointment.id}
+													role="dialog"
+													className="text-xs p-1 rounded cursor-pointer hover:opacity-80 border bg-accent"
+													style={{
+														backgroundColor: `${getStatusColor(appointment.status)}20`,
+													}}
+													onClick={(e) => {
+														e.stopPropagation();
+														onAppointmentClick(appointment);
+													}}
+													onKeyDown={(e) => {
+														if (e.key === "Enter") {
 															e.stopPropagation();
-															onAppointmentClick(
-																appointment
-															);
-														}}
-													>
-														<div className="flex items-center gap-1">
-															<div
-																className={`w-2 h-2 rounded-full ${getStatusColor(appointment.status)}`}
-															></div>
-															<span className="truncate">
-																{
-																	appointment.appointmentTime
-																}{" "}
-																{
-																	appointment
-																		.patient
-																		?.firstName
-																}
-															</span>
-														</div>
+															onAppointmentClick(appointment);
+														}
+													}}
+												>
+													<div className="flex items-center gap-1">
+														<div
+															className={`w-2 h-2 rounded-full ${getStatusColor(appointment.status)}`}
+														></div>
+														<span className="truncate">
+															{appointment.appointmentTime}{" "}
+															{appointment.patient?.firstName}
+														</span>
 													</div>
-												))}
+												</div>
+											))}
 											{dayAppointments.length > 2 && (
 												<Button
 													variant="outline"
 													className="text-xs text-muted-foreground text-center p-1 w-full"
 												>
-													+
-													{dayAppointments.length - 2}{" "}
-													more <ChevronDownCircle />
+													+{dayAppointments.length - 2} more{" "}
+													<ChevronDownCircle />
 												</Button>
 											)}
 										</div>
@@ -250,6 +245,7 @@ export function AppointmentCalendar({
 									<div className="space-y-4">
 										{dayAppointments.map((appointment) => (
 											<div
+												role="dialog"
 												key={appointment.id}
 												className="text-xs p-1 rounded cursor-pointer hover:opacity-80 border bg-accent"
 												style={{
@@ -257,9 +253,12 @@ export function AppointmentCalendar({
 												}}
 												onClick={(e) => {
 													e.stopPropagation();
-													onAppointmentClick(
-														appointment
-													);
+													onAppointmentClick(appointment);
+												}}
+												onKeyDown={(e) => {
+													if (e.key === "Enter") {
+														onAppointmentClick(appointment);
+													}
 												}}
 											>
 												<div className="flex items-center gap-1">
@@ -267,13 +266,8 @@ export function AppointmentCalendar({
 														className={`w-2 h-2 rounded-full ${getStatusColor(appointment.status)}`}
 													></div>
 													<span className="truncate">
-														{
-															appointment.appointmentTime
-														}{" "}
-														{
-															appointment.patient
-																?.firstName
-														}
+														{appointment.appointmentTime}{" "}
+														{appointment.patient?.firstName}
 													</span>
 												</div>
 											</div>

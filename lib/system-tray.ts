@@ -1,6 +1,7 @@
 // import { exec } from "child_process";
-import path from "path";
+
 import { readdir } from "node:fs/promises";
+import path from "node:path";
 
 export async function setupTray(port: number) {
 	const isDev = process.env.NODE_ENV === "development";
@@ -15,13 +16,13 @@ export async function setupTray(port: number) {
 				{
 					stdout: "pipe",
 					stderr: "pipe",
-				}
+				},
 			);
 			await browserProcess.exited;
 			console.log(
-				`Clinic System opened in browser at http://localhost:${port}`
+				`Clinic System opened in browser at http://localhost:${port}`,
 			);
-		} catch (error) {
+		} catch (_error) {
 			console.log(`Please open http://localhost:${port} in your browser`);
 		}
 	}
@@ -69,11 +70,7 @@ function getUserBackupPath(): string {
 
 	// 1. Try %LOCALAPPDATA%\ClinicSystem\Backups (most common for user data)
 	if (process.env["LOCALAPPDATA"]) {
-		return path.join(
-			process.env["LOCALAPPDATA"],
-			"ClinicSystem",
-			"Backups"
-		);
+		return path.join(process.env["LOCALAPPDATA"], "ClinicSystem", "Backups");
 	}
 
 	// 2. Try %APPDATA%\ClinicSystem\Backups
@@ -88,13 +85,13 @@ function getUserBackupPath(): string {
 			"AppData",
 			"Local",
 			"ClinicSystem",
-			"Backups"
+			"Backups",
 		);
 	}
 
 	// 4. Fallback to current directory (might not work in Program Files)
 	console.warn(
-		"Could not find user data directory, falling back to current directory"
+		"Could not find user data directory, falling back to current directory",
 	);
 	return path.join(process.cwd(), "backups");
 }
@@ -109,10 +106,7 @@ export async function createBackup() {
 
 		// Create backup filename with timestamp
 		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-		const backupPath = path.join(
-			backupDir,
-			`clinic-backup-${timestamp}.db`
-		);
+		const backupPath = path.join(backupDir, `clinic-backup-${timestamp}.db`);
 
 		// Check if database file exists
 		try {
@@ -122,7 +116,7 @@ export async function createBackup() {
 				console.log("Database file not found, skipping backup");
 				return;
 			}
-		} catch (error) {
+		} catch (_error) {
 			console.log("Database file not found, skipping backup");
 			return;
 		}
@@ -155,7 +149,7 @@ async function ensureDirectoryExists(dirPath: string): Promise<void> {
 		if (output !== 0) {
 			throw new Error("Failed to create directory");
 		}
-	} catch (error) {
+	} catch (_error) {
 		// Directory might already exist, ignore error
 		console.log(`Directory creation attempted: ${dirPath}`);
 	}
@@ -176,28 +170,21 @@ async function cleanupOldBackups(backupDir: string) {
 			const parts = file.split(/\s+/);
 			if (parts.length >= 9) {
 				const fileName = parts.slice(8).join(" ");
-				if (
-					fileName.startsWith("clinic-backup-") &&
-					fileName.endsWith(".db")
-				) {
+				if (fileName.startsWith("clinic-backup-") && fileName.endsWith(".db")) {
 					const filePath = path.join(backupDir, fileName);
 					try {
 						const file = Bun.file(filePath);
 						const exists = await file.exists();
 						if (exists) {
 							// Get file modification time using stat command
-							const statProcess = Bun.spawn(
-								["stat", "-c", "%Y", filePath],
-								{
-									stdout: "pipe",
-									stderr: "pipe",
-								}
-							);
+							const statProcess = Bun.spawn(["stat", "-c", "%Y", filePath], {
+								stdout: "pipe",
+								stderr: "pipe",
+							});
 							const timestampStr = await new Response(
-								statProcess.stdout
+								statProcess.stdout,
 							).text();
-							const timestamp =
-								parseInt(timestampStr.trim()) * 1000; // Convert to milliseconds
+							const timestamp = parseInt(timestampStr.trim()) * 1000; // Convert to milliseconds
 
 							backupFiles.push({
 								name: fileName,
@@ -206,10 +193,7 @@ async function cleanupOldBackups(backupDir: string) {
 							});
 						}
 					} catch (error) {
-						console.log(
-							`Could not process file ${fileName}:`,
-							error
-						);
+						console.log(`Could not process file ${fileName}:`, error);
 					}
 				}
 			}

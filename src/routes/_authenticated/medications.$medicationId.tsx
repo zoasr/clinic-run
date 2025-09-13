@@ -1,11 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { MedicationForm } from "@/components/medication-form";
-import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/medications/$medicationId"
+	"/_authenticated/medications/$medicationId",
 )({
 	loader: () => ({
 		crumb: "Edit Medication",
@@ -23,7 +23,7 @@ function RouteComponent() {
 	} = useQuery(
 		trpc.medications.getById.queryOptions({
 			id: Number(medicationId),
-		})
+		}),
 	);
 
 	if (isLoading) {

@@ -1,6 +1,6 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 // Infer types from tRPC
 type Invoice = AppRouter["invoices"]["getById"]["_def"]["$types"]["output"];
@@ -22,20 +22,20 @@ export function useInvoice(invoiceId: number) {
 	return useQuery(
 		trpc.invoices.getById.queryOptions(
 			{ id: invoiceId },
-			{ enabled: !!invoiceId, retry: false }
-		)
+			{ enabled: !!invoiceId, retry: false },
+		),
 	);
 }
 
 export function usePatientInvoices(
 	patientId: number,
-	params?: Omit<InvoiceListParams, "patientId">
+	params?: Omit<InvoiceListParams, "patientId">,
 ) {
 	return useQuery(
 		trpc.invoices.getByPatientId.queryOptions(
 			{ patientId, ...params },
-			{ enabled: !!patientId }
-		)
+			{ enabled: !!patientId },
+		),
 	);
 }
 

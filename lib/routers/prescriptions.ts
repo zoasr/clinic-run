@@ -1,9 +1,9 @@
-import { z } from "zod";
-import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
-import { eq, and, desc, lt, or } from "drizzle-orm";
-import * as schema from "../db/schema/schema.js";
-import * as authSchema from "../db/schema/auth-schema.js";
+import { and, desc, eq, lt, or } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import * as authSchema from "../db/schema/auth-schema.js";
+import * as schema from "../db/schema/schema.js";
+import { authorizedProcedure, protectedProcedure, router } from "../trpc.js";
 
 const prescriptionInputSchema = createInsertSchema(schema.prescriptions);
 
@@ -16,7 +16,7 @@ export const prescriptionsRouter = router({
 				isDispensed: z.boolean().optional(),
 				cursor: z.number().min(1).optional(),
 				limit: z.number().min(1).max(100).default(10),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { search, patientId, isDispensed, cursor, limit } = input;
@@ -28,20 +28,16 @@ export const prescriptionsRouter = router({
 					or(
 						eq(schema.patients.firstName, search),
 						eq(schema.patients.lastName, search),
-						eq(schema.patients.patientId, search)
-					)
+						eq(schema.patients.patientId, search),
+					),
 				);
 			}
 
 			if (patientId) {
-				whereConditions.push(
-					eq(schema.prescriptions.patientId, patientId)
-				);
+				whereConditions.push(eq(schema.prescriptions.patientId, patientId));
 			}
 			if (isDispensed) {
-				whereConditions.push(
-					eq(schema.prescriptions.isDispensed, isDispensed)
-				);
+				whereConditions.push(eq(schema.prescriptions.isDispensed, isDispensed));
 			}
 			if (cursor) {
 				whereConditions.push(lt(schema.prescriptions.id, cursor));
@@ -83,15 +79,15 @@ export const prescriptionsRouter = router({
 				.from(schema.prescriptions)
 				.leftJoin(
 					schema.patients,
-					eq(schema.prescriptions.patientId, schema.patients.id)
+					eq(schema.prescriptions.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.prescriptions.doctorId, authSchema.user.id)
+					eq(schema.prescriptions.doctorId, authSchema.user.id),
 				)
 				.leftJoin(
 					schema.medications,
-					eq(schema.prescriptions.medicationId, schema.medications.id)
+					eq(schema.prescriptions.medicationId, schema.medications.id),
 				)
 				.where(and(...whereConditions))
 				.limit(limit + 1)
@@ -99,9 +95,7 @@ export const prescriptionsRouter = router({
 				.orderBy(desc(schema.prescriptions.id));
 
 			const hasNextPage = prescriptions.length > limit;
-			const data = hasNextPage
-				? prescriptions.slice(0, limit)
-				: prescriptions;
+			const data = hasNextPage ? prescriptions.slice(0, limit) : prescriptions;
 			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
 
 			return {
@@ -115,7 +109,7 @@ export const prescriptionsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const prescription = await ctx.db
@@ -154,15 +148,15 @@ export const prescriptionsRouter = router({
 				.from(schema.prescriptions)
 				.leftJoin(
 					schema.patients,
-					eq(schema.prescriptions.patientId, schema.patients.id)
+					eq(schema.prescriptions.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.prescriptions.doctorId, authSchema.user.id)
+					eq(schema.prescriptions.doctorId, authSchema.user.id),
 				)
 				.leftJoin(
 					schema.medications,
-					eq(schema.prescriptions.medicationId, schema.medications.id)
+					eq(schema.prescriptions.medicationId, schema.medications.id),
 				)
 				.where(eq(schema.prescriptions.id, input.id))
 				.limit(1);
@@ -181,20 +175,16 @@ export const prescriptionsRouter = router({
 				isDispensed: z.boolean().optional(),
 				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { patientId, isDispensed, page, limit } = input;
 			const offset = (page - 1) * limit;
 
-			const whereConditions = [
-				eq(schema.prescriptions.patientId, patientId),
-			];
+			const whereConditions = [eq(schema.prescriptions.patientId, patientId)];
 
 			if (isDispensed !== undefined) {
-				whereConditions.push(
-					eq(schema.prescriptions.isDispensed, isDispensed)
-				);
+				whereConditions.push(eq(schema.prescriptions.isDispensed, isDispensed));
 			}
 
 			const prescriptions = await ctx.db
@@ -227,11 +217,11 @@ export const prescriptionsRouter = router({
 				.from(schema.prescriptions)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.prescriptions.doctorId, authSchema.user.id)
+					eq(schema.prescriptions.doctorId, authSchema.user.id),
 				)
 				.leftJoin(
 					schema.medications,
-					eq(schema.prescriptions.medicationId, schema.medications.id)
+					eq(schema.prescriptions.medicationId, schema.medications.id),
 				)
 				.where(and(...whereConditions))
 				.limit(limit)
@@ -261,7 +251,7 @@ export const prescriptionsRouter = router({
 			z.object({
 				id: z.number(),
 				data: prescriptionInputSchema.partial(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedPrescription = await ctx.db
@@ -284,7 +274,7 @@ export const prescriptionsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedPrescription = await ctx.db
@@ -303,7 +293,7 @@ export const prescriptionsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const dispensedPrescription = await ctx.db
@@ -325,7 +315,7 @@ export const prescriptionsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const dispensedPrescription = await ctx.db

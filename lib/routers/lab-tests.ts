@@ -1,9 +1,9 @@
-import { z } from "zod";
-import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
-import { eq, and, desc, like, or, lt } from "drizzle-orm";
-import * as schema from "../db/schema/schema.js";
-import * as authSchema from "../db/schema/auth-schema.js";
+import { and, desc, eq, like, lt, or } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import * as authSchema from "../db/schema/auth-schema.js";
+import * as schema from "../db/schema/schema.js";
+import { authorizedProcedure, protectedProcedure, router } from "../trpc.js";
 
 const labTestInputSchema = createInsertSchema(schema.labTests);
 
@@ -17,11 +17,10 @@ export const labTestsRouter = router({
 				testType: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				cursor: z.number().optional(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
-			const { search, status, patientId, testType, limit, cursor } =
-				input;
+			const { search, status, patientId, testType, limit, cursor } = input;
 			const whereConditions = [];
 
 			if (cursor) {
@@ -33,8 +32,8 @@ export const labTestsRouter = router({
 						like(schema.labTests.testName, `%${search}%`),
 						like(schema.patients.firstName, `%${search}%`),
 						like(schema.patients.lastName, `%${search}%`),
-						like(authSchema.user.name, `%${search}%`)
-					)
+						like(authSchema.user.name, `%${search}%`),
+					),
 				);
 			}
 			if (status) {
@@ -77,17 +76,13 @@ export const labTestsRouter = router({
 				.from(schema.labTests)
 				.leftJoin(
 					schema.patients,
-					eq(schema.labTests.patientId, schema.patients.id)
+					eq(schema.labTests.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.labTests.doctorId, authSchema.user.id)
+					eq(schema.labTests.doctorId, authSchema.user.id),
 				)
-				.where(
-					whereConditions.length > 0
-						? and(...whereConditions)
-						: undefined
-				)
+				.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
 				.limit(limit + 1)
 				.orderBy(desc(schema.labTests.id));
 
@@ -106,7 +101,7 @@ export const labTestsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const labTest = await ctx.db
@@ -139,11 +134,11 @@ export const labTestsRouter = router({
 				.from(schema.labTests)
 				.leftJoin(
 					schema.patients,
-					eq(schema.labTests.patientId, schema.patients.id)
+					eq(schema.labTests.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.labTests.doctorId, authSchema.user.id)
+					eq(schema.labTests.doctorId, authSchema.user.id),
 				)
 				.where(eq(schema.labTests.id, input.id))
 				.limit(1);
@@ -162,7 +157,7 @@ export const labTestsRouter = router({
 				status: z.string().optional(),
 				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { patientId, status, page, limit } = input;
@@ -198,7 +193,7 @@ export const labTestsRouter = router({
 				.from(schema.labTests)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.labTests.doctorId, authSchema.user.id)
+					eq(schema.labTests.doctorId, authSchema.user.id),
 				)
 				.where(and(...whereConditions))
 				.limit(limit)
@@ -228,7 +223,7 @@ export const labTestsRouter = router({
 			z.object({
 				id: z.number(),
 				data: labTestInputSchema.partial(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedLabTest = await ctx.db
@@ -251,7 +246,7 @@ export const labTestsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedLabTest = await ctx.db
@@ -273,7 +268,7 @@ export const labTestsRouter = router({
 				status: z.enum(["ordered", "in-progress", "completed"]),
 				results: z.string().optional(),
 				completedDate: z.date().optional(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updateData: any = {

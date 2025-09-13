@@ -1,9 +1,9 @@
-import { db as testDb } from "./index";
-import * as schema from "./schema/schema";
-import * as authSchema from "./schema/auth-schema";
 import { faker } from "@faker-js/faker";
-import { auth } from "../auth";
 import { eq } from "drizzle-orm";
+import { auth } from "../auth";
+import { db as testDb } from "./index";
+import * as authSchema from "./schema/auth-schema";
+import * as schema from "./schema/schema";
 
 // Configuration for data generation
 const CONFIG = {
@@ -76,9 +76,7 @@ export async function seedPerformanceData() {
 
 	try {
 		// 1. Create doctors first (needed for foreign keys)
-		console.log(
-			`📊 Creating ${CONFIG.doctors} doctors with login accounts...`
-		);
+		console.log(`📊 Creating ${CONFIG.doctors} doctors with login accounts...`);
 		// const doctors = [];
 
 		for (let i = 0; i < CONFIG.doctors; i++) {
@@ -102,11 +100,11 @@ export async function seedPerformanceData() {
 					},
 				});
 				console.log(
-					`✅ Created login account for Dr. ${firstName} ${lastName}`
+					`✅ Created login account for Dr. ${firstName} ${lastName}`,
 				);
-			} catch (error) {
+			} catch (_error) {
 				console.log(
-					`⚠️  Login account for Dr. ${firstName} ${lastName} may already exist`
+					`⚠️  Login account for Dr. ${firstName} ${lastName} may already exist`,
 				);
 			}
 
@@ -132,9 +130,7 @@ export async function seedPerformanceData() {
 		console.log(`✅ Created ${CONFIG.doctors} doctors with login accounts`);
 
 		// 1.5. Create nurses with login accounts
-		console.log(
-			`📊 Creating ${CONFIG.admins} admins with login accounts...`
-		);
+		console.log(`📊 Creating ${CONFIG.admins} admins with login accounts...`);
 
 		for (let i = 0; i < CONFIG.admins; i++) {
 			const firstName = faker.person.firstName();
@@ -157,11 +153,11 @@ export async function seedPerformanceData() {
 					},
 				});
 				console.log(
-					`✅ Created login account for Admin ${firstName} ${lastName}`
+					`✅ Created login account for Admin ${firstName} ${lastName}`,
 				);
-			} catch (error) {
+			} catch (_error) {
 				console.log(
-					`⚠️  Login account for Admin ${firstName} ${lastName} may already exist`
+					`⚠️  Login account for Admin ${firstName} ${lastName} may already exist`,
 				);
 			}
 
@@ -216,10 +212,9 @@ export async function seedPerformanceData() {
 				allergies: faker.helpers.maybe(() => faker.lorem.words(3), {
 					probability: 0.3,
 				}),
-				medicalHistory: faker.helpers.maybe(
-					() => faker.lorem.sentences(2),
-					{ probability: 0.5 }
-				),
+				medicalHistory: faker.helpers.maybe(() => faker.lorem.sentences(2), {
+					probability: 0.5,
+				}),
 				isActive: faker.datatype.boolean(),
 			});
 		}
@@ -339,7 +334,7 @@ export async function seedPerformanceData() {
 			const doctorId = doctor.id;
 			const appointmentId = faker.helpers.maybe(
 				() => faker.number.int({ min: 1, max: CONFIG.appointments }),
-				{ probability: 0.7 }
+				{ probability: 0.7 },
 			);
 
 			medicalRecords.push({
@@ -364,10 +359,9 @@ export async function seedPerformanceData() {
 					"Depression",
 				]),
 				treatment: faker.lorem.sentences(2),
-				prescription: faker.helpers.maybe(
-					() => faker.lorem.sentences(1),
-					{ probability: 0.6 }
-				),
+				prescription: faker.helpers.maybe(() => faker.lorem.sentences(1), {
+					probability: 0.6,
+				}),
 				notes: faker.helpers.maybe(() => faker.lorem.sentences(3), {
 					probability: 0.5,
 				}),
@@ -395,7 +389,7 @@ export async function seedPerformanceData() {
 			});
 			const medicalRecordId = faker.helpers.maybe(
 				() => faker.number.int({ min: 1, max: CONFIG.medicalRecords }),
-				{ probability: 0.8 }
+				{ probability: 0.8 },
 			);
 
 			prescriptions.push({
@@ -445,7 +439,7 @@ export async function seedPerformanceData() {
 			});
 			const appointmentId = faker.helpers.maybe(
 				() => faker.number.int({ min: 1, max: CONFIG.appointments }),
-				{ probability: 0.6 }
+				{ probability: 0.6 },
 			);
 			const totalAmount = faker.number.float({
 				min: 50,
@@ -526,7 +520,7 @@ export async function seedPerformanceData() {
 							from: new Date(2023, 0, 1),
 							to: new Date(),
 						}),
-					{ probability: 0.7 }
+					{ probability: 0.7 },
 				),
 				results: faker.helpers.maybe(() => faker.lorem.sentences(2), {
 					probability: 0.6,
@@ -562,10 +556,10 @@ export async function seedPerformanceData() {
 		console.log("\n🎉 Performance data seeding completed!");
 		console.log(`⏱️  Total time: ${duration.toFixed(2)} seconds`);
 		console.log(
-			`📈 Generated approximately ${(CONFIG.patients + CONFIG.appointments + CONFIG.medicalRecords + CONFIG.prescriptions + CONFIG.invoices + CONFIG.labTests).toLocaleString()} records`
+			`📈 Generated approximately ${(CONFIG.patients + CONFIG.appointments + CONFIG.medicalRecords + CONFIG.prescriptions + CONFIG.invoices + CONFIG.labTests).toLocaleString()} records`,
 		);
 		console.log(
-			`👥 Created ${CONFIG.doctors} doctors, ${CONFIG.admins} admins with login accounts`
+			`👥 Created ${CONFIG.doctors} doctors, ${CONFIG.admins} admins with login accounts`,
 		);
 		console.log("\n🔐 Test Login Credentials:");
 		console.log("   Admin: admin@clinic.local / admin123");

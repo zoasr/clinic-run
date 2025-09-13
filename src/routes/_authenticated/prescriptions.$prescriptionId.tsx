@@ -1,10 +1,12 @@
-import { PrescriptionDetail } from "@/components/prescription-detail";
-import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { PrescriptionDetail } from "@/components/prescription-detail";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
-export const Route = createFileRoute("/_authenticated/prescriptions/$prescriptionId")({
+export const Route = createFileRoute(
+	"/_authenticated/prescriptions/$prescriptionId",
+)({
 	loader: ({ params }) => {
 		return {
 			crumb: "Prescription Details",
@@ -24,7 +26,7 @@ function RouteComponent() {
 	} = useQuery(
 		trpc.prescriptions.getById.queryOptions({
 			id: Number(params.prescriptionId),
-		})
+		}),
 	);
 
 	if (isLoading) {
@@ -45,7 +47,7 @@ function RouteComponent() {
 			onEdit={() => {
 				navigate({
 					to: "/prescriptions/edit/$prescriptionId",
-					params: { prescriptionId: params.prescriptionId }
+					params: { prescriptionId: params.prescriptionId },
 				});
 			}}
 			onBack={() => {

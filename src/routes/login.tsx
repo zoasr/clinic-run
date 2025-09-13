@@ -1,11 +1,16 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { PageLoading } from "@/components/ui/loading";
-import { trpcClient } from "@/lib/trpc-client";
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import {
+	createFileRoute,
+	redirect,
+	useLoaderData,
+	useNavigate,
+} from "@tanstack/react-router";
+import { Check, Copy } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import z from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Card,
 	CardContent,
@@ -13,13 +18,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PageLoading } from "@/components/ui/loading";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLoaderData, useNavigate } from "@tanstack/react-router";
-import { Copy, Check } from "lucide-react";
-import { toast } from "sonner";
-import z from "zod";
+import { trpcClient } from "@/lib/trpc-client";
 import { getClinicInfo } from "@/lib/utils";
 
 export const Route = createFileRoute("/login")({
@@ -50,7 +54,7 @@ function LoginForm() {
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [copiedField, setCopiedField] = useState<"email" | "password" | null>(
-		null
+		null,
 	);
 	const { login } = useAuth();
 	const navigate = useNavigate();
@@ -59,20 +63,17 @@ function LoginForm() {
 	} = Route.useLoaderData();
 	const defaultUser = useLoaderData({ from: "/login" });
 
-	const copyToClipboard = async (
-		text: string,
-		field: "email" | "password"
-	) => {
+	const copyToClipboard = async (text: string, field: "email" | "password") => {
 		try {
 			await navigator.clipboard.writeText(text);
 			setCopiedField(field);
 			toast.success(
-				`${field === "email" ? "Email" : "Password"} copied to clipboard!`
+				`${field === "email" ? "Email" : "Password"} copied to clipboard!`,
 			);
 
 			// Reset the copied state after 2 seconds
 			setTimeout(() => setCopiedField(null), 2000);
-		} catch (err) {
+		} catch (_err) {
 			toast.error("Failed to copy to clipboard");
 		}
 	};
@@ -86,7 +87,7 @@ function LoginForm() {
 
 			// Reset the copied state after 2 seconds
 			setTimeout(() => setCopiedField(null), 2000);
-		} catch (err) {
+		} catch (_err) {
 			toast.error("Failed to copy to clipboard");
 		}
 	};
@@ -133,13 +134,9 @@ function LoginForm() {
 						/>
 					</div>
 					<div className="space-y-2">
-						<h1 className="text-3xl font-bold text-foreground">
-							Welcome Back
-						</h1>
+						<h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
 						<p className="text-muted-foreground">
-							<span className="text-primary font-bold">
-								{clinicName}
-							</span>{" "}
+							<span className="text-primary font-bold">{clinicName}</span>{" "}
 							Dashboard
 						</p>
 					</div>
@@ -153,9 +150,7 @@ function LoginForm() {
 						</CardTitle>
 						<CardDescription className="text-muted-foreground">
 							Access your{" "}
-							<span className="text-primary font-bold">
-								{clinicName}
-							</span>{" "}
+							<span className="text-primary font-bold">{clinicName}</span>{" "}
 							dashboard and manage patient care
 						</CardDescription>
 					</CardHeader>
@@ -184,21 +179,14 @@ function LoginForm() {
 											id="email"
 											type="email"
 											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											required
 											placeholder="Enter your email"
 											className="h-11"
 										/>
 										{field.state.meta.errors.length > 0 && (
 											<p className="text-sm text-destructive mt-1">
-												{
-													field.state.meta.errors[0]
-														?.message
-												}
+												{field.state.meta.errors[0]?.message}
 											</p>
 										)}
 									</div>
@@ -226,11 +214,7 @@ function LoginForm() {
 											id="password"
 											type="password"
 											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											required
 											placeholder="Enter your password"
 											className="h-11"
@@ -253,9 +237,7 @@ function LoginForm() {
 								className="w-full h-11 bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary/90 hover:via-primary/95 hover:to-primary text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-200"
 								disabled={isLoading}
 							>
-								{isLoading
-									? "Signing in..."
-									: "Sign In to Dashboard"}
+								{isLoading ? "Signing in..." : "Sign In to Dashboard"}
 							</Button>
 						</form>
 
@@ -265,9 +247,7 @@ function LoginForm() {
 								<Separator />
 								<div className="text-xs text-muted-foreground text-center space-y-3">
 									<div className="flex items-center justify-center gap-2">
-										<p className="font-medium">
-											Default Credentials:
-										</p>
+										<p className="font-medium">Default Credentials:</p>
 										<Button
 											type="button"
 											variant="ghost"
@@ -281,10 +261,7 @@ function LoginForm() {
 									</div>
 									<div className="space-y-2">
 										<div className="flex items-center justify-center gap-2">
-											<span>
-												Email:{" "}
-												{defaultUser?.user?.email}
-											</span>
+											<span>Email: {defaultUser?.user?.email}</span>
 											<Button
 												type="button"
 												variant="ghost"
@@ -292,9 +269,8 @@ function LoginForm() {
 												className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
 												onClick={() =>
 													copyToClipboard(
-														defaultUser?.user
-															?.email || "",
-														"email"
+														defaultUser?.user?.email || "",
+														"email",
 													)
 												}
 											>
@@ -312,12 +288,7 @@ function LoginForm() {
 												variant="ghost"
 												size="sm"
 												className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-												onClick={() =>
-													copyToClipboard(
-														"admin123",
-														"password"
-													)
-												}
+												onClick={() => copyToClipboard("admin123", "password")}
 											>
 												{copiedField === "password" ? (
 													<Check className="h-3 w-3 text-green-500" />

@@ -1,11 +1,16 @@
-import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
-
 import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from "@/components/ui/sidebar";
+	createFileRoute,
+	Link,
+	Outlet,
+	redirect,
+	useMatches,
+} from "@tanstack/react-router";
+import { memo } from "react";
+import { Fragment } from "react/jsx-runtime";
 import { AppSidebar } from "@/components/app-sidebar";
+import ErrorComponent from "@/components/error";
+import NotFound from "@/components/not-found";
+import { SessionManager } from "@/components/SessionManager";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -13,21 +18,19 @@ import {
 	BreadcrumbList,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { Fragment } from "react/jsx-runtime";
-import { useMatches } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
-import NotFound from "@/components/not-found";
-import ErrorComponent from "@/components/error";
 import { PageLoading } from "@/components/ui/loading";
-import { SessionManager } from "@/components/SessionManager";
+import { Separator } from "@/components/ui/separator";
+import {
+	SidebarInset,
+	SidebarProvider,
+	SidebarTrigger,
+} from "@/components/ui/sidebar";
 import {
 	getAppearanceSettings,
 	getClinicInfo,
 	getCurrency,
 	getSessionTimeout,
 } from "@/lib/utils";
-import { memo } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: ({ context, location }) => {
@@ -70,9 +73,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 		return (
 			<SessionManager>
-				<SidebarProvider
-					defaultOpen={!appearanceSettings.sidebarCollapsed}
-				>
+				<SidebarProvider defaultOpen={!appearanceSettings.sidebarCollapsed}>
 					<AppSidebar />
 					<SidebarInset>
 						<Header />
@@ -111,9 +112,7 @@ const Header = memo(() => {
 									<Link to={link.href}>{link.label}</Link>
 								</BreadcrumbLink>
 							</BreadcrumbItem>
-							{index < breadcrumbItems.length - 1 && (
-								<BreadcrumbSeparator />
-							)}
+							{index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
 						</Fragment>
 					))}
 				</BreadcrumbList>

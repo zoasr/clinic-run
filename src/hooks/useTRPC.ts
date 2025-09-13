@@ -1,5 +1,5 @@
-import { trpc } from "@/lib/trpc-client";
 import { useAuth } from "@/contexts/AuthContext";
+import { trpc } from "@/lib/trpc-client";
 
 /**
  * Custom hook that provides tRPC functionality with authentication context

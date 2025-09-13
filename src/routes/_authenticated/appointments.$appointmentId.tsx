@@ -1,11 +1,11 @@
-import { AppointmentForm } from "@/components/appointment-form";
-import { trpcClient } from "@/lib/trpc-client";
 import { createFileRoute } from "@tanstack/react-router";
-import { PageLoading } from "@/components/ui/loading";
+import { AppointmentForm } from "@/components/appointment-form";
 import ErrorComponent from "@/components/error";
+import { PageLoading } from "@/components/ui/loading";
+import { trpcClient } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/appointments/$appointmentId"
+	"/_authenticated/appointments/$appointmentId",
 )({
 	loader: async ({ params }) => {
 		const appointment = await trpcClient.appointments.getById.query({
@@ -16,9 +16,7 @@ export const Route = createFileRoute(
 			appointment,
 		};
 	},
-	pendingComponent: () => (
-		<PageLoading text="Loading appointment details..." />
-	),
+	pendingComponent: () => <PageLoading text="Loading appointment details..." />,
 	errorComponent: ({ error }) => <ErrorComponent error={error} />,
 	component: RouteComponent,
 });

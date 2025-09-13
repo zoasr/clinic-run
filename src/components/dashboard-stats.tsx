@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { Calendar, FileText, Package, Users } from "lucide-react";
 import {
 	Card,
 	CardContent,
@@ -6,8 +8,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { useTRPC } from "@/hooks/useTRPC";
-import { useQuery } from "@tanstack/react-query";
-import { Users, Calendar, FileText, Package } from "lucide-react";
 
 export function DashboardStats() {
 	const trpc = useTRPC();
@@ -100,9 +100,7 @@ export function DashboardStats() {
 								<Icon className={`h-4 w-4 ${card.color}`} />
 							</CardHeader>
 							<CardContent>
-								<div className="text-2xl font-bold">
-									{card.value}
-								</div>
+								<div className="text-2xl font-bold">{card.value}</div>
 								<p className="text-xs text-muted-foreground">
 									{card.description}
 								</p>
@@ -116,27 +114,19 @@ export function DashboardStats() {
 				<Card>
 					<CardHeader>
 						<CardTitle>Quick Actions</CardTitle>
-						<CardDescription>
-							Common tasks and shortcuts
-						</CardDescription>
+						<CardDescription>Common tasks and shortcuts</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-2">
 						<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-							<span className="text-sm font-medium">
-								Add New Patient
-							</span>
+							<span className="text-sm font-medium">Add New Patient</span>
 							<Users className="h-4 w-4 text-muted-foreground" />
 						</div>
 						<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-							<span className="text-sm font-medium">
-								Schedule Appointment
-							</span>
+							<span className="text-sm font-medium">Schedule Appointment</span>
 							<Calendar className="h-4 w-4 text-muted-foreground" />
 						</div>
 						<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-							<span className="text-sm font-medium">
-								Update Inventory
-							</span>
+							<span className="text-sm font-medium">Update Inventory</span>
 							<Package className="h-4 w-4 text-muted-foreground" />
 						</div>
 					</CardContent>
@@ -145,40 +135,26 @@ export function DashboardStats() {
 				<Card>
 					<CardHeader>
 						<CardTitle>System Status</CardTitle>
-						<CardDescription>
-							Current system information
-						</CardDescription>
+						<CardDescription>Current system information</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-2">
 						<div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-							<span className="text-sm font-medium">
-								Database
-							</span>
+							<span className="text-sm font-medium">Database</span>
 							<div className="flex items-center gap-2">
 								<div className="w-2 h-2 bg-green-500 rounded-full"></div>
-								<span className="text-xs text-green-700">
-									Online
-								</span>
+								<span className="text-xs text-green-700">Online</span>
 							</div>
 						</div>
 						<div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-							<span className="text-sm font-medium">
-								API Server
-							</span>
+							<span className="text-sm font-medium">API Server</span>
 							<div className="flex items-center gap-2">
 								<div className="w-2 h-4 bg-green-500 rounded-full"></div>
-								<span className="text-xs text-green-700">
-									Running
-								</span>
+								<span className="text-xs text-green-700">Running</span>
 							</div>
 						</div>
 						<div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-							<span className="text-sm font-medium">
-								Last Backup
-							</span>
-							<span className="text-xs text-blue-700">
-								Auto-saved
-							</span>
+							<span className="text-sm font-medium">Last Backup</span>
+							<span className="text-xs text-blue-700">Auto-saved</span>
 						</div>
 					</CardContent>
 				</Card>

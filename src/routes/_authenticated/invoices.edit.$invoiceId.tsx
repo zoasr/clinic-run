@@ -3,7 +3,7 @@ import { InvoiceForm } from "@/components/invoice-form";
 import { trpcClient } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/invoices/edit/$invoiceId"
+	"/_authenticated/invoices/edit/$invoiceId",
 )({
 	component: RouteComponent,
 	loader: async ({ params }) => {

@@ -1,16 +1,10 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	Card,
 	CardContent,
@@ -18,14 +12,20 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { DatePicker } from "./date-picker";
-import { queryKeys, trpc } from "@/lib/trpc-client";
-import type { TRPCClientErrorLike } from "@trpc/client";
-import type { AppRouter } from "@/lib/trpc";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ButtonLoading } from "@/components/ui/loading";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import type { AppRouter } from "@/lib/trpc";
+import { queryKeys, trpc } from "@/lib/trpc-client";
+import { DatePicker } from "./date-picker";
 
 // Basic email regex to validate on the client before submit (backend will still validate via Zod)
 const EMAIL_RE =
@@ -38,9 +38,7 @@ type Patient = AppRouter["patients"]["getById"]["_def"]["$types"]["output"];
 type PatientFormValues = PatientInput;
 
 interface PatientFormProps {
-	patient?:
-		| (Patient & { id?: number })
-		| (PatientFormValues & { id?: number });
+	patient?: (Patient & { id?: number }) | (PatientFormValues & { id?: number });
 	onSave: () => void;
 	onCancel: () => void;
 }
@@ -79,7 +77,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to create patient");
 			},
-		})
+		}),
 	);
 
 	const updateMutation = useMutation(
@@ -95,7 +93,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to update patient");
 			},
-		})
+		}),
 	);
 
 	const { isPending, error } = patient?.id ? updateMutation : createMutation;
@@ -171,20 +169,14 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 										name="firstName"
 										validators={{
 											onChange: ({ value }) =>
-												!value
-													? "First name is required"
-													: undefined,
+												!value ? "First name is required" : undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="firstName"
 												value={field.state.value}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												required
 											/>
 										)}
@@ -198,20 +190,14 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 										name="lastName"
 										validators={{
 											onChange: ({ value }) =>
-												!value
-													? "Last name is required"
-													: undefined,
+												!value ? "Last name is required" : undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="lastName"
 												value={field.state.value}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												required
 											/>
 										)}
@@ -222,28 +208,22 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="dateOfBirth">
-									Date of Birth *
-								</Label>
+								<Label htmlFor="dateOfBirth">Date of Birth *</Label>
 								{
 									<form.Field
 										name="dateOfBirth"
 										validators={{
 											onChange: ({ value }) =>
-												!value
-													? "Date of birth is required"
-													: undefined,
+												!value ? "Date of birth is required" : undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<DatePicker
 												mode="single"
 												captionLayout="dropdown"
 												selected={
 													field.state.value
-														? new Date(
-																field.state.value
-															)
+														? new Date(field.state.value)
 														: undefined
 												}
 												disabled={(date) => {
@@ -251,9 +231,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 													today.setHours(0, 0, 0, 0);
 													return date > today;
 												}}
-												onSelect={(
-													value: Date | undefined
-												) => {
+												onSelect={(value: Date | undefined) => {
 													field.handleChange(value);
 												}}
 												required
@@ -269,31 +247,21 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 										name="gender"
 										validators={{
 											onChange: ({ value }) =>
-												!value
-													? "Gender is required"
-													: undefined,
+												!value ? "Gender is required" : undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<Select
 												value={field.state.value}
-												onValueChange={(value) =>
-													field.handleChange(value)
-												}
+												onValueChange={(value) => field.handleChange(value)}
 											>
 												<SelectTrigger>
 													<SelectValue placeholder="Select gender" />
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="male">
-														Male
-													</SelectItem>
-													<SelectItem value="female">
-														Female
-													</SelectItem>
-													<SelectItem value="other">
-														Other
-													</SelectItem>
+													<SelectItem value="male">Male</SelectItem>
+													<SelectItem value="female">Female</SelectItem>
+													<SelectItem value="other">Other</SelectItem>
 												</SelectContent>
 											</Select>
 										)}
@@ -307,16 +275,12 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 								<Label htmlFor="phone">Phone Number</Label>
 								{
 									<form.Field name="phone">
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="phone"
 												type="tel"
 												value={field.state.value ?? ""}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 											/>
 										)}
 									</form.Field>
@@ -337,31 +301,18 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 											},
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<>
 												<Input
 													id="email"
 													type="email"
-													value={
-														field.state.value ?? ""
-													}
-													onChange={(e) =>
-														field.handleChange(
-															e.target.value
-														)
-													}
-													aria-invalid={
-														field.state.meta.errors
-															?.length > 0
-													}
+													value={field.state.value ?? ""}
+													onChange={(e) => field.handleChange(e.target.value)}
+													aria-invalid={field.state.meta.errors?.length > 0}
 												/>
-												{field.state.meta
-													.errors?.[0] && (
+												{field.state.meta.errors?.[0] && (
 													<p className="text-sm text-destructive">
-														{
-															field.state.meta
-																.errors[0]
-														}
+														{field.state.meta.errors[0]}
 													</p>
 												)}
 											</>
@@ -375,15 +326,11 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 							<Label htmlFor="address">Address</Label>
 							{
 								<form.Field name="address">
-									{(field: any) => (
+									{(field) => (
 										<Textarea
 											id="address"
 											value={field.state.value ?? ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											rows={2}
 										/>
 									)}
@@ -397,48 +344,34 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 				<Card>
 					<CardHeader>
 						<CardTitle>Emergency Contact</CardTitle>
-						<CardDescription>
-							Emergency contact information
-						</CardDescription>
+						<CardDescription>Emergency contact information</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="emergencyContact">
-									Emergency Contact Name
-								</Label>
+								<Label htmlFor="emergencyContact">Emergency Contact Name</Label>
 								{
 									<form.Field name="emergencyContact">
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="emergencyContact"
 												value={field.state.value ?? ""}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 											/>
 										)}
 									</form.Field>
 								}
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="emergencyPhone">
-									Emergency Contact Phone
-								</Label>
+								<Label htmlFor="emergencyPhone">Emergency Contact Phone</Label>
 								{
 									<form.Field name="emergencyPhone">
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="emergencyPhone"
 												type="tel"
 												value={field.state.value ?? ""}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 											/>
 										)}
 									</form.Field>
@@ -461,41 +394,23 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 							<Label htmlFor="bloodType">Blood Type</Label>
 							{
 								<form.Field name="bloodType">
-									{(field: any) => (
+									{(field) => (
 										<Select
 											value={field.state.value ?? ""}
-											onValueChange={(value) =>
-												field.handleChange(value)
-											}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select blood type" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="A+">
-													A+
-												</SelectItem>
-												<SelectItem value="A-">
-													A-
-												</SelectItem>
-												<SelectItem value="B+">
-													B+
-												</SelectItem>
-												<SelectItem value="B-">
-													B-
-												</SelectItem>
-												<SelectItem value="AB+">
-													AB+
-												</SelectItem>
-												<SelectItem value="AB-">
-													AB-
-												</SelectItem>
-												<SelectItem value="O+">
-													O+
-												</SelectItem>
-												<SelectItem value="O-">
-													O-
-												</SelectItem>
+												<SelectItem value="A+">A+</SelectItem>
+												<SelectItem value="A-">A-</SelectItem>
+												<SelectItem value="B+">B+</SelectItem>
+												<SelectItem value="B-">B-</SelectItem>
+												<SelectItem value="AB+">AB+</SelectItem>
+												<SelectItem value="AB-">AB-</SelectItem>
+												<SelectItem value="O+">O+</SelectItem>
+												<SelectItem value="O-">O-</SelectItem>
 											</SelectContent>
 										</Select>
 									)}
@@ -507,15 +422,11 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 							<Label htmlFor="allergies">Allergies</Label>
 							{
 								<form.Field name="allergies">
-									{(field: any) => (
+									{(field) => (
 										<Textarea
 											id="allergies"
 											value={field.state.value ?? ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="List any known allergies..."
 											rows={3}
 										/>
@@ -525,20 +436,14 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="medicalHistory">
-								Medical History
-							</Label>
+							<Label htmlFor="medicalHistory">Medical History</Label>
 							{
 								<form.Field name="medicalHistory">
-									{(field: any) => (
+									{(field) => (
 										<Textarea
 											id="medicalHistory"
 											value={field.state.value ?? ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="Previous medical conditions, surgeries, etc..."
 											rows={4}
 										/>

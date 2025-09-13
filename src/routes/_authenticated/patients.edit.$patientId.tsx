@@ -1,11 +1,11 @@
-import { PatientForm } from "@/components/patient-form";
-import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { PatientForm } from "@/components/patient-form";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/patients/edit/$patientId"
+	"/_authenticated/patients/edit/$patientId",
 )({
 	component: RouteComponent,
 });

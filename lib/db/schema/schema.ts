@@ -1,5 +1,5 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./auth-schema";
 
 // Patients table
@@ -110,7 +110,7 @@ export const prescriptions = sqliteTable("prescriptions", {
 		.notNull()
 		.references(() => medications.id),
 	medicalRecordId: integer("medical_record_id").references(
-		() => medicalRecords.id
+		() => medicalRecords.id,
 	),
 	dosage: text("dosage").notNull(),
 	frequency: text("frequency").notNull(),

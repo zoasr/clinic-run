@@ -1,7 +1,18 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { ArrowLeft, Plus, Trash2, User } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,23 +22,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Plus, Trash2, User } from "lucide-react";
-import { toast } from "sonner";
-import { DatePicker } from "./date-picker";
 import { usePatient } from "@/hooks/usePatients";
-import { queryKeys, trpc } from "@/lib/trpc-client";
-import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "@/lib/trpc";
-import SearchPatientsDialog from "./search-patients-dialog";
+import { queryKeys, trpc } from "@/lib/trpc-client";
 import { formatCurrency } from "@/lib/utils";
+import { DatePicker } from "./date-picker";
+import SearchPatientsDialog from "./search-patients-dialog";
 
 // Infer types from tRPC
 type InvoiceInput = AppRouter["invoices"]["create"]["_def"]["$types"]["input"];
@@ -51,7 +51,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 	const [items, setItems] = useState<InvoiceItem[]>(
 		invoice?.items
 			? JSON.parse(invoice.items)
-			: [{ description: "", amount: 0 }]
+			: [{ description: "", amount: 0 }],
 	);
 
 	// Fetch patients for dropdown
@@ -80,7 +80,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to create invoice");
 			},
-		})
+		}),
 	);
 
 	const updateMutation = useMutation(
@@ -96,7 +96,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to update invoice");
 			},
-		})
+		}),
 	);
 
 	const { isPending, error } = invoice?.id ? updateMutation : createMutation;
@@ -120,7 +120,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 	const updateItem = (
 		index: number,
 		field: keyof InvoiceItem,
-		value: string | number
+		value: string | number,
 	) => {
 		const newItems = [...items];
 		newItems[index] = { ...newItems[index], [field]: value };
@@ -192,22 +192,16 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 								name="patientId"
 								validators={{
 									onChange: ({ value }) =>
-										!value || value === 0
-											? "Patient is required"
-											: undefined,
+										!value || value === 0 ? "Patient is required" : undefined,
 								}}
 							>
-								{(field: any) => (
+								{(field) => (
 									<div>
-										<Label htmlFor="patientId">
-											Patient *
-										</Label>
+										<Label htmlFor="patientId">Patient *</Label>
 										<SearchPatientsDialog
 											patient={patient}
 											onSelect={(patient) => {
-												field.handleChange(
-													patient?.id || 0
-												);
+												field.handleChange(patient?.id || 0);
 											}}
 										/>
 									</div>
@@ -233,11 +227,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 									<Input
 										value={item.description}
 										onChange={(e) =>
-											updateItem(
-												index,
-												"description",
-												e.target.value
-											)
+											updateItem(index, "description", e.target.value)
 										}
 										placeholder="Service or item description"
 									/>
@@ -253,7 +243,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 											updateItem(
 												index,
 												"amount",
-												parseFloat(e.target.value) || 0
+												parseFloat(e.target.value) || 0,
 											)
 										}
 										placeholder="0.00"
@@ -284,9 +274,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 
 						<div className="pt-4 border-t">
 							<div className="flex justify-between items-center">
-								<span className="text-lg font-semibold">
-									Total Amount:
-								</span>
+								<span className="text-lg font-semibold">Total Amount:</span>
 								<span className="text-2xl font-bold text-primary">
 									{formatCurrency(calculateTotal(items))}
 								</span>
@@ -299,16 +287,14 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 				<Card>
 					<CardHeader>
 						<CardTitle>Payment Information</CardTitle>
-						<CardDescription>
-							Payment status and due date
-						</CardDescription>
+						<CardDescription>Payment status and due date</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="paidAmount">Amount Paid</Label>
 								<form.Field name="paidAmount">
-									{(field: any) => (
+									{(field) => (
 										<Input
 											id="paidAmount"
 											type="number"
@@ -316,11 +302,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 											min="0"
 											value={field.state.value || ""}
 											onChange={(e) =>
-												field.handleChange(
-													parseFloat(
-														e.target.value
-													) || 0
-												)
+												field.handleChange(parseFloat(e.target.value) || 0)
 											}
 											placeholder="0.00"
 										/>
@@ -334,31 +316,21 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 									name="status"
 									validators={{
 										onChange: ({ value }) =>
-											!value
-												? "Status is required"
-												: undefined,
+											!value ? "Status is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<Select
 											value={field.state.value}
-											onValueChange={(value) =>
-												field.handleChange(value)
-											}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select status" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="pending">
-													Pending
-												</SelectItem>
-												<SelectItem value="paid">
-													Paid
-												</SelectItem>
-												<SelectItem value="overdue">
-													Overdue
-												</SelectItem>
+												<SelectItem value="pending">Pending</SelectItem>
+												<SelectItem value="paid">Paid</SelectItem>
+												<SelectItem value="overdue">Overdue</SelectItem>
 											</SelectContent>
 										</Select>
 									)}
@@ -368,23 +340,17 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 							<div className="space-y-2">
 								<Label htmlFor="dueDate">Due Date</Label>
 								<form.Field name="dueDate">
-									{(field: any) => (
+									{(field) => (
 										<DatePicker
 											mode="single"
 											captionLayout="dropdown"
 											selected={
 												field.state.value
-													? new Date(
-															field.state.value
-														)
+													? new Date(field.state.value)
 													: undefined
 											}
-											onSelect={(
-												value: Date | undefined
-											) => {
-												field.handleChange(
-													value ? value : new Date()
-												);
+											onSelect={(value: Date | undefined) => {
+												field.handleChange(value ? value : new Date());
 											}}
 										/>
 									)}
@@ -406,11 +372,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 						Cancel
 					</Button>
 					<Button type="submit" disabled={isPending}>
-						{isPending
-							? "Saving..."
-							: invoice
-								? "Update"
-								: "Create"}
+						{isPending ? "Saving..." : invoice ? "Update" : "Create"}
 					</Button>
 				</div>
 			</form>

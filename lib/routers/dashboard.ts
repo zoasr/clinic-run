@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { router, protectedProcedure } from "../trpc.js";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import * as schema from "../db/schema/schema.js";
+import { protectedProcedure, router } from "../trpc.js";
 
 export const dashboardRouter = router({
 	getStats: protectedProcedure.query(async ({ ctx }) => {
@@ -51,11 +51,11 @@ export const dashboardRouter = router({
 
 		// Calculate stock levels
 		const lowStock = allMedications.filter(
-			(med) => med.quantity <= med.minStockLevel && med.quantity > 0
+			(med) => med.quantity <= med.minStockLevel && med.quantity > 0,
 		);
 		const outOfStock = allMedications.filter((med) => med.quantity === 0);
 		const healthyStock = allMedications.filter(
-			(med) => med.quantity > med.minStockLevel
+			(med) => med.quantity > med.minStockLevel,
 		);
 
 		// Calculate appointment trends
@@ -104,7 +104,7 @@ export const dashboardRouter = router({
 		.input(
 			z.object({
 				limit: z.number().min(1).max(50).default(10),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { limit } = input;
@@ -124,7 +124,7 @@ export const dashboardRouter = router({
 				.from(schema.appointments)
 				.leftJoin(
 					schema.patients,
-					eq(schema.appointments.patientId, schema.patients.id)
+					eq(schema.appointments.patientId, schema.patients.id),
 				)
 				.orderBy(schema.appointments.appointmentDate)
 				.limit(limit);
@@ -143,7 +143,7 @@ export const dashboardRouter = router({
 				.from(schema.medicalRecords)
 				.leftJoin(
 					schema.patients,
-					eq(schema.medicalRecords.patientId, schema.patients.id)
+					eq(schema.medicalRecords.patientId, schema.patients.id),
 				)
 				.orderBy(schema.medicalRecords.visitDate)
 				.limit(limit);
@@ -158,7 +158,7 @@ export const dashboardRouter = router({
 		.input(
 			z.object({
 				days: z.number().min(1).max(30).default(7),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { days } = input;
@@ -181,11 +181,11 @@ export const dashboardRouter = router({
 				.from(schema.appointments)
 				.leftJoin(
 					schema.patients,
-					eq(schema.appointments.patientId, schema.patients.id)
+					eq(schema.appointments.patientId, schema.patients.id),
 				)
 				.where(
 					eq(schema.appointments.appointmentDate, startDate) ||
-						eq(schema.appointments.appointmentDate, endDate)
+						eq(schema.appointments.appointmentDate, endDate),
 				)
 				.orderBy(schema.appointments.appointmentDate)
 				.limit(20);

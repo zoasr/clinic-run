@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 // Infer types from tRPC
 type Prescription =
@@ -27,10 +27,9 @@ export function usePrescriptions(params?: PrescriptionListParams) {
 				limit: params?.limit,
 			},
 			{
-				getNextPageParam: (lastPage) =>
-					lastPage.nextCursor ?? undefined,
-			}
-		)
+				getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+			},
+		),
 	);
 }
 
@@ -38,20 +37,20 @@ export function usePrescription(prescriptionId: number) {
 	return useQuery(
 		trpc.prescriptions.getById.queryOptions(
 			{ id: prescriptionId },
-			{ enabled: !!prescriptionId }
-		)
+			{ enabled: !!prescriptionId },
+		),
 	);
 }
 
 export function usePatientPrescriptions(
 	patientId: number,
-	params?: Omit<PrescriptionListParams, "patientId">
+	params?: Omit<PrescriptionListParams, "patientId">,
 ) {
 	return useQuery(
 		trpc.prescriptions.getByPatientId.queryOptions(
 			{ patientId, ...params },
-			{ enabled: !!patientId }
-		)
+			{ enabled: !!patientId },
+		),
 	);
 }
 

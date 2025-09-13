@@ -1,12 +1,12 @@
-import { PrescriptionForm } from "@/components/prescription-form";
-import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { PageLoading } from "@/components/ui/loading";
 import ErrorComponent from "@/components/error";
+import { PrescriptionForm } from "@/components/prescription-form";
+import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/prescriptions/edit/$prescriptionId"
+	"/_authenticated/prescriptions/edit/$prescriptionId",
 )({
 	component: RouteComponent,
 });
@@ -19,7 +19,7 @@ function RouteComponent() {
 		isLoading: loading,
 		error,
 	} = useQuery(
-		trpc.prescriptions.getById.queryOptions({ id: Number(prescriptionId) })
+		trpc.prescriptions.getById.queryOptions({ id: Number(prescriptionId) }),
 	);
 
 	if (loading)

@@ -1,5 +1,5 @@
-import { Outlet } from "@tanstack/react-router";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+
 function RouteComponent() {
 	return (
 		<div className="space-y-6 p-6">

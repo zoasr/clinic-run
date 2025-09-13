@@ -1,8 +1,8 @@
-import { PatientDetail } from "@/components/patient-detail";
-import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { PatientDetail } from "@/components/patient-detail";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute("/_authenticated/patients/$patientId")({
 	loader: ({ params }) => {
@@ -24,7 +24,7 @@ function RouteComponent() {
 	} = useQuery(
 		trpc.patients.getById.queryOptions({
 			id: Number(params.patientId),
-		})
+		}),
 	);
 	if (isLoading) {
 		return <PageLoading text="Loading patient details..." />;

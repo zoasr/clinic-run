@@ -1,5 +1,5 @@
-import { MedicationForm } from "@/components/medication-form";
 import { createFileRoute } from "@tanstack/react-router";
+import { MedicationForm } from "@/components/medication-form";
 
 export const Route = createFileRoute("/_authenticated/medications/new")({
 	loader: () => ({

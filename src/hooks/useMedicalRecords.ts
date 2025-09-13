@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 export type MedicalRecordInput =
 	AppRouter["medicalRecords"]["create"]["_def"]["$types"]["input"];
@@ -39,7 +39,7 @@ export function useMedicalRecordsInfinite(params: MedicalRecordInfiniteParams) {
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
-			}
-		)
+			},
+		),
 	);
 }

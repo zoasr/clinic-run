@@ -1,9 +1,9 @@
-import { z } from "zod";
-import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
-import { eq, and, desc, or, like, lt } from "drizzle-orm";
-import * as schema from "../db/schema/schema.js";
-import * as authSchema from "../db/schema/auth-schema.js";
+import { and, desc, eq, like, lt, or } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import * as authSchema from "../db/schema/auth-schema.js";
+import * as schema from "../db/schema/schema.js";
+import { authorizedProcedure, protectedProcedure, router } from "../trpc.js";
 
 const medicalRecordInputSchema = createInsertSchema(schema.medicalRecords);
 
@@ -15,7 +15,7 @@ export const medicalRecordsRouter = router({
 				search: z.string().optional(),
 				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { patientId, page, limit, search } = input;
@@ -24,9 +24,7 @@ export const medicalRecordsRouter = router({
 			const whereConditions = [];
 
 			if (patientId) {
-				whereConditions.push(
-					eq(schema.medicalRecords.patientId, patientId)
-				);
+				whereConditions.push(eq(schema.medicalRecords.patientId, patientId));
 			}
 			if (search) {
 				whereConditions.push(
@@ -34,8 +32,8 @@ export const medicalRecordsRouter = router({
 						like(schema.patients.firstName, `%${search}%`),
 						like(schema.patients.lastName, `%${search}%`),
 						like(schema.medicalRecords.diagnosis, `%${search}%`),
-						like(authSchema.user.name, `%${search}%`)
-					)
+						like(authSchema.user.name, `%${search}%`),
+					),
 				);
 			}
 
@@ -64,17 +62,13 @@ export const medicalRecordsRouter = router({
 				.from(schema.medicalRecords)
 				.leftJoin(
 					schema.patients,
-					eq(schema.medicalRecords.patientId, schema.patients.id)
+					eq(schema.medicalRecords.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.medicalRecords.doctorId, authSchema.user.id)
+					eq(schema.medicalRecords.doctorId, authSchema.user.id),
 				)
-				.where(
-					whereConditions.length > 0
-						? and(...whereConditions)
-						: undefined
-				)
+				.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
 				.limit(limit)
 				.offset(offset)
 				.orderBy(desc(schema.medicalRecords.visitDate));
@@ -89,16 +83,14 @@ export const medicalRecordsRouter = router({
 				search: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				cursor: z.number().optional(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { patientId, search, limit, cursor } = input;
 			const whereConditions = [];
 
 			if (patientId) {
-				whereConditions.push(
-					eq(schema.medicalRecords.patientId, patientId)
-				);
+				whereConditions.push(eq(schema.medicalRecords.patientId, patientId));
 			}
 			if (search) {
 				whereConditions.push(
@@ -106,8 +98,8 @@ export const medicalRecordsRouter = router({
 						like(schema.patients.firstName, `%${search}%`),
 						like(schema.patients.lastName, `%${search}%`),
 						like(schema.medicalRecords.diagnosis, `%${search}%`),
-						like(authSchema.user.name, `%${search}%`)
-					)
+						like(authSchema.user.name, `%${search}%`),
+					),
 				);
 			}
 
@@ -141,17 +133,13 @@ export const medicalRecordsRouter = router({
 				.from(schema.medicalRecords)
 				.leftJoin(
 					schema.patients,
-					eq(schema.medicalRecords.patientId, schema.patients.id)
+					eq(schema.medicalRecords.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.medicalRecords.doctorId, authSchema.user.id)
+					eq(schema.medicalRecords.doctorId, authSchema.user.id),
 				)
-				.where(
-					whereConditions.length > 0
-						? and(...whereConditions)
-						: undefined
-				)
+				.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
 				.limit(limit + 1) // Fetch one extra to determine if there are more
 				.orderBy(desc(schema.medicalRecords.id)); // Order by ID for cursor-based pagination
 
@@ -170,7 +158,7 @@ export const medicalRecordsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const record = await ctx.db
@@ -201,11 +189,11 @@ export const medicalRecordsRouter = router({
 				.from(schema.medicalRecords)
 				.leftJoin(
 					schema.patients,
-					eq(schema.medicalRecords.patientId, schema.patients.id)
+					eq(schema.medicalRecords.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.medicalRecords.doctorId, authSchema.user.id)
+					eq(schema.medicalRecords.doctorId, authSchema.user.id),
 				)
 				.where(eq(schema.medicalRecords.id, input.id))
 				.limit(1);
@@ -237,7 +225,7 @@ export const medicalRecordsRouter = router({
 			z.object({
 				id: z.number(),
 				data: medicalRecordInputSchema.partial(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedRecord = await ctx.db
@@ -260,7 +248,7 @@ export const medicalRecordsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedRecord = await ctx.db

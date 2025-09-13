@@ -1,5 +1,5 @@
-import { AppointmentForm } from "@/components/appointment-form";
 import { createFileRoute } from "@tanstack/react-router";
+import { AppointmentForm } from "@/components/appointment-form";
 
 export const Route = createFileRoute("/_authenticated/appointments/new")({
 	loader: () => ({
@@ -11,11 +11,7 @@ export const Route = createFileRoute("/_authenticated/appointments/new")({
 			navigate({ to: "/appointments" });
 		};
 		return (
-			<AppointmentForm
-				appointment={null}
-				onSave={goBack}
-				onCancel={goBack}
-			/>
+			<AppointmentForm appointment={null} onSave={goBack} onCancel={goBack} />
 		);
 	},
 });

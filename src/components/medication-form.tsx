@@ -1,5 +1,18 @@
 import { useForm } from "@tanstack/react-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,22 +22,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DatePicker } from "@/components/date-picker";
+import type { Medication } from "@/lib/schema-types";
+import type { AppRouter } from "@/lib/trpc";
 import { queryKeys, trpc } from "@/lib/trpc-client";
-import { ArrowLeft } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { AppRouter } from "@/lib/trpc";
-import { TRPCClientErrorLike } from "@trpc/client";
-import { Medication } from "@/lib/schema-types";
 
 interface MedicationFormProps {
 	medication?: Medication | null;
@@ -67,7 +67,7 @@ export function MedicationForm({
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to create medication");
 			},
-		})
+		}),
 	);
 
 	const updateMutation = useMutation(
@@ -83,7 +83,7 @@ export function MedicationForm({
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to update medication");
 			},
-		})
+		}),
 	);
 
 	const { isPending, error } = (medication as any)?.id
@@ -163,20 +163,14 @@ export function MedicationForm({
 										name="name"
 										validators={{
 											onChange: ({ value }) =>
-												!value?.trim()
-													? "Name is required"
-													: undefined,
+												!value?.trim() ? "Name is required" : undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="name"
 												value={field.state.value}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												required
 												placeholder="e.g., Paracetamol"
 											/>
@@ -185,20 +179,14 @@ export function MedicationForm({
 								}
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="genericName">
-									Generic Name
-								</Label>
+								<Label htmlFor="genericName">Generic Name</Label>
 								{
 									<form.Field name="genericName">
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="genericName"
 												value={field.state.value ?? ""}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												placeholder="e.g., Acetaminophen"
 											/>
 										)}
@@ -212,15 +200,11 @@ export function MedicationForm({
 								<Label htmlFor="dosage">Dosage</Label>
 								{
 									<form.Field name="dosage">
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="dosage"
 												value={field.state.value ?? ""}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												placeholder="e.g., 500mg"
 											/>
 										)}
@@ -231,44 +215,23 @@ export function MedicationForm({
 								<Label htmlFor="form">Form</Label>
 								{
 									<form.Field name="form">
-										{(field: any) => (
+										{(field) => (
 											<Select
-												value={
-													field.state.value ??
-													"tablet"
-												}
-												onValueChange={(value) =>
-													field.handleChange(value)
-												}
+												value={field.state.value ?? "tablet"}
+												onValueChange={(value) => field.handleChange(value)}
 											>
 												<SelectTrigger>
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="tablet">
-														Tablet
-													</SelectItem>
-													<SelectItem value="capsule">
-														Capsule
-													</SelectItem>
-													<SelectItem value="syrup">
-														Syrup
-													</SelectItem>
-													<SelectItem value="injection">
-														Injection
-													</SelectItem>
-													<SelectItem value="cream">
-														Cream
-													</SelectItem>
-													<SelectItem value="ointment">
-														Ointment
-													</SelectItem>
-													<SelectItem value="drops">
-														Drops
-													</SelectItem>
-													<SelectItem value="inhaler">
-														Inhaler
-													</SelectItem>
+													<SelectItem value="tablet">Tablet</SelectItem>
+													<SelectItem value="capsule">Capsule</SelectItem>
+													<SelectItem value="syrup">Syrup</SelectItem>
+													<SelectItem value="injection">Injection</SelectItem>
+													<SelectItem value="cream">Cream</SelectItem>
+													<SelectItem value="ointment">Ointment</SelectItem>
+													<SelectItem value="drops">Drops</SelectItem>
+													<SelectItem value="inhaler">Inhaler</SelectItem>
 												</SelectContent>
 											</Select>
 										)}
@@ -281,15 +244,11 @@ export function MedicationForm({
 							<Label htmlFor="manufacturer">Manufacturer</Label>
 							{
 								<form.Field name="manufacturer">
-									{(field: any) => (
+									{(field) => (
 										<Input
 											id="manufacturer"
 											value={field.state.value ?? ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="e.g., Generic Pharma"
 										/>
 									)}
@@ -310,20 +269,14 @@ export function MedicationForm({
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="batchNumber">
-									Batch Number
-								</Label>
+								<Label htmlFor="batchNumber">Batch Number</Label>
 								{
 									<form.Field name="batchNumber">
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="batchNumber"
 												value={field.state.value ?? ""}
-												onChange={(e) =>
-													field.handleChange(
-														e.target.value
-													)
-												}
+												onChange={(e) => field.handleChange(e.target.value)}
 												placeholder="e.g., BT2024001"
 											/>
 										)}
@@ -334,29 +287,20 @@ export function MedicationForm({
 								<Label htmlFor="expiryDate">Expiry Date</Label>
 								{
 									<form.Field name="expiryDate">
-										{(field: any) => (
+										{(field) => (
 											<DatePicker
 												selected={
 													field.state.value
-														? new Date(
-																field.state.value
-															)
+														? new Date(field.state.value)
 														: undefined
 												}
 												onSelect={(date) => {
-													field.handleChange(
-														date ? date : new Date()
-													);
+													field.handleChange(date ? date : new Date());
 												}}
 												disabled={(date) => {
 													// Disable past dates for expiry dates
 													const today = new Date();
-													today.setHours(
-														23,
-														59,
-														59,
-														999
-													); // End of today
+													today.setHours(23, 59, 59, 999); // End of today
 													return date <= today;
 												}}
 												mode="single"
@@ -382,33 +326,26 @@ export function MedicationForm({
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="quantity">
-									Current Quantity *
-								</Label>
+								<Label htmlFor="quantity">Current Quantity *</Label>
 								{
 									<form.Field
 										name="quantity"
 										validators={{
 											onChange: ({ value }) =>
-												value == null ||
-												Number(value) < 0
+												value == null || Number(value) < 0
 													? "Quantity must be >= 0"
 													: undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="quantity"
 												type="number"
 												min="0"
-												value={String(
-													field.state.value ?? 0
-												)}
+												value={String(field.state.value ?? 0)}
 												onChange={(e) =>
 													field.handleChange(
-														Number.parseInt(
-															e.target.value
-														) || 0
+														Number.parseInt(e.target.value) || 0,
 													)
 												}
 												required
@@ -418,33 +355,26 @@ export function MedicationForm({
 								}
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="minStockLevel">
-									Minimum Stock Level *
-								</Label>
+								<Label htmlFor="minStockLevel">Minimum Stock Level *</Label>
 								{
 									<form.Field
 										name="minStockLevel"
 										validators={{
 											onChange: ({ value }) =>
-												value == null ||
-												Number(value) < 0
+												value == null || Number(value) < 0
 													? "Min stock must be >= 0"
 													: undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="minStockLevel"
 												type="number"
 												min="0"
-												value={String(
-													field.state.value ?? 0
-												)}
+												value={String(field.state.value ?? 0)}
 												onChange={(e) =>
 													field.handleChange(
-														Number.parseInt(
-															e.target.value
-														) || 0
+														Number.parseInt(e.target.value) || 0,
 													)
 												}
 												required
@@ -454,34 +384,27 @@ export function MedicationForm({
 								}
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="unitPrice">
-									Unit Price (EGP) *
-								</Label>
+								<Label htmlFor="unitPrice">Unit Price (EGP) *</Label>
 								{
 									<form.Field
 										name="unitPrice"
 										validators={{
 											onChange: ({ value }) =>
-												value == null ||
-												Number(value) < 0
+												value == null || Number(value) < 0
 													? "Price must be >= 0"
 													: undefined,
 										}}
 									>
-										{(field: any) => (
+										{(field) => (
 											<Input
 												id="unitPrice"
 												type="number"
 												step="0.01"
 												min="0"
-												value={String(
-													field.state.value ?? 0
-												)}
+												value={String(field.state.value ?? 0)}
 												onChange={(e) =>
 													field.handleChange(
-														Number.parseFloat(
-															e.target.value
-														) || 0
+														Number.parseFloat(e.target.value) || 0,
 													)
 												}
 												required
@@ -496,9 +419,7 @@ export function MedicationForm({
 
 				{error && (
 					<Alert variant="destructive">
-						<AlertDescription>
-							{(error as any).message}
-						</AlertDescription>
+						<AlertDescription>{(error as any).message}</AlertDescription>
 					</Alert>
 				)}
 

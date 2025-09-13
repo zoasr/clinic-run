@@ -1,28 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Calendar, Clock, Plus, Search, Trash2, User } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DatePicker } from "@/components/date-picker";
-import { AppointmentCalendar } from "@/components/appointment-calendar";
-import { Search, Plus, Calendar, Clock, User, Trash2 } from "lucide-react";
-import {
-	useAppointments,
-	useUpdateAppointment,
-	useDeleteAppointment,
-	Appointment,
-} from "@/hooks/useAppointments";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { AppointmentCalendar } from "@/components/appointment-calendar";
+import { DatePicker } from "@/components/date-picker";
+import ErrorComponent from "@/components/error";
+import LoadMore from "@/components/load-more";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -34,10 +17,25 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { LoadingCards } from "@/components/ui/loading";
-import LoadMore from "@/components/load-more";
-import ErrorComponent from "@/components/error";
-import { Link } from "@tanstack/react-router";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	type Appointment,
+	useAppointments,
+	useDeleteAppointment,
+	useUpdateAppointment,
+} from "@/hooks/useAppointments";
 
 export const Route = createFileRoute("/_authenticated/appointments/")({
 	component: AppointmentManagement,
@@ -65,20 +63,12 @@ const AppointmentCard = memo(
 					refetch();
 				},
 				onError: (error: Error) => {
-					console.error(
-						"Failed to update appointment status:",
-						error
-					);
-					toast.error(
-						`Failed to update appointment status: ${error.message}`
-					);
+					console.error("Failed to update appointment status:", error);
+					toast.error(`Failed to update appointment status: ${error.message}`);
 				},
 			});
 
-		const handleStatusUpdate = (
-			appointmentId: number,
-			newStatus: string
-		) => {
+		const handleStatusUpdate = (appointmentId: number, newStatus: string) => {
 			updateStatus({
 				id: appointmentId,
 				data: { status: newStatus },
@@ -94,9 +84,7 @@ const AppointmentCard = memo(
 				},
 				onError: (error: Error) => {
 					console.error("Failed to delete appointment:", error);
-					toast.error(
-						`Failed to delete appointment: ${error.message}`
-					);
+					toast.error(`Failed to delete appointment: ${error.message}`);
 				},
 			});
 
@@ -157,17 +145,11 @@ const AppointmentCard = memo(
 							<div className="relative">
 								<div
 									className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-										getTypeColor(appointment.type).includes(
-											"purple"
-										)
+										getTypeColor(appointment.type).includes("purple")
 											? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-											: getTypeColor(
-														appointment.type
-												  ).includes("green")
+											: getTypeColor(appointment.type).includes("green")
 												? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-												: getTypeColor(
-															appointment.type
-													  ).includes("blue")
+												: getTypeColor(appointment.type).includes("blue")
 													? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
 													: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
 									}`}
@@ -184,8 +166,7 @@ const AppointmentCard = memo(
 							</div>
 							<div className="flex-1 min-w-0">
 								<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-									{appointment.patient.firstName}{" "}
-									{appointment.patient.lastName}
+									{appointment.patient.firstName} {appointment.patient.lastName}
 								</h3>
 								<p className="text-sm text-muted-foreground font-mono">
 									ID: {appointment.patient.patientId}
@@ -217,12 +198,9 @@ const AppointmentCard = memo(
 										{appointmentDate.toLocaleDateString()}
 									</p>
 									<p className="text-xs text-muted-foreground">
-										{appointmentDate.toLocaleDateString(
-											"en",
-											{
-												weekday: "short",
-											}
-										)}
+										{appointmentDate.toLocaleDateString("en", {
+											weekday: "short",
+										})}
 									</p>
 								</div>
 							</div>
@@ -278,45 +256,29 @@ const AppointmentCard = memo(
 								}}
 								className="flex-1"
 							>
-								<Button
-									size="sm"
-									className="transition-all w-full"
-								>
+								<Button size="sm" className="transition-all w-full">
 									View Details
 								</Button>
 							</Link>
 							<AlertDialog>
 								<AlertDialogTrigger asChild>
-									<Button
-										variant="destructive"
-										size="sm"
-										disabled={isDeleting}
-									>
+									<Button variant="destructive" size="sm" disabled={isDeleting}>
 										<Trash2 className="h-4 w-4" />
 									</Button>
 								</AlertDialogTrigger>
 								<AlertDialogContent>
 									<AlertDialogHeader>
-										<AlertDialogTitle>
-											Delete Appointment
-										</AlertDialogTitle>
+										<AlertDialogTitle>Delete Appointment</AlertDialogTitle>
 										<AlertDialogDescription>
-											Are you sure you want to delete this
-											appointment? This action cannot be
-											undone.
+											Are you sure you want to delete this appointment? This
+											action cannot be undone.
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 									<AlertDialogFooter>
-										<AlertDialogCancel>
-											Cancel
-										</AlertDialogCancel>
+										<AlertDialogCancel>Cancel</AlertDialogCancel>
 										<AlertDialogAction asChild>
 											<Button
-												onClick={() =>
-													handleDeleteAppointment(
-														appointment.id
-													)
-												}
+												onClick={() => handleDeleteAppointment(appointment.id)}
 												variant={"destructive"}
 											>
 												Delete
@@ -339,18 +301,10 @@ const AppointmentCard = memo(
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="scheduled">
-										Scheduled
-									</SelectItem>
-									<SelectItem value="completed">
-										Completed
-									</SelectItem>
-									<SelectItem value="cancelled">
-										Cancelled
-									</SelectItem>
-									<SelectItem value="no-show">
-										No Show
-									</SelectItem>
+									<SelectItem value="scheduled">Scheduled</SelectItem>
+									<SelectItem value="completed">Completed</SelectItem>
+									<SelectItem value="cancelled">Cancelled</SelectItem>
+									<SelectItem value="no-show">No Show</SelectItem>
 								</SelectContent>
 							</Select>
 						)}
@@ -358,7 +312,7 @@ const AppointmentCard = memo(
 				</CardContent>
 			</Card>
 		);
-	}
+	},
 );
 
 export function AppointmentManagement() {
@@ -385,7 +339,7 @@ export function AppointmentManagement() {
 
 	const appointmentsData = useMemo(
 		() => data?.pages?.flatMap((page) => page.data) || [],
-		[data]
+		[data],
 	);
 
 	if (error) {
@@ -400,7 +354,7 @@ export function AppointmentManagement() {
 					refetch={refetch}
 				/>
 			)),
-		[appointmentsData, refetch]
+		[appointmentsData, refetch],
 	);
 
 	return (
@@ -439,31 +393,20 @@ export function AppointmentManagement() {
 								className="pl-10 w-full"
 							/>
 						</div>
-						<Select
-							value={statusFilter}
-							onValueChange={setStatusFilter}
-						>
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger className="flex-1 sm:w-48">
 								<SelectValue placeholder="Filter by status" />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">All Status</SelectItem>
-								<SelectItem value="scheduled">
-									Scheduled
-								</SelectItem>
-								<SelectItem value="completed">
-									Completed
-								</SelectItem>
-								<SelectItem value="cancelled">
-									Cancelled
-								</SelectItem>
+								<SelectItem value="scheduled">Scheduled</SelectItem>
+								<SelectItem value="completed">Completed</SelectItem>
+								<SelectItem value="cancelled">Cancelled</SelectItem>
 								<SelectItem value="no-show">No Show</SelectItem>
 							</SelectContent>
 						</Select>
 						<DatePicker
-							selected={
-								dateFilter ? new Date(dateFilter) : undefined
-							}
+							selected={dateFilter ? new Date(dateFilter) : undefined}
 							onSelect={(date) => {
 								setDateFilter(date ? date : undefined);
 							}}
@@ -479,9 +422,7 @@ export function AppointmentManagement() {
 			{/* View Toggle */}
 			<Tabs
 				value={activeView}
-				onValueChange={(value) =>
-					setActiveView(value as "list" | "calendar")
-				}
+				onValueChange={(value) => setActiveView(value as "list" | "calendar")}
 			>
 				<TabsList>
 					<TabsTrigger value="list">List View</TabsTrigger>
@@ -500,17 +441,11 @@ export function AppointmentManagement() {
 									No appointments found
 								</h3>
 								<p className="text-muted-foreground text-center mb-4">
-									{searchTerm ||
-									statusFilter !== "all" ||
-									dateFilter
+									{searchTerm || statusFilter !== "all" || dateFilter
 										? "No appointments match your search criteria."
 										: "Get started by scheduling your first appointment."}
 								</p>
-								<Button
-									onClick={() =>
-										navigate({ to: "/appointments/new" })
-									}
-								>
+								<Button onClick={() => navigate({ to: "/appointments/new" })}>
 									<Plus className="h-4 w-4 mr-2" />
 									Schedule Appointment
 								</Button>
@@ -541,9 +476,7 @@ export function AppointmentManagement() {
 								},
 							});
 						}}
-						onDateClick={() =>
-							navigate({ to: "/appointments/new" })
-						}
+						onDateClick={() => navigate({ to: "/appointments/new" })}
 					/>
 				</TabsContent>
 			</Tabs>

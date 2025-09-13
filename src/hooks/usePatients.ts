@@ -1,6 +1,6 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 // Pagination types
 export interface PaginationMeta {
@@ -38,8 +38,8 @@ export function usePatient(patientId: number) {
 	return useQuery(
 		trpc.patients.getById.queryOptions(
 			{ id: patientId },
-			{ enabled: !!patientId }
-		)
+			{ enabled: !!patientId },
+		),
 	);
 }
 

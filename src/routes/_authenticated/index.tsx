@@ -1,4 +1,19 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+	Activity,
+	AlertTriangle,
+	ArrowRight,
+	Calendar,
+	Clock,
+	FileText,
+	Package,
+	Plus,
+	Users,
+} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -6,24 +21,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-	Users,
-	Calendar,
-	FileText,
-	Package,
-	AlertTriangle,
-	Clock,
-	Plus,
-	ArrowRight,
-	Activity,
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { CardLoading, TableLoading } from "@/components/ui/loading";
 import { trpc } from "@/lib/trpc-client";
 import { cn } from "@/lib/utils";
-import { CardLoading, TableLoading } from "@/components/ui/loading";
 
 export function DashboardPage() {
 	const {
@@ -33,13 +33,11 @@ export function DashboardPage() {
 	} = useQuery(trpc.dashboard.getStats.queryOptions());
 
 	const { data: recentActivity, isLoading: activityLoading } = useQuery(
-		trpc.dashboard.getRecentActivity.queryOptions({ limit: 5 })
+		trpc.dashboard.getRecentActivity.queryOptions({ limit: 5 }),
 	);
 
 	const { data: upcomingAppointments, isLoading: appointmentsLoading } =
-		useQuery(
-			trpc.dashboard.getUpcomingAppointments.queryOptions({ days: 3 })
-		);
+		useQuery(trpc.dashboard.getUpcomingAppointments.queryOptions({ days: 3 }));
 
 	if (statsLoading) {
 		return (
@@ -48,9 +46,7 @@ export function DashboardPage() {
 					<h1 className="text-2xl font-serif font-bold text-foreground">
 						Dashboard
 					</h1>
-					<p className="text-muted-foreground">
-						Loading clinic overview...
-					</p>
+					<p className="text-muted-foreground">Loading clinic overview...</p>
 				</div>
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 					{[...Array(5)].map((_, i) => (
@@ -140,8 +136,7 @@ export function DashboardPage() {
 
 	// Significant change in appointment volume
 	if (stats && Math.abs(stats.appointmentChange) > 50) {
-		const changeType =
-			stats.appointmentChange > 0 ? "increase" : "decrease";
+		const changeType = stats.appointmentChange > 0 ? "increase" : "decrease";
 		criticalAlerts.push({
 			type: "info",
 			message: `Appointment volume ${changeType} of ${Math.abs(stats.appointmentChange)}% compared to yesterday`,
@@ -273,9 +268,7 @@ export function DashboardPage() {
 						<Alert
 							key={index}
 							className="items-center text-destructive"
-							variant={
-								alert.type === "info" ? "default" : alert.type
-							}
+							variant={alert.type === "info" ? "default" : alert.type}
 						>
 							<AlertTriangle className="h-4 w-4" />
 							<AlertDescription className="flex items-center justify-between text-destructive">
@@ -308,11 +301,10 @@ export function DashboardPage() {
 											card.color === "text-yellow-600",
 										"border-green-600/20 border":
 											card.color === "text-green-600",
-										"border-blue-600/20 border":
-											card.color === "text-blue-600",
+										"border-blue-600/20 border": card.color === "text-blue-600",
 										"border-orange-600/20 border":
 											card.color === "text-orange-600",
-									}
+									},
 								)}
 							>
 								<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -322,9 +314,7 @@ export function DashboardPage() {
 									<Icon className={`h-5 w-5 ${card.color}`} />
 								</CardHeader>
 								<CardContent>
-									<div className="text-3xl font-bold mb-1">
-										{card.value}
-									</div>
+									<div className="text-3xl font-bold mb-1">{card.value}</div>
 									<div className="flex items-center justify-between">
 										<p className="text-xs text-muted-foreground">
 											{card.description}
@@ -333,20 +323,15 @@ export function DashboardPage() {
 											variant="outline"
 											className={cn(`text-xs`, {
 												"border-destructive/30 bg-destructive/10 border":
-													card.color ===
-													"text-red-600",
+													card.color === "text-red-600",
 												"border-yellow-600/30 bg-yellow-600/10 border":
-													card.color ===
-													"text-yellow-600",
+													card.color === "text-yellow-600",
 												"border-green-600/30 bg-green-600/10 border":
-													card.color ===
-													"text-green-600",
+													card.color === "text-green-600",
 												"border-blue-600/30 bg-blue-600/10 border":
-													card.color ===
-													"text-blue-600",
+													card.color === "text-blue-600",
 												"border-orange-600/30 bg-orange-600/10 border":
-													card.color ===
-													"text-orange-600",
+													card.color === "text-orange-600",
 											})}
 										>
 											{card.trend}
@@ -389,30 +374,17 @@ export function DashboardPage() {
 												<div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
 												<div className="flex-1">
 													<p className="text-sm font-medium">
-														Appointment with{" "}
-														{
-															appointment.patient
-																?.firstName
-														}{" "}
-														{
-															appointment.patient
-																?.lastName
-														}
+														Appointment with {appointment.patient?.firstName}{" "}
+														{appointment.patient?.lastName}
 													</p>
 													<p className="text-xs text-muted-foreground">
 														{new Date(
-															appointment.appointmentDate
+															appointment.appointmentDate,
 														).toLocaleDateString()}{" "}
-														at{" "}
-														{
-															appointment.appointmentTime
-														}
+														at {appointment.appointmentTime}
 													</p>
 												</div>
-												<Badge
-													variant="outline"
-													className="text-xs"
-												>
+												<Badge variant="outline" className="text-xs">
 													{appointment.status}
 												</Badge>
 											</div>
@@ -429,26 +401,14 @@ export function DashboardPage() {
 												<div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
 												<div className="flex-1">
 													<p className="text-sm font-medium">
-														Medical record for{" "}
-														{
-															record.patient
-																?.firstName
-														}{" "}
-														{
-															record.patient
-																?.lastName
-														}
+														Medical record for {record.patient?.firstName}{" "}
+														{record.patient?.lastName}
 													</p>
 													<p className="text-xs text-muted-foreground">
-														{new Date(
-															record.visitDate
-														).toLocaleDateString()}
+														{new Date(record.visitDate).toLocaleDateString()}
 													</p>
 												</div>
-												<Badge
-													variant="outline"
-													className="text-xs"
-												>
+												<Badge variant="outline" className="text-xs">
 													Record
 												</Badge>
 											</div>
@@ -469,9 +429,7 @@ export function DashboardPage() {
 					<Card>
 						<CardHeader>
 							<CardTitle>Quick Actions</CardTitle>
-							<CardDescription>
-								Common tasks and shortcuts
-							</CardDescription>
+							<CardDescription>Common tasks and shortcuts</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3">
 							<Button
@@ -520,46 +478,31 @@ export function DashboardPage() {
 						<CardContent>
 							{appointmentsLoading ? (
 								<TableLoading rows={2} />
-							) : upcomingAppointments &&
-							  upcomingAppointments.length > 0 ? (
+							) : upcomingAppointments && upcomingAppointments.length > 0 ? (
 								<div className="space-y-3">
-									{upcomingAppointments
-										.slice(0, 4)
-										.map((appointment: any) => (
-											<div
-												key={appointment.id}
-												className="flex items-start gap-3 p-2 bg-muted/20 rounded"
-											>
-												<div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-												<div className="flex-1">
-													<p className="text-sm font-medium">
-														{
-															appointment.patient
-																?.firstName
-														}{" "}
-														{
-															appointment.patient
-																?.lastName
-														}
-													</p>
-													<p className="text-xs text-muted-foreground">
-														{new Date(
-															appointment.appointmentDate
-														).toLocaleDateString()}{" "}
-														at{" "}
-														{
-															appointment.appointmentTime
-														}
-													</p>
-												</div>
-												<Badge
-													variant="outline"
-													className="text-xs"
-												>
-													{appointment.type}
-												</Badge>
+									{upcomingAppointments.slice(0, 4).map((appointment: any) => (
+										<div
+											key={appointment.id}
+											className="flex items-start gap-3 p-2 bg-muted/20 rounded"
+										>
+											<div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+											<div className="flex-1">
+												<p className="text-sm font-medium">
+													{appointment.patient?.firstName}{" "}
+													{appointment.patient?.lastName}
+												</p>
+												<p className="text-xs text-muted-foreground">
+													{new Date(
+														appointment.appointmentDate,
+													).toLocaleDateString()}{" "}
+													at {appointment.appointmentTime}
+												</p>
 											</div>
-										))}
+											<Badge variant="outline" className="text-xs">
+												{appointment.type}
+											</Badge>
+										</div>
+									))}
 									{upcomingAppointments.length > 4 && (
 										<Button
 											asChild
@@ -581,9 +524,7 @@ export function DashboardPage() {
 										No upcoming appointments
 									</p>
 									<Button asChild size="sm" className="mt-2">
-										<Link to="/appointments/new">
-											Schedule One
-										</Link>
+										<Link to="/appointments/new">Schedule One</Link>
 									</Button>
 								</div>
 							)}

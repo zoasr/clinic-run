@@ -1,6 +1,6 @@
 import "dotenv/config";
-import * as schema from "./schema/schema";
 import * as authSchema from "./schema/auth-schema";
+import * as schema from "./schema/schema";
 
 // We support two modes:
 // 1) Local file DB: use Bun's built-in SQLite to avoid native @libsql/* binaries in compiled exe

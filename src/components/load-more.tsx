@@ -28,9 +28,7 @@ export default function LoadMore({
 							className="min-w-[120px]"
 							size="lg"
 						>
-							{isFetchingNextPage
-								? "Loading..."
-								: `Load more ${label}`}
+							{isFetchingNextPage ? "Loading..." : `Load more ${label}`}
 						</Button>
 					)}
 				</div>

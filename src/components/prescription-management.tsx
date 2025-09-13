@@ -1,8 +1,8 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { CheckCircle, Clock, Pill, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -13,19 +13,19 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
-	useDeletePrescription,
 	type Prescription,
+	useDeletePrescription,
 } from "@/hooks/usePrescriptions";
-import { Search, Plus, Pill, CheckCircle, Clock, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { Link } from "@tanstack/react-router";
-import LoadMore from "./load-more";
-import ErrorComponent from "./error";
-import { LoadingCards } from "./ui/loading";
 import { trpc } from "@/lib/trpc-client";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import ErrorComponent from "./error";
+import LoadMore from "./load-more";
+import { LoadingCards } from "./ui/loading";
 
 export function PrescriptionManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -48,10 +48,9 @@ export function PrescriptionManagement() {
 				limit: 20,
 			},
 			{
-				getNextPageParam: (lastPage) =>
-					lastPage.nextCursor ?? undefined,
-			}
-		)
+				getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+			},
+		),
 	);
 
 	const prescriptions = data?.pages?.flatMap((page) => page.data) || [];
@@ -74,11 +73,9 @@ export function PrescriptionManagement() {
 						setPrescriptionToDelete(null);
 					},
 					onError: (error) => {
-						toast.error(
-							`Failed to delete prescription: ${error.message}`
-						);
+						toast.error(`Failed to delete prescription: ${error.message}`);
 					},
-				}
+				},
 			);
 		}
 	};
@@ -153,9 +150,7 @@ export function PrescriptionManagement() {
 				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{prescriptions?.map((prescription: Prescription) => {
 						if (!prescription) return null;
-						const StatusIcon = getStatusIcon(
-							prescription.isDispensed
-						);
+						const StatusIcon = getStatusIcon(prescription.isDispensed);
 						const isPending = !prescription.isDispensed;
 						const isDispensed = prescription.isDispensed;
 
@@ -176,8 +171,7 @@ export function PrescriptionManagement() {
 										<Link
 											to="/prescriptions/$prescriptionId"
 											params={{
-												prescriptionId:
-													prescription.id.toString(),
+												prescriptionId: prescription.id.toString(),
 											}}
 											className="flex items-center gap-3 flex-1"
 										>
@@ -201,19 +195,12 @@ export function PrescriptionManagement() {
 											</div>
 											<div className="flex-1 min-w-0">
 												<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-													{prescription.medication
-														?.name ||
+													{prescription.medication?.name ||
 														"Unknown Medication"}
 												</h3>
 												<p className="text-sm text-muted-foreground truncate">
-													{
-														prescription.patient
-															?.firstName
-													}{" "}
-													{
-														prescription.patient
-															?.lastName
-													}
+													{prescription.patient?.firstName}{" "}
+													{prescription.patient?.lastName}
 												</p>
 											</div>
 										</Link>
@@ -225,9 +212,7 @@ export function PrescriptionManagement() {
 														: "bg-green-100 text-green-800 border-green-200"
 												} border-0 text-xs`}
 											>
-												{isDispensed
-													? "Dispensed"
-													: "Pending"}
+												{isDispensed ? "Dispensed" : "Pending"}
 											</Badge>
 										</div>
 									</div>
@@ -236,21 +221,16 @@ export function PrescriptionManagement() {
 									<div className="grid grid-cols-2 gap-4 mb-4">
 										{/* Dosage & Form */}
 										<div className="space-y-1">
-											<p className="text-xs text-muted-foreground">
-												Dosage
-											</p>
+											<p className="text-xs text-muted-foreground">Dosage</p>
 											<p className="text-sm font-medium">
 												{prescription.dosage}{" "}
-												{prescription.medication
-													?.form || ""}
+												{prescription.medication?.form || ""}
 											</p>
 										</div>
 
 										{/* Frequency */}
 										<div className="space-y-1">
-											<p className="text-xs text-muted-foreground">
-												Frequency
-											</p>
+											<p className="text-xs text-muted-foreground">Frequency</p>
 											<p className="text-sm font-medium">
 												{prescription.frequency}
 											</p>
@@ -258,9 +238,7 @@ export function PrescriptionManagement() {
 
 										{/* Quantity */}
 										<div className="space-y-1">
-											<p className="text-xs text-muted-foreground">
-												Quantity
-											</p>
+											<p className="text-xs text-muted-foreground">Quantity</p>
 											<p className="text-sm font-medium">
 												{prescription.quantity} units
 											</p>
@@ -272,8 +250,7 @@ export function PrescriptionManagement() {
 												Prescribing Doctor
 											</p>
 											<p className="text-sm font-medium truncate">
-												Dr.{" "}
-												{prescription.doctor?.firstName}{" "}
+												Dr. {prescription.doctor?.firstName}{" "}
 												{prescription.doctor?.lastName}
 											</p>
 										</div>
@@ -285,9 +262,7 @@ export function PrescriptionManagement() {
 											<p className="text-xs text-muted-foreground mb-1">
 												Instructions
 											</p>
-											<p className="text-sm">
-												{prescription.instructions}
-											</p>
+											<p className="text-sm">{prescription.instructions}</p>
 										</div>
 									)}
 
@@ -295,16 +270,12 @@ export function PrescriptionManagement() {
 									<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
 										<span>
 											Prescribed{" "}
-											{new Date(
-												prescription.createdAt
-											).toLocaleDateString()}
+											{new Date(prescription.createdAt).toLocaleDateString()}
 										</span>
 										{isDispensed && (
 											<span className="text-green-600">
 												Dispensed{" "}
-												{new Date(
-													prescription.updatedAt
-												).toLocaleDateString()}
+												{new Date(prescription.updatedAt).toLocaleDateString()}
 											</span>
 										)}
 									</div>
@@ -314,29 +285,21 @@ export function PrescriptionManagement() {
 										<Link
 											to="/prescriptions/$prescriptionId"
 											params={{
-												prescriptionId:
-													prescription.id.toString(),
+												prescriptionId: prescription.id.toString(),
 											}}
 											className="flex-1"
 										>
-											<Button
-												size="sm"
-												className="w-full transition-all"
-											>
+											<Button size="sm" className="w-full transition-all">
 												View Details
 											</Button>
 										</Link>
 										<Link
 											to="/prescriptions/edit/$prescriptionId"
 											params={{
-												prescriptionId:
-													prescription.id.toString(),
+												prescriptionId: prescription.id.toString(),
 											}}
 										>
-											<Button
-												variant="outline"
-												className="transition-all"
-											>
+											<Button variant="outline" className="transition-all">
 												Edit
 											</Button>
 										</Link>
@@ -346,9 +309,7 @@ export function PrescriptionManagement() {
 											className="transition-all"
 											onClick={(e) => {
 												e.stopPropagation();
-												handleDeletePrescription(
-													prescription
-												);
+												handleDeletePrescription(prescription);
 											}}
 											disabled={deleteMutation.isPending}
 										>
@@ -369,28 +330,21 @@ export function PrescriptionManagement() {
 			/>
 
 			{/* Delete Confirmation Dialog */}
-			<AlertDialog
-				open={deleteDialogOpen}
-				onOpenChange={setDeleteDialogOpen}
-			>
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Prescription</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to delete this prescription?
-							This action cannot be undone.
+							Are you sure you want to delete this prescription? This action
+							cannot be undone.
 							{prescriptionToDelete && (
 								<div className="mt-2 p-3 bg-muted rounded-md">
 									<p className="font-medium">
-										{prescriptionToDelete.medication
-											?.name || "Unknown Medication"}
+										{prescriptionToDelete.medication?.name ||
+											"Unknown Medication"}
 									</p>
 									<p className="text-sm text-muted-foreground">
-										for{" "}
-										{
-											prescriptionToDelete.patient
-												?.firstName
-										}{" "}
+										for {prescriptionToDelete.patient?.firstName}{" "}
 										{prescriptionToDelete.patient?.lastName}
 									</p>
 								</div>
@@ -404,9 +358,7 @@ export function PrescriptionManagement() {
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							disabled={deleteMutation.isPending}
 						>
-							{deleteMutation.isPending
-								? "Deleting..."
-								: "Delete"}
+							{deleteMutation.isPending ? "Deleting..." : "Delete"}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

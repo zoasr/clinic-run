@@ -1,30 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DatePicker } from "@/components/date-picker";
-import { queryKeys, trpc } from "@/lib/trpc-client";
-import { ArrowLeft, User, Trash2 } from "lucide-react";
-import { Appointment } from "@/lib/schema-types";
-import { useDeleteAppointment } from "@/hooks/useAppointments";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -36,6 +15,27 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useDeleteAppointment } from "@/hooks/useAppointments";
+import type { Appointment } from "@/lib/schema-types";
+import { queryKeys, trpc } from "@/lib/trpc-client";
 import DoctorsDialog from "./search-doctors-dialog";
 import SearchPatientsDialog from "./search-patients-dialog";
 import { Loading } from "./ui/loading";
@@ -56,8 +56,8 @@ export function AppointmentForm({
 			{ id: appointment?.patientId || 0 },
 			{
 				enabled: !!appointment?.patientId,
-			}
-		)
+			},
+		),
 	);
 
 	const form = useForm({
@@ -113,7 +113,7 @@ export function AppointmentForm({
 			onError: (error) => {
 				console.error("Failed to save appointment:", error);
 			},
-		})
+		}),
 	);
 
 	const { mutate: updateAppointment, isPending: isUpdating } = useMutation(
@@ -128,7 +128,7 @@ export function AppointmentForm({
 				console.error("Failed to update appointment:", error);
 				toast.error(`Failed to update appointment: ${error.message}`);
 			},
-		})
+		}),
 	);
 
 	const { mutate: deleteAppointment, isPending: isDeleting } =
@@ -167,9 +167,7 @@ export function AppointmentForm({
 				</Button>
 				<div>
 					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{appointment
-							? "Edit Appointment"
-							: "Schedule Appointment"}
+						{appointment ? "Edit Appointment" : "Schedule Appointment"}
 					</h1>
 					<p className="text-muted-foreground">
 						{appointment
@@ -199,18 +197,14 @@ export function AppointmentForm({
 							name="patientId"
 							validators={{
 								onChange: ({ value }) =>
-									!value || value <= 0
-										? "Patient is required"
-										: undefined,
+									!value || value <= 0 ? "Patient is required" : undefined,
 							}}
 							children={(field) => (
 								<>
 									<SearchPatientsDialog
 										patient={patient}
 										onSelect={(patient) => {
-											field.handleChange(
-												patient?.id || 0
-											);
+											field.handleChange(patient?.id || 0);
 										}}
 									/>
 									{!!patient && (
@@ -225,12 +219,10 @@ export function AppointmentForm({
 													</div>
 													<div>
 														<h3 className="font-semibold text-foreground">
-															{patient.firstName}{" "}
-															{patient.lastName}
+															{patient.firstName} {patient.lastName}
 														</h3>
 														<p className="text-sm text-muted-foreground">
-															ID:{" "}
-															{patient.patientId}
+															ID: {patient.patientId}
 														</p>
 													</div>
 												</div>
@@ -261,21 +253,15 @@ export function AppointmentForm({
 								}}
 								children={(field) => (
 									<div>
-										<Label htmlFor="appointmentDate">
-											Date *
-										</Label>
+										<Label htmlFor="appointmentDate">Date *</Label>
 										<DatePicker
 											selected={
 												field.state.value
-													? new Date(
-															field.state.value
-														)
+													? new Date(field.state.value)
 													: undefined
 											}
 											onSelect={(date) => {
-												field.handleChange(
-													date ? date : new Date()
-												);
+												field.handleChange(date ? date : new Date());
 											}}
 											disabled={(date) => {
 												// Disable past dates for new appointments
@@ -304,18 +290,12 @@ export function AppointmentForm({
 								}}
 								children={(field) => (
 									<div>
-										<Label htmlFor="appointmentTime">
-											Time *
-										</Label>
+										<Label htmlFor="appointmentTime">Time *</Label>
 										<Input
 											id="appointmentTime"
 											type="time"
 											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											required
 										/>
 										{field.state.meta.errors.length > 0 && (
@@ -333,45 +313,27 @@ export function AppointmentForm({
 								name="duration"
 								validators={{
 									onChange: ({ value }) =>
-										!value
-											? "Duration is required"
-											: undefined,
+										!value ? "Duration is required" : undefined,
 								}}
 								children={(field) => (
 									<div>
-										<Label htmlFor="duration">
-											Duration (minutes) *
-										</Label>
+										<Label htmlFor="duration">Duration (minutes) *</Label>
 										<Select
 											value={field.state.value?.toString()}
 											onValueChange={(value) =>
-												field.handleChange(
-													parseInt(value)
-												)
+												field.handleChange(parseInt(value))
 											}
 										>
 											<SelectTrigger>
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="15">
-													15 minutes
-												</SelectItem>
-												<SelectItem value="30">
-													30 minutes
-												</SelectItem>
-												<SelectItem value="45">
-													45 minutes
-												</SelectItem>
-												<SelectItem value="60">
-													1 hour
-												</SelectItem>
-												<SelectItem value="90">
-													1.5 hours
-												</SelectItem>
-												<SelectItem value="120">
-													2 hours
-												</SelectItem>
+												<SelectItem value="15">15 minutes</SelectItem>
+												<SelectItem value="30">30 minutes</SelectItem>
+												<SelectItem value="45">45 minutes</SelectItem>
+												<SelectItem value="60">1 hour</SelectItem>
+												<SelectItem value="90">1.5 hours</SelectItem>
+												<SelectItem value="120">2 hours</SelectItem>
 											</SelectContent>
 										</Select>
 										{field.state.meta.errors.length > 0 && (
@@ -394,9 +356,7 @@ export function AppointmentForm({
 										<Label htmlFor="type">Type *</Label>
 										<Select
 											value={field.state.value}
-											onValueChange={(value) =>
-												field.handleChange(value)
-											}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger>
 												<SelectValue />
@@ -405,15 +365,9 @@ export function AppointmentForm({
 												<SelectItem value="consultation">
 													Consultation
 												</SelectItem>
-												<SelectItem value="checkup">
-													Checkup
-												</SelectItem>
-												<SelectItem value="follow-up">
-													Follow-up
-												</SelectItem>
-												<SelectItem value="emergency">
-													Emergency
-												</SelectItem>
+												<SelectItem value="checkup">Checkup</SelectItem>
+												<SelectItem value="follow-up">Follow-up</SelectItem>
+												<SelectItem value="emergency">Emergency</SelectItem>
 											</SelectContent>
 										</Select>
 										{field.state.meta.errors.length > 0 && (
@@ -436,9 +390,7 @@ export function AppointmentForm({
 								<div>
 									<Label htmlFor="doctorId">Doctor *</Label>
 									<DoctorsDialog
-										onSelect={(doctor) =>
-											field.handleChange(doctor.id)
-										}
+										onSelect={(doctor) => field.handleChange(doctor.id)}
 										doctorId={field.state.value}
 									/>
 
@@ -460,9 +412,7 @@ export function AppointmentForm({
 										id="notes"
 										placeholder="Additional notes about the appointment..."
 										value={field.state.value || ""}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										rows={3}
 									/>
 								</div>
@@ -483,33 +433,24 @@ export function AppointmentForm({
 										disabled={isDeleting}
 									>
 										<Trash2 className="h-4 w-4 mr-2" />
-										{isDeleting
-											? "Deleting..."
-											: "Delete Appointment"}
+										{isDeleting ? "Deleting..." : "Delete Appointment"}
 									</Button>
 								</AlertDialogTrigger>
 								<AlertDialogContent>
 									<AlertDialogHeader>
-										<AlertDialogTitle>
-											Delete Appointment
-										</AlertDialogTitle>
+										<AlertDialogTitle>Delete Appointment</AlertDialogTitle>
 										<AlertDialogDescription>
-											Are you sure you want to delete this
-											appointment? This action cannot be
-											undone.
+											Are you sure you want to delete this appointment? This
+											action cannot be undone.
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 									<AlertDialogFooter>
-										<AlertDialogCancel>
-											Cancel
-										</AlertDialogCancel>
+										<AlertDialogCancel>Cancel</AlertDialogCancel>
 										<AlertDialogAction
 											onClick={handleDeleteAppointment}
 											asChild
 										>
-											<Button variant="destructive">
-												Delete
-											</Button>
+											<Button variant="destructive">Delete</Button>
 										</AlertDialogAction>
 									</AlertDialogFooter>
 								</AlertDialogContent>
@@ -517,22 +458,14 @@ export function AppointmentForm({
 						)}
 					</div>
 					<div className="flex gap-4">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={onCancel}
-						>
+						<Button type="button" variant="outline" onClick={onCancel}>
 							Cancel
 						</Button>
 						<form.Subscribe
 							children={(field) => (
 								<Button
 									type="submit"
-									disabled={
-										isUpdating ||
-										isSaving ||
-										!field.canSubmit
-									}
+									disabled={isUpdating || isSaving || !field.canSubmit}
 								>
 									{isSaving || isUpdating
 										? "Saving..."
@@ -547,9 +480,7 @@ export function AppointmentForm({
 
 				{mutationError && (
 					<Alert variant="destructive">
-						<AlertDescription>
-							{mutationError.message}
-						</AlertDescription>
+						<AlertDescription>{mutationError.message}</AlertDescription>
 					</Alert>
 				)}
 			</form>

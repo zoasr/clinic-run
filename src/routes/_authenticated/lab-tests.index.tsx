@@ -1,33 +1,17 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { trpc } from "@/lib/trpc-client";
-import {
-	Search,
-	Plus,
-	TestTube,
 	AlertTriangle,
 	Calendar,
 	CheckCircle,
 	Clock,
+	Plus,
+	Search,
+	TestTube,
+	Trash2,
 	XCircle,
 } from "lucide-react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { LabTest } from "@/lib/schema-types";
-import { useDeleteLabTest } from "@/hooks/useLabTests";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
 	AlertDialog,
@@ -40,8 +24,22 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { LoadingCards } from "@/components/ui/loading";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDeleteLabTest } from "@/hooks/useLabTests";
+import type { LabTest } from "@/lib/schema-types";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute("/_authenticated/lab-tests/")({
 	loader: () => ({
@@ -70,10 +68,9 @@ export function LabTestManagement() {
 				limit: 20,
 			},
 			{
-				getNextPageParam: (lastPage) =>
-					lastPage.nextCursor ?? undefined,
-			}
-		)
+				getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+			},
+		),
 	);
 
 	const labTests = data?.pages?.flatMap((page) => page.data) || [];
@@ -129,7 +126,7 @@ export function LabTestManagement() {
 		const orderDate = new Date(labTest.orderDate);
 		const today = new Date();
 		const daysSinceOrder = Math.ceil(
-			(today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
+			(today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24),
 		);
 
 		if (daysSinceOrder > 7)
@@ -154,7 +151,7 @@ export function LabTestManagement() {
 			const orderDate = new Date(test.orderDate);
 			const today = new Date();
 			const daysSinceOrder = Math.ceil(
-				(today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
+				(today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24),
 			);
 			return daysSinceOrder > 7;
 		}).length || 0;
@@ -185,12 +182,8 @@ export function LabTestManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Total Tests
-								</p>
-								<p className="text-2xl font-bold">
-									{labTests?.length || 0}
-								</p>
+								<p className="text-sm text-muted-foreground">Total Tests</p>
+								<p className="text-2xl font-bold">{labTests?.length || 0}</p>
 							</div>
 							<TestTube className="h-8 w-8 text-blue-500" />
 						</div>
@@ -201,9 +194,7 @@ export function LabTestManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Completed
-								</p>
+								<p className="text-sm text-muted-foreground">Completed</p>
 								<p className="text-2xl font-bold text-green-600">
 									{completedCount}
 								</p>
@@ -217,9 +208,7 @@ export function LabTestManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									In Progress
-								</p>
+								<p className="text-sm text-muted-foreground">In Progress</p>
 								<p className="text-2xl font-bold text-blue-600">
 									{inProgressCount}
 								</p>
@@ -233,12 +222,8 @@ export function LabTestManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Urgent Review
-								</p>
-								<p className="text-2xl font-bold text-red-600">
-									{urgentCount}
-								</p>
+								<p className="text-sm text-muted-foreground">Urgent Review</p>
+								<p className="text-2xl font-bold text-red-600">{urgentCount}</p>
 							</div>
 							<Calendar className="h-8 w-8 text-red-500" />
 						</div>
@@ -259,22 +244,15 @@ export function LabTestManagement() {
 								className="pl-10"
 							/>
 						</div>
-						<Select
-							value={statusFilter}
-							onValueChange={setStatusFilter}
-						>
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger className="w-full sm:w-48">
 								<SelectValue placeholder="Filter by status" />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">All Tests</SelectItem>
 								<SelectItem value="ordered">Ordered</SelectItem>
-								<SelectItem value="in-progress">
-									In Progress
-								</SelectItem>
-								<SelectItem value="completed">
-									Completed
-								</SelectItem>
+								<SelectItem value="in-progress">In Progress</SelectItem>
+								<SelectItem value="completed">Completed</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -316,18 +294,13 @@ export function LabTestManagement() {
 						<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 							{labTests &&
 								labTests?.map((labTest) => {
-									const statusInfo = getStatusInfo(
-										labTest.status
-									);
-									const urgencyStatus =
-										getUrgencyStatus(labTest);
+									const statusInfo = getStatusInfo(labTest.status);
+									const urgencyStatus = getUrgencyStatus(labTest);
 									const StatusIcon = statusInfo.icon;
 									const isUrgent =
-										urgencyStatus &&
-										urgencyStatus.status === "urgent";
+										urgencyStatus && urgencyStatus.status === "urgent";
 									const isPending =
-										urgencyStatus &&
-										urgencyStatus.status === "pending";
+										urgencyStatus && urgencyStatus.status === "pending";
 
 									return (
 										<Card
@@ -366,21 +339,11 @@ export function LabTestManagement() {
 														</div>
 														<div className="flex-1 min-w-0">
 															<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-																{
-																	labTest.testName
-																}
+																{labTest.testName}
 															</h3>
 															<p className="text-sm text-muted-foreground truncate">
-																{
-																	labTest
-																		.patient
-																		?.firstName
-																}{" "}
-																{
-																	labTest
-																		.patient
-																		?.lastName
-																}
+																{labTest.patient?.firstName}{" "}
+																{labTest.patient?.lastName}
 															</p>
 														</div>
 													</div>
@@ -391,14 +354,11 @@ export function LabTestManagement() {
 															{statusInfo.status}
 														</Badge>
 														{urgencyStatus &&
-															urgencyStatus.status !==
-																"recent" && (
+															urgencyStatus.status !== "recent" && (
 																<Badge
 																	className={`${urgencyStatus.color} border-0 text-xs`}
 																>
-																	{
-																		urgencyStatus.status
-																	}
+																	{urgencyStatus.status}
 																</Badge>
 															)}
 													</div>
@@ -422,9 +382,7 @@ export function LabTestManagement() {
 															Ordered
 														</p>
 														<p className="text-sm font-medium">
-															{new Date(
-																labTest.orderDate
-															).toLocaleDateString()}
+															{new Date(labTest.orderDate).toLocaleDateString()}
 														</p>
 													</div>
 
@@ -434,15 +392,8 @@ export function LabTestManagement() {
 															Doctor
 														</p>
 														<p className="text-sm font-medium">
-															Dr.{" "}
-															{
-																labTest.doctor
-																	?.firstName
-															}{" "}
-															{
-																labTest.doctor
-																	?.lastName
-															}
+															Dr. {labTest.doctor?.firstName}{" "}
+															{labTest.doctor?.lastName}
 														</p>
 													</div>
 
@@ -454,7 +405,7 @@ export function LabTestManagement() {
 															</p>
 															<p className="text-sm font-medium">
 																{new Date(
-																	labTest.completedDate
+																	labTest.completedDate,
 																).toLocaleDateString()}
 															</p>
 														</div>
@@ -469,8 +420,7 @@ export function LabTestManagement() {
 																Results
 															</span>
 															<span className="text-sm line-clamp-2">
-																{labTest.results
-																	.length > 50
+																{labTest.results.length > 50
 																	? `${labTest.results.substring(0, 50)}...`
 																	: labTest.results}
 															</span>
@@ -482,17 +432,12 @@ export function LabTestManagement() {
 												<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
 													<span>
 														Ordered{" "}
-														{new Date(
-															labTest.createdAt
-														).toLocaleDateString()}
+														{new Date(labTest.createdAt).toLocaleDateString()}
 													</span>
-													{labTest.updatedAt !==
-														labTest.createdAt && (
+													{labTest.updatedAt !== labTest.createdAt && (
 														<span>
 															Updated{" "}
-															{new Date(
-																labTest.updatedAt
-															).toLocaleDateString()}
+															{new Date(labTest.updatedAt).toLocaleDateString()}
 														</span>
 													)}
 												</div>
@@ -502,23 +447,18 @@ export function LabTestManagement() {
 													<Link
 														to={`/lab-tests/$labTestId`}
 														params={{
-															labTestId:
-																labTest.id.toString(),
+															labTestId: labTest.id.toString(),
 														}}
 														className="flex-1"
 													>
-														<Button
-															size="sm"
-															className="w-full transition-all"
-														>
+														<Button size="sm" className="w-full transition-all">
 															View Details
 														</Button>
 													</Link>
 													<Link
 														to={`/lab-tests/edit/$labTestId`}
 														params={{
-															labTestId:
-																labTest.id.toString(),
+															labTestId: labTest.id.toString(),
 														}}
 													>
 														<Button
@@ -529,15 +469,11 @@ export function LabTestManagement() {
 														</Button>
 													</Link>
 													<AlertDialog>
-														<AlertDialogTrigger
-															asChild
-														>
+														<AlertDialogTrigger asChild>
 															<Button
 																variant="destructive"
 																size="sm"
-																disabled={
-																	isDeleting
-																}
+																disabled={isDeleting}
 															>
 																<Trash2 className="h-4 w-4" />
 															</Button>
@@ -545,50 +481,26 @@ export function LabTestManagement() {
 														<AlertDialogContent>
 															<AlertDialogHeader>
 																<AlertDialogTitle>
-																	Delete Lab
-																	Test
+																	Delete Lab Test
 																</AlertDialogTitle>
 																<AlertDialogDescription>
-																	Are you sure
-																	you want to
-																	delete this
-																	lab test
+																	Are you sure you want to delete this lab test
 																	&quot;
-																	{
-																		labTest.testName
-																	}
-																	&quot; for{" "}
-																	{
-																		labTest
-																			.patient
-																			?.firstName
-																	}{" "}
-																	{
-																		labTest
-																			.patient
-																			?.lastName
-																	}
-																	? This
-																	action
-																	cannot be
-																	undone.
+																	{labTest.testName}
+																	&quot; for {labTest.patient?.firstName}{" "}
+																	{labTest.patient?.lastName}? This action
+																	cannot be undone.
 																</AlertDialogDescription>
 															</AlertDialogHeader>
 															<AlertDialogFooter>
-																<AlertDialogCancel>
-																	Cancel
-																</AlertDialogCancel>
+																<AlertDialogCancel>Cancel</AlertDialogCancel>
 																<AlertDialogAction
 																	onClick={() =>
-																		handleDeleteLabTest(
-																			labTest.id
-																		)
+																		handleDeleteLabTest(labTest.id)
 																	}
 																	asChild
 																>
-																	<Button variant="destructive">
-																		Delete
-																	</Button>
+																	<Button variant="destructive">Delete</Button>
 																</AlertDialogAction>
 															</AlertDialogFooter>
 														</AlertDialogContent>
@@ -614,9 +526,7 @@ export function LabTestManagement() {
 									className="min-w-[120px]"
 									size="lg"
 								>
-									{isFetchingNextPage
-										? "Loading..."
-										: "Load More Lab Tests"}
+									{isFetchingNextPage ? "Loading..." : "Load More Lab Tests"}
 								</Button>
 							)}
 						</div>
@@ -636,29 +546,20 @@ export function LabTestManagement() {
 												Urgent Review Required
 											</h3>
 											<p className="text-sm text-muted-foreground">
-												{urgentCount} tests need
-												immediate attention
+												{urgentCount} tests need immediate attention
 											</p>
 										</div>
 									</div>
 									<div className="space-y-2">
 										{labTests
 											?.filter((test) => {
-												if (test.status === "completed")
-													return false;
-												const orderDate = new Date(
-													test.orderDate
-												);
+												if (test.status === "completed") return false;
+												const orderDate = new Date(test.orderDate);
 												const today = new Date();
-												const daysSinceOrder =
-													Math.ceil(
-														(today.getTime() -
-															orderDate.getTime()) /
-															(1000 *
-																60 *
-																60 *
-																24)
-													);
+												const daysSinceOrder = Math.ceil(
+													(today.getTime() - orderDate.getTime()) /
+														(1000 * 60 * 60 * 24),
+												);
 												return daysSinceOrder > 7;
 											})
 											.map((labTest) => (
@@ -667,37 +568,23 @@ export function LabTestManagement() {
 													className="flex items-center justify-between p-3 bg-red-50 rounded-lg"
 												>
 													<div>
-														<p className="font-medium">
-															{labTest.testName}
-														</p>
+														<p className="font-medium">{labTest.testName}</p>
 														<p className="text-sm text-muted-foreground">
-															Patient:{" "}
-															{
-																labTest.patient
-																	?.firstName
-															}{" "}
-															{
-																labTest.patient
-																	?.lastName
-															}
+															Patient: {labTest.patient?.firstName}{" "}
+															{labTest.patient?.lastName}
 														</p>
 														<p className="text-sm text-muted-foreground">
 															Ordered:{" "}
-															{new Date(
-																labTest.orderDate
-															).toLocaleDateString()}
+															{new Date(labTest.orderDate).toLocaleDateString()}
 														</p>
 													</div>
 													<Link
 														to={`/lab-tests/$labTestId`}
 														params={{
-															labTestId:
-																labTest.id.toString(),
+															labTestId: labTest.id.toString(),
 														}}
 													>
-														<Button size="sm">
-															Review
-														</Button>
+														<Button size="sm">Review</Button>
 													</Link>
 												</div>
 											))}
@@ -717,49 +604,32 @@ export function LabTestManagement() {
 												Tests In Progress
 											</h3>
 											<p className="text-sm text-muted-foreground">
-												{inProgressCount} tests are
-												currently being processed
+												{inProgressCount} tests are currently being processed
 											</p>
 										</div>
 									</div>
 									<div className="space-y-2">
 										{labTests
-											?.filter(
-												(test) =>
-													test.status ===
-													"in-progress"
-											)
+											?.filter((test) => test.status === "in-progress")
 											.map((labTest) => (
 												<div
 													key={labTest.id}
 													className="flex items-center justify-between p-3 bg-blue-500/20 border rounded-lg"
 												>
 													<div>
-														<p className="font-medium">
-															{labTest.testName}
-														</p>
+														<p className="font-medium">{labTest.testName}</p>
 														<p className="text-sm text-muted-foreground">
-															Patient:{" "}
-															{
-																labTest.patient
-																	?.firstName
-															}{" "}
-															{
-																labTest.patient
-																	?.lastName
-															}
+															Patient: {labTest.patient?.firstName}{" "}
+															{labTest.patient?.lastName}
 														</p>
 													</div>
 													<Link
 														to={`/lab-tests/$labTestId`}
 														params={{
-															labTestId:
-																labTest.id.toString(),
+															labTestId: labTest.id.toString(),
 														}}
 													>
-														<Button size="sm">
-															Update
-														</Button>
+														<Button size="sm">Update</Button>
 													</Link>
 												</div>
 											))}
@@ -779,17 +649,13 @@ export function LabTestManagement() {
 												Recently Ordered
 											</h3>
 											<p className="text-sm text-muted-foreground">
-												{orderedCount} tests are waiting
-												to be started
+												{orderedCount} tests are waiting to be started
 											</p>
 										</div>
 									</div>
 									<div className="space-y-2">
 										{labTests
-											?.filter(
-												(test) =>
-													test.status === "ordered"
-											)
+											?.filter((test) => test.status === "ordered")
 											.slice(0, 5)
 											.map((labTest) => (
 												<div
@@ -797,31 +663,19 @@ export function LabTestManagement() {
 													className="flex items-center justify-between p-3 border border-yellow-50 bg-yellow-50/20 rounded-lg"
 												>
 													<div>
-														<p className="font-medium">
-															{labTest.testName}
-														</p>
+														<p className="font-medium">{labTest.testName}</p>
 														<p className="text-sm text-muted-foreground">
-															Patient:{" "}
-															{
-																labTest.patient
-																	?.firstName
-															}{" "}
-															{
-																labTest.patient
-																	?.lastName
-															}
+															Patient: {labTest.patient?.firstName}{" "}
+															{labTest.patient?.lastName}
 														</p>
 													</div>
 													<Link
 														to={`/lab-tests/$labTestId`}
 														params={{
-															labTestId:
-																labTest.id.toString(),
+															labTestId: labTest.id.toString(),
 														}}
 													>
-														<Button size="sm">
-															Start
-														</Button>
+														<Button size="sm">Start</Button>
 													</Link>
 												</div>
 											))}
@@ -840,8 +694,7 @@ export function LabTestManagement() {
 											All Caught Up!
 										</h3>
 										<p className="text-muted-foreground text-center">
-											No urgent lab test alerts at this
-											time.
+											No urgent lab test alerts at this time.
 										</p>
 									</CardContent>
 								</Card>

@@ -1,5 +1,5 @@
-import { LabTestForm } from "@/components/lab-test-form";
 import { createFileRoute } from "@tanstack/react-router";
+import { LabTestForm } from "@/components/lab-test-form";
 
 export const Route = createFileRoute("/_authenticated/lab-tests/new")({
 	loader: () => ({

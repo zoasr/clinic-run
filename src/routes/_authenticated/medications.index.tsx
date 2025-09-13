@@ -1,34 +1,16 @@
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { trpc } from "@/lib/trpc-client";
-import {
-	Search,
-	Plus,
-	Package,
 	AlertTriangle,
 	Calendar,
+	Package,
 	Pill,
+	Plus,
+	Search,
 	Trash2,
 } from "lucide-react";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { Medication } from "@/lib/schema-types";
-import { useDeleteMedication } from "@/hooks/useMedications";
+import { useState } from "react";
 import { toast } from "sonner";
-import { LoadingCards } from "@/components/ui/loading";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -40,6 +22,22 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { LoadingCards } from "@/components/ui/loading";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDeleteMedication } from "@/hooks/useMedications";
+import type { Medication } from "@/lib/schema-types";
+import { trpc } from "@/lib/trpc-client";
 import { formatCurrency } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/medications/")({
@@ -70,16 +68,15 @@ export function InventoryManagement() {
 				limit: 20,
 			},
 			{
-				getNextPageParam: (lastPage) =>
-					lastPage.nextCursor ?? undefined,
-			}
-		)
+				getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+			},
+		),
 	);
 	const { data: lowStockMeds } = useQuery(
-		trpc.medications.getAllLowStock.queryOptions()
+		trpc.medications.getAllLowStock.queryOptions(),
 	);
 	const { data: outOfStockMeds } = useQuery(
-		trpc.medications.getAllOutOfStock.queryOptions()
+		trpc.medications.getAllOutOfStock.queryOptions(),
 	);
 
 	// Mutation for deleting medications
@@ -116,7 +113,7 @@ export function InventoryManagement() {
 		const today = new Date();
 		const expiry = new Date(expiryDate);
 		const daysUntilExpiry = Math.ceil(
-			(expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+			(expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
 		);
 
 		if (daysUntilExpiry < 0)
@@ -137,7 +134,7 @@ export function InventoryManagement() {
 		const expiry = new Date(med.expiryDate);
 		const today = new Date();
 		const daysUntilExpiry = Math.ceil(
-			(expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+			(expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
 		);
 		return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
 	}).length;
@@ -168,12 +165,8 @@ export function InventoryManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Total Items
-								</p>
-								<p className="text-2xl font-bold">
-									{medications?.length || 0}
-								</p>
+								<p className="text-sm text-muted-foreground">Total Items</p>
+								<p className="text-2xl font-bold">{medications?.length || 0}</p>
 							</div>
 							<Package className="h-8 w-8 text-blue-500" />
 						</div>
@@ -184,9 +177,7 @@ export function InventoryManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Low Stock
-								</p>
+								<p className="text-sm text-muted-foreground">Low Stock</p>
 								<p className="text-2xl font-bold text-yellow-600">
 									{lowStockCount}
 								</p>
@@ -200,9 +191,7 @@ export function InventoryManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Out of Stock
-								</p>
+								<p className="text-sm text-muted-foreground">Out of Stock</p>
 								<p className="text-2xl font-bold text-red-600">
 									{outOfStockCount}
 								</p>
@@ -216,9 +205,7 @@ export function InventoryManagement() {
 					<CardContent className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-sm text-muted-foreground">
-									Expiring Soon
-								</p>
+								<p className="text-sm text-muted-foreground">Expiring Soon</p>
 								<p className="text-2xl font-bold text-orange-600">
 									{expiringCount}
 								</p>
@@ -242,19 +229,14 @@ export function InventoryManagement() {
 								className="pl-10"
 							/>
 						</div>
-						<Select
-							value={stockFilter}
-							onValueChange={setStockFilter}
-						>
+						<Select value={stockFilter} onValueChange={setStockFilter}>
 							<SelectTrigger className="w-full sm:w-48">
 								<SelectValue placeholder="Filter by stock" />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">All Items</SelectItem>
 								<SelectItem value="low">Low Stock</SelectItem>
-								<SelectItem value="out">
-									Out of Stock
-								</SelectItem>
+								<SelectItem value="out">Out of Stock</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -296,21 +278,15 @@ export function InventoryManagement() {
 						<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 							{medications &&
 								medications?.map((medication) => {
-									const stockStatus =
-										getStockStatus(medication);
-									const expiryStatus = getExpiryStatus(
-										medication?.expiryDate
-									);
+									const stockStatus = getStockStatus(medication);
+									const expiryStatus = getExpiryStatus(medication?.expiryDate);
 									const isLowStock =
-										medication.quantity <=
-											medication.minStockLevel &&
+										medication.quantity <= medication.minStockLevel &&
 										medication.quantity > 0;
-									const isOutOfStock =
-										medication.quantity === 0;
+									const isOutOfStock = medication.quantity === 0;
 									const isExpiringSoon =
 										expiryStatus &&
-										(expiryStatus.status ===
-											"expiring-soon" ||
+										(expiryStatus.status === "expiring-soon" ||
 											expiryStatus.status === "expired");
 
 									return (
@@ -342,8 +318,7 @@ export function InventoryManagement() {
 															>
 																<Pill className="h-6 w-6" />
 															</div>
-															{(isLowStock ||
-																isOutOfStock) && (
+															{(isLowStock || isOutOfStock) && (
 																<div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
 																	<span className="text-xs text-white font-bold">
 																		!
@@ -353,15 +328,11 @@ export function InventoryManagement() {
 														</div>
 														<div className="flex-1 min-w-0">
 															<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-																{
-																	medication.name
-																}
+																{medication.name}
 															</h3>
 															{medication.genericName && (
 																<p className="text-sm text-muted-foreground truncate">
-																	{
-																		medication.genericName
-																	}
+																	{medication.genericName}
 																</p>
 															)}
 														</div>
@@ -376,9 +347,7 @@ export function InventoryManagement() {
 															<Badge
 																className={`${expiryStatus.color} border-black/20 text-xs`}
 															>
-																{
-																	expiryStatus.status
-																}
+																{expiryStatus.status}
 															</Badge>
 														)}
 													</div>
@@ -393,16 +362,10 @@ export function InventoryManagement() {
 														</p>
 														<div className="flex items-center gap-2">
 															<span className="text-lg font-bold">
-																{
-																	medication.quantity
-																}
+																{medication.quantity}
 															</span>
 															<span className="text-xs text-muted-foreground">
-																/{" "}
-																{
-																	medication.minStockLevel
-																}{" "}
-																min
+																/ {medication.minStockLevel} min
 															</span>
 														</div>
 													</div>
@@ -413,9 +376,7 @@ export function InventoryManagement() {
 															Price
 														</p>
 														<p className="text-lg font-bold">
-															{formatCurrency(
-																medication.unitPrice
-															)}
+															{formatCurrency(medication.unitPrice)}
 														</p>
 													</div>
 
@@ -425,8 +386,7 @@ export function InventoryManagement() {
 															Dosage
 														</p>
 														<p className="text-sm font-medium">
-															{medication.dosage}{" "}
-															{medication.form}
+															{medication.dosage} {medication.form}
 														</p>
 													</div>
 
@@ -438,7 +398,7 @@ export function InventoryManagement() {
 															</p>
 															<p className="text-sm font-medium">
 																{new Date(
-																	medication.expiryDate
+																	medication.expiryDate,
 																).toLocaleDateString()}
 															</p>
 														</div>
@@ -455,9 +415,7 @@ export function InventoryManagement() {
 																	Manufacturer
 																</span>
 																<span className="text-sm">
-																	{
-																		medication.manufacturer
-																	}
+																	{medication.manufacturer}
 																</span>
 															</div>
 														)}
@@ -467,9 +425,7 @@ export function InventoryManagement() {
 																	Batch
 																</span>
 																<span className="text-sm font-mono">
-																	{
-																		medication.batchNumber
-																	}
+																	{medication.batchNumber}
 																</span>
 															</div>
 														)}
@@ -481,15 +437,14 @@ export function InventoryManagement() {
 													<span>
 														Added{" "}
 														{new Date(
-															medication.createdAt
+															medication.createdAt,
 														).toLocaleDateString()}
 													</span>
-													{medication.updatedAt !==
-														medication.createdAt && (
+													{medication.updatedAt !== medication.createdAt && (
 														<span>
 															Updated{" "}
 															{new Date(
-																medication.updatedAt
+																medication.updatedAt,
 															).toLocaleDateString()}
 														</span>
 													)}
@@ -500,39 +455,28 @@ export function InventoryManagement() {
 													<Link
 														to={`/medications/$medicationId`}
 														params={{
-															medicationId:
-																medication.id.toString(),
+															medicationId: medication.id.toString(),
 														}}
 														className="flex-1"
 													>
-														<Button
-															size="sm"
-															className="w-full transition-all"
-														>
+														<Button size="sm" className="w-full transition-all">
 															View Details
 														</Button>
 													</Link>
 													<Link
 														to={`/medications/stock/$medicationId`}
 														params={{
-															medicationId:
-																medication.id.toString(),
+															medicationId: medication.id.toString(),
 														}}
 													>
-														<Button variant="outline">
-															Adjust Stock
-														</Button>
+														<Button variant="outline">Adjust Stock</Button>
 													</Link>
 													<AlertDialog>
-														<AlertDialogTrigger
-															asChild
-														>
+														<AlertDialogTrigger asChild>
 															<Button
 																variant="destructive"
 																size="sm"
-																disabled={
-																	isDeleting
-																}
+																disabled={isDeleting}
 															>
 																<Trash2 className="h-4 w-4" />
 															</Button>
@@ -540,28 +484,18 @@ export function InventoryManagement() {
 														<AlertDialogContent>
 															<AlertDialogHeader>
 																<AlertDialogTitle>
-																	Delete
-																	Medication
+																	Delete Medication
 																</AlertDialogTitle>
 																<AlertDialogDescription>
-																	Are you sure
-																	you want to
-																	delete this
-																	medication?
-																	This action
-																	cannot be
-																	undone.
+																	Are you sure you want to delete this
+																	medication? This action cannot be undone.
 																</AlertDialogDescription>
 															</AlertDialogHeader>
 															<AlertDialogFooter>
-																<AlertDialogCancel>
-																	Cancel
-																</AlertDialogCancel>
+																<AlertDialogCancel>Cancel</AlertDialogCancel>
 																<AlertDialogAction
 																	onClick={() =>
-																		handleDeleteMedication(
-																			medication.id
-																		)
+																		handleDeleteMedication(medication.id)
 																	}
 																	className="bg-red-600 hover:bg-red-700"
 																>
@@ -591,9 +525,7 @@ export function InventoryManagement() {
 									className="min-w-[120px]"
 									size="lg"
 								>
-									{isFetchingNextPage
-										? "Loading..."
-										: "Load More Medications"}
+									{isFetchingNextPage ? "Loading..." : "Load More Medications"}
 								</Button>
 							)}
 						</div>
@@ -613,8 +545,7 @@ export function InventoryManagement() {
 												Low Stock Alert
 											</h3>
 											<p className="text-sm text-muted-foreground">
-												{lowStockCount} items need
-												restocking
+												{lowStockCount} items need restocking
 											</p>
 										</div>
 									</div>
@@ -625,28 +556,19 @@ export function InventoryManagement() {
 												className="flex items-center justify-between p-3 rounded-lg border bg-warning/10 "
 											>
 												<div>
-													<p className="font-medium">
-														{medication.name}
-													</p>
+													<p className="font-medium">{medication.name}</p>
 													<p className="text-sm text-muted-foreground">
-														Current:{" "}
-														{medication.quantity} |
-														Min:{" "}
-														{
-															medication.minStockLevel
-														}
+														Current: {medication.quantity} | Min:{" "}
+														{medication.minStockLevel}
 													</p>
 												</div>
 												<Link
 													to="/medications/stock/$medicationId"
 													params={{
-														medicationId:
-															medication.id.toString(),
+														medicationId: medication.id.toString(),
 													}}
 												>
-													<Button size="sm">
-														Restock
-													</Button>
+													<Button size="sm">Restock</Button>
 												</Link>
 											</div>
 										))}
@@ -666,8 +588,7 @@ export function InventoryManagement() {
 												Out of Stock
 											</h3>
 											<p className="text-sm text-muted-foreground">
-												{outOfStockCount} items are out
-												of stock
+												{outOfStockCount} items are out of stock
 											</p>
 										</div>
 									</div>
@@ -678,9 +599,7 @@ export function InventoryManagement() {
 												className="flex items-center justify-between p-3 rounded-lg border bg-destructive/10 "
 											>
 												<div>
-													<p className="font-medium">
-														{medication.name}
-													</p>
+													<p className="font-medium">{medication.name}</p>
 													<p className="text-sm text-muted-foreground">
 														Stock depleted
 													</p>
@@ -688,13 +607,10 @@ export function InventoryManagement() {
 												<Link
 													to="/medications/stock/$medicationId"
 													params={{
-														medicationId:
-															medication.id.toString(),
+														medicationId: medication.id.toString(),
 													}}
 												>
-													<Button size="sm">
-														Restock
-													</Button>
+													<Button size="sm">Restock</Button>
 												</Link>
 											</div>
 										))}
@@ -714,48 +630,29 @@ export function InventoryManagement() {
 												Expiring Soon
 											</h3>
 											<p className="text-sm text-muted-foreground">
-												{expiringCount} item(s)
-												expire(s) within 30 days
+												{expiringCount} item(s) expire(s) within 30 days
 											</p>
 										</div>
 									</div>
 									<div className="space-y-2">
 										{medications
 											.filter((med) => {
-												if (!med.expiryDate)
-													return false;
-												const expiry = new Date(
-													med.expiryDate
-												);
+												if (!med.expiryDate) return false;
+												const expiry = new Date(med.expiryDate);
 												const today = new Date();
-												const daysUntilExpiry =
-													Math.ceil(
-														(expiry.getTime() -
-															today.getTime()) /
-															(1000 *
-																60 *
-																60 *
-																24)
-													);
-												return (
-													daysUntilExpiry <= 30 &&
-													daysUntilExpiry >= 0
+												const daysUntilExpiry = Math.ceil(
+													(expiry.getTime() - today.getTime()) /
+														(1000 * 60 * 60 * 24),
 												);
+												return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
 											})
 											.map((medication) => {
-												const expiry = new Date(
-													medication.expiryDate!
-												);
+												const expiry = new Date(medication.expiryDate!);
 												const today = new Date();
-												const daysUntilExpiry =
-													Math.ceil(
-														(expiry.getTime() -
-															today.getTime()) /
-															(1000 *
-																60 *
-																60 *
-																24)
-													);
+												const daysUntilExpiry = Math.ceil(
+													(expiry.getTime() - today.getTime()) /
+														(1000 * 60 * 60 * 24),
+												);
 
 												return (
 													<div
@@ -763,27 +660,17 @@ export function InventoryManagement() {
 														className="flex items-center justify-between p-3 border bg-amber-500/10 rounded-lg"
 													>
 														<div>
-															<p className="font-medium">
-																{
-																	medication.name
-																}
-															</p>
+															<p className="font-medium">{medication.name}</p>
 															<p className="text-sm text-muted-foreground">
-																Expires in{" "}
-																{
-																	daysUntilExpiry
-																}{" "}
-																days (
-																{expiry.toLocaleDateString()}
-																)
+																Expires in {daysUntilExpiry} days (
+																{expiry.toLocaleDateString()})
 															</p>
 														</div>
 														<Badge
 															variant="outline"
 															className="text-amber-100 bg-amber-800"
 														>
-															{daysUntilExpiry}{" "}
-															days
+															{daysUntilExpiry} days
 														</Badge>
 													</div>
 												);
@@ -803,8 +690,8 @@ export function InventoryManagement() {
 											All Good!
 										</h3>
 										<p className="text-muted-foreground text-center">
-											No stock alerts at this time. All
-											medications are adequately stocked.
+											No stock alerts at this time. All medications are
+											adequately stocked.
 										</p>
 									</CardContent>
 								</Card>

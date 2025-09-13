@@ -1,16 +1,10 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { ArrowLeft, User } from "lucide-react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	Card,
 	CardContent,
@@ -18,15 +12,21 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, User } from "lucide-react";
-import { toast } from "sonner";
-import { DatePicker } from "./date-picker";
-import { usePatient } from "@/hooks/usePatients";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-import { trpc } from "@/lib/trpc-client";
-import type { TRPCClientErrorLike } from "@trpc/client";
+import { usePatient } from "@/hooks/usePatients";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
+import { DatePicker } from "./date-picker";
 import DoctorsDialog from "./search-doctors-dialog";
 import SearchPatientsDialog from "./search-patients-dialog";
 
@@ -48,7 +48,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 
 	// Fetch patient data for existing lab test
 	const { data: patient, isLoading: patientLoading } = usePatient(
-		labTest?.patientId || 0
+		labTest?.patientId || 0,
 	);
 
 	const defaultValues: LabTestFormValues = {
@@ -77,7 +77,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to order lab test");
 			},
-		})
+		}),
 	);
 
 	const updateMutation = useMutation(
@@ -93,7 +93,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(error.message || "Failed to update lab test");
 			},
-		})
+		}),
 	);
 
 	const { isPending, error } = labTest?.id ? updateMutation : createMutation;
@@ -154,8 +154,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					<CardHeader>
 						<CardTitle>Patient & Doctor Information</CardTitle>
 						<CardDescription>
-							Select the patient and ordering doctor for this lab
-							test
+							Select the patient and ordering doctor for this lab test
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -164,21 +163,15 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 								name="patientId"
 								validators={{
 									onChange: ({ value }) =>
-										!value || value <= 0
-											? "Patient is required"
-											: undefined,
+										!value || value <= 0 ? "Patient is required" : undefined,
 								}}
 								children={(field) => (
 									<div>
-										<Label htmlFor="patientId">
-											Patient *
-										</Label>
+										<Label htmlFor="patientId">Patient *</Label>
 										<SearchPatientsDialog
 											patient={patient}
 											onSelect={(patient) => {
-												field.handleChange(
-													patient?.id || 0
-												);
+												field.handleChange(patient?.id || 0);
 											}}
 										/>
 
@@ -195,19 +188,13 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 								name="doctorId"
 								validators={{
 									onChange: ({ value }) =>
-										!value
-											? "Doctor is required"
-											: undefined,
+										!value ? "Doctor is required" : undefined,
 								}}
 								children={(field) => (
 									<div>
-										<Label htmlFor="doctorId">
-											Ordering Doctor *
-										</Label>
+										<Label htmlFor="doctorId">Ordering Doctor *</Label>
 										<DoctorsDialog
-											onSelect={(doctor) =>
-												field.handleChange(doctor.id)
-											}
+											onSelect={(doctor) => field.handleChange(doctor.id)}
 											doctorId={field.state.value}
 										/>
 
@@ -227,9 +214,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 				<Card>
 					<CardHeader>
 						<CardTitle>Test Information</CardTitle>
-						<CardDescription>
-							Details about the laboratory test
-						</CardDescription>
+						<CardDescription>Details about the laboratory test</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -239,20 +224,14 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 									name="testName"
 									validators={{
 										onChange: ({ value }) =>
-											!value?.trim()
-												? "Test name is required"
-												: undefined,
+											!value?.trim() ? "Test name is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<Input
 											id="testName"
 											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="e.g., Complete Blood Count, Lipid Panel"
 											required
 										/>
@@ -266,43 +245,27 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 									name="testType"
 									validators={{
 										onChange: ({ value }) =>
-											!value
-												? "Test type is required"
-												: undefined,
+											!value ? "Test type is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<Select
 											value={field.state.value}
-											onValueChange={(value) =>
-												field.handleChange(value)
-											}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select test type" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="blood">
-													Blood Test
-												</SelectItem>
-												<SelectItem value="urine">
-													Urine Test
-												</SelectItem>
-												<SelectItem value="stool">
-													Stool Test
-												</SelectItem>
-												<SelectItem value="imaging">
-													Imaging
-												</SelectItem>
-												<SelectItem value="biopsy">
-													Biopsy
-												</SelectItem>
+												<SelectItem value="blood">Blood Test</SelectItem>
+												<SelectItem value="urine">Urine Test</SelectItem>
+												<SelectItem value="stool">Stool Test</SelectItem>
+												<SelectItem value="imaging">Imaging</SelectItem>
+												<SelectItem value="biopsy">Biopsy</SelectItem>
 												<SelectItem value="microbiology">
 													Microbiology
 												</SelectItem>
-												<SelectItem value="other">
-													Other
-												</SelectItem>
+												<SelectItem value="other">Other</SelectItem>
 											</SelectContent>
 										</Select>
 									)}
@@ -317,28 +280,20 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 									name="orderDate"
 									validators={{
 										onChange: ({ value }) =>
-											!value
-												? "Order date is required"
-												: undefined,
+											!value ? "Order date is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<DatePicker
 											mode="single"
 											captionLayout="dropdown"
 											selected={
 												field.state.value
-													? new Date(
-															field.state.value
-														)
+													? new Date(field.state.value)
 													: undefined
 											}
-											onSelect={(
-												value: Date | undefined
-											) => {
-												field.handleChange(
-													value ? value : new Date()
-												);
+											onSelect={(value: Date | undefined) => {
+												field.handleChange(value ? value : new Date());
 											}}
 											required
 										/>
@@ -352,31 +307,21 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 									name="status"
 									validators={{
 										onChange: ({ value }) =>
-											!value
-												? "Status is required"
-												: undefined,
+											!value ? "Status is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<Select
 											value={field.state.value}
-											onValueChange={(value) =>
-												field.handleChange(value)
-											}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select status" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="ordered">
-													Ordered
-												</SelectItem>
-												<SelectItem value="in-progress">
-													In Progress
-												</SelectItem>
-												<SelectItem value="completed">
-													Completed
-												</SelectItem>
+												<SelectItem value="ordered">Ordered</SelectItem>
+												<SelectItem value="in-progress">In Progress</SelectItem>
+												<SelectItem value="completed">Completed</SelectItem>
 											</SelectContent>
 										</Select>
 									)}
@@ -391,34 +336,25 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					<CardHeader>
 						<CardTitle>Test Results</CardTitle>
 						<CardDescription>
-							Results and findings (available when test is
-							completed)
+							Results and findings (available when test is completed)
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="completedDate">
-									Completed Date
-								</Label>
+								<Label htmlFor="completedDate">Completed Date</Label>
 								<form.Field name="completedDate">
-									{(field: any) => (
+									{(field) => (
 										<DatePicker
 											mode="single"
 											captionLayout="dropdown"
 											selected={
 												field.state.value
-													? new Date(
-															field.state.value
-														)
+													? new Date(field.state.value)
 													: undefined
 											}
-											onSelect={(
-												value: Date | undefined
-											) => {
-												field.handleChange(
-													value ? value : new Date()
-												);
+											onSelect={(value: Date | undefined) => {
+												field.handleChange(value ? value : new Date());
 											}}
 										/>
 									)}
@@ -426,19 +362,13 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="normalRange">
-									Normal Range
-								</Label>
+								<Label htmlFor="normalRange">Normal Range</Label>
 								<form.Field name="normalRange">
-									{(field: any) => (
+									{(field) => (
 										<Input
 											id="normalRange"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="e.g., 70-99 mg/dL, Negative"
 										/>
 									)}
@@ -449,13 +379,11 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 						<div className="space-y-2">
 							<Label htmlFor="results">Results</Label>
 							<form.Field name="results">
-								{(field: any) => (
+								{(field) => (
 									<Textarea
 										id="results"
 										value={field.state.value || ""}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Enter test results and findings..."
 										rows={4}
 									/>
@@ -466,13 +394,11 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 						<div className="space-y-2">
 							<Label htmlFor="notes">Notes</Label>
 							<form.Field name="notes">
-								{(field: any) => (
+								{(field) => (
 									<Textarea
 										id="notes"
 										value={field.state.value || ""}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Additional notes or observations..."
 										rows={3}
 									/>
@@ -495,15 +421,8 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					</Button>
 					<form.Subscribe
 						children={(field) => (
-							<Button
-								type="submit"
-								disabled={isPending || !field.canSubmit}
-							>
-								{isPending
-									? "Saving..."
-									: labTest
-										? "Update"
-										: "Order"}
+							<Button type="submit" disabled={isPending || !field.canSubmit}>
+								{isPending ? "Saving..." : labTest ? "Update" : "Order"}
 							</Button>
 						)}
 					/>

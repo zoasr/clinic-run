@@ -1,14 +1,14 @@
 /** @jsx jsx */
 /** @jsxImportSource hono/jsx */
 
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { serveStatic } from "hono/bun";
-import { auth } from "./auth.js";
+import path from "node:path";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
+import { cors } from "hono/cors";
+import { auth } from "./auth.js";
 import { appRouter } from "./index.js";
 import { createContext } from "./trpc.js";
-import path from "node:path";
 
 const app = new Hono();
 const PORT = Number(process.env["BACKEND_PORT"]) || 3031;
@@ -24,7 +24,7 @@ app.use(
 		allowHeaders: ["Content-Type", "Authorization", "Cookie"],
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 		exposeHeaders: ["Set-Cookie"],
-	})
+	}),
 );
 
 // CSRF Protection Middleware
@@ -61,9 +61,7 @@ app.all("/api/trpc/*", async (c) => {
 		onError:
 			process.env.NODE_ENV === "development"
 				? ({ path, error }) => {
-						console.error(
-							`❌ tRPC failed on ${path ?? "<no-path>"}: ${error}`
-						);
+						console.error(`❌ tRPC failed on ${path ?? "<no-path>"}: ${error}`);
 					}
 				: () => {},
 	});
@@ -75,13 +73,13 @@ const root =
 	process.env.NODE_ENV === "production" ? exeDir : path.join(exeDir, "dist");
 
 app.get("/assets/*", serveStatic({ root: root }));
-app.get("/:file{.+\.(ico|png|jpg|jpeg|svg)}", serveStatic({ root: root }));
+app.get("/:file{.+.(ico|png|jpg|jpeg|svg)}", serveStatic({ root: root }));
 app.get(
 	"/*",
 	serveStatic({
 		root: root,
 		rewriteRequestPath: () => "/index.html",
-	})
+	}),
 );
 
 // Initialize database on startup
@@ -111,7 +109,7 @@ async function setupSystemTray() {
 			const { setupTray } = await import("./system-tray.js");
 			await setupTray(PORT);
 		}
-	} catch (error) {
+	} catch (_error) {
 		console.log("System tray not available, running in server mode");
 	}
 }
@@ -130,14 +128,14 @@ async function openBrowser() {
 					{
 						stdout: "pipe",
 						stderr: "pipe",
-					}
+					},
 				);
 				await browserProcess.exited;
 				console.log(
-					`Clinic System opened in browser at http://localhost:${PORT}`
+					`Clinic System opened in browser at http://localhost:${PORT}`,
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			console.log(`Server running at http://localhost:${PORT}`);
 		}
 	}

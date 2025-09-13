@@ -1,16 +1,11 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { ArrowLeft, Package } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	Card,
 	CardContent,
@@ -18,15 +13,20 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import type { Medication } from "@/lib/schema-types";
+import type { AppRouter } from "@/lib/trpc";
 import { trpc } from "@/lib/trpc-client";
-import { ArrowLeft, Package } from "lucide-react";
-import { type Medication } from "@/lib/schema-types";
-import { useMutation } from "@tanstack/react-query";
 import { cn, formatCurrency } from "@/lib/utils";
-import { toast } from "sonner";
-import { TRPCClientErrorLike } from "@trpc/client";
-import { type AppRouter } from "@/lib/trpc";
 
 interface StockAdjustmentFormProps {
 	medication: Medication;
@@ -51,10 +51,10 @@ export function StockAdjustmentForm({
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(
 					`Failed to adjust stock: ${error.message}` ||
-						"Failed to adjust stock"
+						"Failed to adjust stock",
 				);
 			},
-		})
+		}),
 	);
 
 	const form = useForm({
@@ -79,7 +79,7 @@ export function StockAdjustmentForm({
 
 			const newQuantity = calculateNewQuantity(
 				value.adjustmentType,
-				value.adjustmentQuantity
+				value.adjustmentQuantity,
 			);
 			if (medication.id) {
 				mutate({
@@ -94,17 +94,14 @@ export function StockAdjustmentForm({
 
 	const calculateNewQuantity = (
 		adjustmentType: "add" | "remove" | "set",
-		adjustmentQuantity: number
+		adjustmentQuantity: number,
 	) => {
 		if (medication.quantity === undefined) return 0;
 		switch (adjustmentType) {
 			case "add":
 				return (medication.quantity ?? 0) + adjustmentQuantity;
 			case "remove":
-				return Math.max(
-					0,
-					+(medication.quantity ?? 0) - adjustmentQuantity
-				);
+				return Math.max(0, +(medication.quantity ?? 0) - adjustmentQuantity);
 			case "set":
 				return adjustmentQuantity;
 			default:
@@ -141,25 +138,15 @@ export function StockAdjustmentForm({
 				<CardContent>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div className="text-center p-4 bg-muted/50 rounded-lg">
-							<p className="text-sm text-muted-foreground">
-								Current Stock
-							</p>
-							<p className="text-2xl font-bold">
-								{medication.quantity}
-							</p>
+							<p className="text-sm text-muted-foreground">Current Stock</p>
+							<p className="text-2xl font-bold">{medication.quantity}</p>
 						</div>
 						<div className="text-center p-4 bg-muted/50 rounded-lg">
-							<p className="text-sm text-muted-foreground">
-								Minimum Level
-							</p>
-							<p className="text-2xl font-bold">
-								{medication.minStockLevel}
-							</p>
+							<p className="text-sm text-muted-foreground">Minimum Level</p>
+							<p className="text-2xl font-bold">{medication.minStockLevel}</p>
 						</div>
 						<div className="text-center p-4 bg-muted/50 rounded-lg">
-							<p className="text-sm text-muted-foreground">
-								Unit Price
-							</p>
+							<p className="text-sm text-muted-foreground">Unit Price</p>
 							<p className="text-2xl font-bold">
 								{formatCurrency(medication.unitPrice ?? 0)}
 							</p>
@@ -188,34 +175,27 @@ export function StockAdjustmentForm({
 							name="adjustmentType"
 							validators={{
 								onChange: ({ value }) =>
-									!value
-										? "Adjustment type is required"
-										: undefined,
+									!value ? "Adjustment type is required" : undefined,
 							}}
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor="adjustmentType">
-										Adjustment Type *
-									</Label>
+									<Label htmlFor="adjustmentType">Adjustment Type *</Label>
 									<Select
 										value={field.state.value}
-										onValueChange={(
-											value: "add" | "remove" | "set"
-										) => field.handleChange(value)}
+										onValueChange={(value: "add" | "remove" | "set") =>
+											field.handleChange(value)
+										}
 									>
 										<SelectTrigger>
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="add">
-												Add Stock (Restock)
-											</SelectItem>
+											<SelectItem value="add">Add Stock (Restock)</SelectItem>
 											<SelectItem value="remove">
 												Remove Stock (Usage/Damage)
 											</SelectItem>
 											<SelectItem value="set">
-												Set Exact Quantity (Inventory
-												Count)
+												Set Exact Quantity (Inventory Count)
 											</SelectItem>
 										</SelectContent>
 									</Select>
@@ -239,8 +219,7 @@ export function StockAdjustmentForm({
 							children={(field) => (
 								<div className="space-y-2">
 									<Label htmlFor="adjustmentQuantity">
-										{field.form.state.values
-											.adjustmentType === "set"
+										{field.form.state.values.adjustmentType === "set"
 											? "New Quantity *"
 											: "Adjustment Quantity *"}
 									</Label>
@@ -250,16 +229,11 @@ export function StockAdjustmentForm({
 										min="0"
 										value={field.state.value}
 										onChange={(e) =>
-											field.handleChange(
-												Number.parseInt(
-													e.target.value
-												) || 0
-											)
+											field.handleChange(Number.parseInt(e.target.value) || 0)
 										}
 										required
 										placeholder={
-											field.form.state.values
-												.adjustmentType === "set"
+											field.form.state.values.adjustmentType === "set"
 												? "Enter new total quantity"
 												: "Enter quantity to adjust"
 										}
@@ -277,15 +251,11 @@ export function StockAdjustmentForm({
 							name="reason"
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor="reason">
-										Reason for Adjustment
-									</Label>
+									<Label htmlFor="reason">Reason for Adjustment</Label>
 									<Textarea
 										id="reason"
 										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="e.g., New stock delivery, expired items removed, inventory correction..."
 										rows={3}
 									/>
@@ -307,22 +277,18 @@ export function StockAdjustmentForm({
 						<form.Subscribe
 							selector={(state) => ({
 								adjustmentType: state.values.adjustmentType,
-								adjustmentQuantity:
-									state.values.adjustmentQuantity,
+								adjustmentQuantity: state.values.adjustmentQuantity,
 							})}
 							children={(formState) => {
 								const newQuantity = calculateNewQuantity(
 									formState.adjustmentType,
-									formState.adjustmentQuantity
+									formState.adjustmentQuantity,
 								);
-								const difference =
-									newQuantity - (medication.quantity ?? 0);
-								const isValidQuantity =
-									formState.adjustmentQuantity > 0;
+								const difference = newQuantity - (medication.quantity ?? 0);
+								const isValidQuantity = formState.adjustmentQuantity > 0;
 								const isValidOperation =
 									formState.adjustmentType !== "remove" ||
-									formState.adjustmentQuantity <=
-										(medication.quantity ?? 0);
+									formState.adjustmentQuantity <= (medication.quantity ?? 0);
 
 								return (
 									<>
@@ -336,9 +302,7 @@ export function StockAdjustmentForm({
 													{medication.quantity ?? 0}
 												</p>
 												<p className="text-xs text-blue-600">
-													Min:{" "}
-													{medication.minStockLevel ??
-														0}
+													Min: {medication.minStockLevel ?? 0}
 												</p>
 											</div>
 
@@ -349,21 +313,16 @@ export function StockAdjustmentForm({
 												</p>
 												<div className="flex items-center justify-center gap-1">
 													<span className="text-lg font-bold">
-														{formState.adjustmentType ===
-															"add" && "+"}
-														{formState.adjustmentType ===
-															"remove" && "-"}
-														{formState.adjustmentType ===
-															"set" && "="}
+														{formState.adjustmentType === "add" && "+"}
+														{formState.adjustmentType === "remove" && "-"}
+														{formState.adjustmentType === "set" && "="}
 													</span>
 													<span className="text-xl font-bold text-gray-900">
-														{formState.adjustmentQuantity ||
-															0}
+														{formState.adjustmentQuantity || 0}
 													</span>
 												</div>
 												<p className="text-xs text-gray-600 capitalize">
-													{formState.adjustmentType ===
-													"set"
+													{formState.adjustmentType === "set"
 														? "Set to"
 														: formState.adjustmentType}
 												</p>
@@ -371,215 +330,133 @@ export function StockAdjustmentForm({
 
 											{/* Difference */}
 											<div
-												className={cn(
-													"text-center p-4 border rounded-lg",
-													{
-														"bg-green-50 border-green-200":
-															difference > 0,
-														"bg-red-50 border-red-200":
-															difference < 0,
-														"bg-yellow-50 border-yellow-200":
-															difference === 0,
-													}
-												)}
+												className={cn("text-center p-4 border rounded-lg", {
+													"bg-green-50 border-green-200": difference > 0,
+													"bg-red-50 border-red-200": difference < 0,
+													"bg-yellow-50 border-yellow-200": difference === 0,
+												})}
 											>
 												<p
-													className={cn(
-														"text-sm font-medium",
-														{
-															"text-green-700":
-																difference > 0,
-															"text-red-700":
-																difference < 0,
-															"text-yellow-700":
-																difference ===
-																0,
-														}
-													)}
+													className={cn("text-sm font-medium", {
+														"text-green-700": difference > 0,
+														"text-red-700": difference < 0,
+														"text-yellow-700": difference === 0,
+													})}
 												>
 													Change
 												</p>
 												<p
-													className={cn(
-														"text-xl font-bold",
-														{
-															"text-green-900":
-																difference > 0,
-															"text-red-900":
-																difference < 0,
-															"text-yellow-900":
-																difference ===
-																0,
-														}
-													)}
+													className={cn("text-xl font-bold", {
+														"text-green-900": difference > 0,
+														"text-red-900": difference < 0,
+														"text-yellow-900": difference === 0,
+													})}
 												>
 													{difference > 0 && "+"}
 													{difference}
 												</p>
 												<p
 													className={cn("text-xs", {
-														"text-green-600":
-															difference > 0,
-														"text-red-600":
-															difference < 0,
-														"text-yellow-600":
-															difference === 0,
+														"text-green-600": difference > 0,
+														"text-red-600": difference < 0,
+														"text-yellow-600": difference === 0,
 													})}
 												>
-													{difference > 0 &&
-														"Increase"}
-													{difference < 0 &&
-														"Decrease"}
-													{difference === 0 &&
-														"No change"}
+													{difference > 0 && "Increase"}
+													{difference < 0 && "Decrease"}
+													{difference === 0 && "No change"}
 												</p>
 											</div>
 
 											{/* New Quantity */}
 											<div
-												className={cn(
-													"text-center p-4 border rounded-lg",
-													{
-														"bg-green-50 border-green-200":
-															newQuantity >
-															(medication.minStockLevel ??
-																0),
-														"bg-yellow-50 border-yellow-200":
-															newQuantity > 0 &&
-															newQuantity <=
-																(medication.minStockLevel ??
-																	0),
-														"bg-red-50 border-red-200":
-															newQuantity <= 0,
-													}
-												)}
+												className={cn("text-center p-4 border rounded-lg", {
+													"bg-green-50 border-green-200":
+														newQuantity > (medication.minStockLevel ?? 0),
+													"bg-yellow-50 border-yellow-200":
+														newQuantity > 0 &&
+														newQuantity <= (medication.minStockLevel ?? 0),
+													"bg-red-50 border-red-200": newQuantity <= 0,
+												})}
 											>
 												<p
-													className={cn(
-														"text-sm font-medium",
-														{
-															"text-green-700":
-																newQuantity >
-																(medication.minStockLevel ??
-																	0),
-															"text-yellow-700":
-																newQuantity >
-																	0 &&
-																newQuantity <=
-																	(medication.minStockLevel ??
-																		0),
-															"text-red-700":
-																newQuantity <=
-																0,
-														}
-													)}
+													className={cn("text-sm font-medium", {
+														"text-green-700":
+															newQuantity > (medication.minStockLevel ?? 0),
+														"text-yellow-700":
+															newQuantity > 0 &&
+															newQuantity <= (medication.minStockLevel ?? 0),
+														"text-red-700": newQuantity <= 0,
+													})}
 												>
 													New Quantity
 												</p>
 												<p
-													className={cn(
-														"text-2xl font-bold",
-														{
-															"text-green-900":
-																newQuantity >
-																(medication.minStockLevel ??
-																	0),
-															"text-yellow-900":
-																newQuantity >
-																	0 &&
-																newQuantity <=
-																	(medication.minStockLevel ??
-																		0),
-															"text-red-900":
-																newQuantity <=
-																0,
-														}
-													)}
+													className={cn("text-2xl font-bold", {
+														"text-green-900":
+															newQuantity > (medication.minStockLevel ?? 0),
+														"text-yellow-900":
+															newQuantity > 0 &&
+															newQuantity <= (medication.minStockLevel ?? 0),
+														"text-red-900": newQuantity <= 0,
+													})}
 												>
 													{newQuantity}
 												</p>
 												<p
 													className={cn("text-xs", {
 														"text-green-600":
-															newQuantity >
-															(medication.minStockLevel ??
-																0),
+															newQuantity > (medication.minStockLevel ?? 0),
 														"text-yellow-600":
 															newQuantity > 0 &&
-															newQuantity <=
-																(medication.minStockLevel ??
-																	0),
-														"text-red-600":
-															newQuantity <= 0,
+															newQuantity <= (medication.minStockLevel ?? 0),
+														"text-red-600": newQuantity <= 0,
 													})}
 												>
-													{newQuantity >
-														(medication.minStockLevel ??
-															0) &&
+													{newQuantity > (medication.minStockLevel ?? 0) &&
 														"Good stock level"}
 													{newQuantity > 0 &&
-														newQuantity <=
-															(medication.minStockLevel ??
-																0) &&
+														newQuantity <= (medication.minStockLevel ?? 0) &&
 														"Low stock"}
-													{newQuantity <= 0 &&
-														"Out of stock"}
+													{newQuantity <= 0 && "Out of stock"}
 												</p>
 											</div>
 										</div>
 
 										{/* Validation Messages */}
-										{!isValidQuantity &&
-											formState.adjustmentQuantity !==
-												0 && (
-												<Alert
-													variant="destructive"
-													className="mb-4"
-												>
-													<AlertDescription>
-														Adjustment quantity must
-														be greater than 0.
-													</AlertDescription>
-												</Alert>
-											)}
+										{!isValidQuantity && formState.adjustmentQuantity !== 0 && (
+											<Alert variant="destructive" className="mb-4">
+												<AlertDescription>
+													Adjustment quantity must be greater than 0.
+												</AlertDescription>
+											</Alert>
+										)}
 
 										{!isValidOperation && (
-											<Alert
-												variant="destructive"
-												className="mb-4"
-											>
+											<Alert variant="destructive" className="mb-4">
 												<AlertDescription>
-													Cannot remove more items
-													than currently in stock (
+													Cannot remove more items than currently in stock (
 													{medication.quantity ?? 0}).
 												</AlertDescription>
 											</Alert>
 										)}
 
-										{newQuantity <=
-											(medication.minStockLevel ?? 0) &&
+										{newQuantity <= (medication.minStockLevel ?? 0) &&
 											newQuantity > 0 && (
 												<Alert className="mb-4">
 													<AlertDescription>
-														⚠️ Warning: New quantity
-														({newQuantity}) is at or
-														below the minimum stock
-														level (
-														{medication.minStockLevel ??
-															0}
+														⚠️ Warning: New quantity ({newQuantity}) is at or
+														below the minimum stock level (
+														{medication.minStockLevel ?? 0}
 														).
 													</AlertDescription>
 												</Alert>
 											)}
 
 										{newQuantity <= 0 && (
-											<Alert
-												variant="destructive"
-												className="mb-4"
-											>
+											<Alert variant="destructive" className="mb-4">
 												<AlertDescription>
-													⚠️ Warning: This adjustment
-													will result in zero or
+													⚠️ Warning: This adjustment will result in zero or
 													negative stock.
 												</AlertDescription>
 											</Alert>
@@ -610,17 +487,14 @@ export function StockAdjustmentForm({
 							<form.Subscribe
 								selector={(state) => ({
 									adjustmentType: state.values.adjustmentType,
-									adjustmentQuantity:
-										state.values.adjustmentQuantity,
+									adjustmentQuantity: state.values.adjustmentQuantity,
 									canSubmit: state.canSubmit,
 								})}
 								children={(formState) => {
-									const isValidQuantity =
-										formState.adjustmentQuantity > 0;
+									const isValidQuantity = formState.adjustmentQuantity > 0;
 									const isValidOperation =
 										formState.adjustmentType !== "remove" ||
-										formState.adjustmentQuantity <=
-											(medication.quantity ?? 0);
+										formState.adjustmentQuantity <= (medication.quantity ?? 0);
 
 									return (
 										<Button
@@ -631,9 +505,7 @@ export function StockAdjustmentForm({
 												!isValidOperation
 											}
 										>
-											{isPending
-												? "Applying..."
-												: "Apply Adjustment"}
+											{isPending ? "Applying..." : "Apply Adjustment"}
 										</Button>
 									);
 								}}

@@ -1,6 +1,6 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 // Infer types from tRPC
 type LabTest = AppRouter["labTests"]["getById"]["_def"]["$types"]["output"];
@@ -23,20 +23,20 @@ export function useLabTest(labTestId: number) {
 	return useQuery(
 		trpc.labTests.getById.queryOptions(
 			{ id: labTestId },
-			{ enabled: !!labTestId }
-		)
+			{ enabled: !!labTestId },
+		),
 	);
 }
 
 export function usePatientLabTests(
 	patientId: number,
-	params?: Omit<LabTestListParams, "patientId">
+	params?: Omit<LabTestListParams, "patientId">,
 ) {
 	return useQuery(
 		trpc.labTests.getByPatientId.queryOptions(
 			{ patientId, ...params },
-			{ enabled: !!patientId }
-		)
+			{ enabled: !!patientId },
+		),
 	);
 }
 

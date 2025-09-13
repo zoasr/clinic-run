@@ -1,39 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
+	Activity,
+	Calendar,
+	Flame,
+	Heart,
 	Plus,
 	Search,
-	User,
-	Calendar,
-	Activity,
 	Trash2,
-	Heart,
-	Flame,
+	User,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
-import {
-	useMedicalRecordsInfinite,
-	useDeleteMedicalRecord,
-} from "@/hooks/useMedicalRecords";
+import { useState } from "react";
 import { toast } from "sonner";
+import LoadMore from "@/components/load-more";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -45,7 +23,28 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import LoadMore from "@/components/load-more";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import {
+	useDeleteMedicalRecord,
+	useMedicalRecordsInfinite,
+} from "@/hooks/useMedicalRecords";
 
 function MedicalRecordsPage() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -71,9 +70,7 @@ function MedicalRecordsPage() {
 			},
 			onError: (error: Error) => {
 				console.error("Failed to delete medical record:", error);
-				toast.error(
-					`Failed to delete medical record: ${error.message}`
-				);
+				toast.error(`Failed to delete medical record: ${error.message}`);
 			},
 		});
 
@@ -152,14 +149,12 @@ function MedicalRecordsPage() {
 											<Link
 												to={`/medical-records/$medicalRecordId`}
 												params={{
-													medicalRecordId:
-														record.id.toString(),
+													medicalRecordId: record.id.toString(),
 												}}
 											>
 												<div className="flex items-center cursor-pointer hover:text-primary transition-colors">
 													<User className="h-4 w-4 mr-2 text-gray-400" />
-													{record.patient?.firstName}{" "}
-													{record.patient?.lastName}
+													{record.patient?.firstName} {record.patient?.lastName}
 												</div>
 											</Link>
 										</TableCell>
@@ -167,22 +162,14 @@ function MedicalRecordsPage() {
 											<Link
 												to={`/medical-records/$medicalRecordId`}
 												params={{
-													medicalRecordId:
-														record.id.toString(),
+													medicalRecordId: record.id.toString(),
 												}}
 											>
 												<div className="cursor-pointer hover:text-primary transition-colors">
 													{record.doctor ? (
 														<>
-															Dr.{" "}
-															{
-																record.doctor
-																	?.firstName
-															}{" "}
-															{
-																record.doctor
-																	?.lastName
-															}
+															Dr. {record.doctor?.firstName}{" "}
+															{record.doctor?.lastName}
 														</>
 													) : (
 														"N/A"
@@ -194,8 +181,7 @@ function MedicalRecordsPage() {
 											<Link
 												to={`/medical-records/$medicalRecordId`}
 												params={{
-													medicalRecordId:
-														record.id.toString(),
+													medicalRecordId: record.id.toString(),
 												}}
 											>
 												<div className="flex items-center text-sm cursor-pointer hover:text-primary transition-colors">
@@ -208,14 +194,11 @@ function MedicalRecordsPage() {
 											<Link
 												to={`/medical-records/$medicalRecordId`}
 												params={{
-													medicalRecordId:
-														record.id.toString(),
+													medicalRecordId: record.id.toString(),
 												}}
 											>
 												<div className="cursor-pointer hover:text-primary transition-colors">
-													<Badge variant="outline">
-														{record.diagnosis}
-													</Badge>
+													<Badge variant="outline">{record.diagnosis}</Badge>
 												</div>
 											</Link>
 										</TableCell>
@@ -223,32 +206,25 @@ function MedicalRecordsPage() {
 											<Link
 												to={`/medical-records/$medicalRecordId`}
 												params={{
-													medicalRecordId:
-														record.id.toString(),
+													medicalRecordId: record.id.toString(),
 												}}
 											>
 												<div className="space-y-1 text-xs cursor-pointer hover:text-primary transition-colors">
 													<div className="flex items-center">
 														<Activity className="h-3 w-3 mr-1" />
 														BP:{" "}
-														{vitalSigns(
-															record.vitalSigns
-														)?.bloodPressure ||
+														{vitalSigns(record.vitalSigns)?.bloodPressure ||
 															"N/A"}
 													</div>
 													<div className="flex items-center">
 														<Heart className="h-3 w-3 mr-1" />
-														HR:{" "}
-														{vitalSigns(
-															record.vitalSigns
-														)?.pulse || "N/A"}
+														HR: {vitalSigns(record.vitalSigns)?.pulse || "N/A"}
 													</div>
 													<div className="flex items-center">
 														<Flame className="h-3 w-3 mr-1" />
 														Temp:{" "}
-														{vitalSigns(
-															record.vitalSigns
-														)?.temperature || "N/A"}
+														{vitalSigns(record.vitalSigns)?.temperature ||
+															"N/A"}
 													</div>
 												</div>
 											</Link>
@@ -257,8 +233,7 @@ function MedicalRecordsPage() {
 											<Link
 												to={`/medical-records/$medicalRecordId`}
 												params={{
-													medicalRecordId:
-														record.id.toString(),
+													medicalRecordId: record.id.toString(),
 												}}
 											>
 												<div className="cursor-pointer hover:text-primary transition-colors truncate">
@@ -267,20 +242,14 @@ function MedicalRecordsPage() {
 											</Link>
 										</TableCell>
 										<TableCell>
-											<div
-												onClick={(e) =>
-													e.stopPropagation()
-												}
-											>
+											<div onClick={(e) => e.stopPropagation()}>
 												<AlertDialog>
 													<AlertDialogTrigger asChild>
 														<Button
 															variant="outline"
 															size="sm"
 															className="text-red-600 hover:text-red-700 hover:bg-red-50"
-															disabled={
-																isDeleting
-															}
+															disabled={isDeleting}
 														>
 															<Trash2 className="h-4 w-4" />
 														</Button>
@@ -288,27 +257,18 @@ function MedicalRecordsPage() {
 													<AlertDialogContent>
 														<AlertDialogHeader>
 															<AlertDialogTitle>
-																Delete Medical
-																Record
+																Delete Medical Record
 															</AlertDialogTitle>
 															<AlertDialogDescription>
-																Are you sure you
-																want to delete
-																this medical
-																record? This
-																action cannot be
-																undone.
+																Are you sure you want to delete this medical
+																record? This action cannot be undone.
 															</AlertDialogDescription>
 														</AlertDialogHeader>
 														<AlertDialogFooter>
-															<AlertDialogCancel>
-																Cancel
-															</AlertDialogCancel>
+															<AlertDialogCancel>Cancel</AlertDialogCancel>
 															<AlertDialogAction
 																onClick={() =>
-																	handleDeleteMedicalRecord(
-																		record.id
-																	)
+																	handleDeleteMedicalRecord(record.id)
 																}
 																className="bg-red-600 hover:bg-red-700"
 															>

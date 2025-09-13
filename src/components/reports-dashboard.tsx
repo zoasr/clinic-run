@@ -1,4 +1,16 @@
+import { useQuery } from "@tanstack/react-query";
+import {
+	CalendarDays,
+	DollarSign,
+	FileText,
+	Pill,
+	Stethoscope,
+	TrendingUp,
+	Users,
+} from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -6,44 +18,32 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-	CalendarDays,
-	Users,
-	Stethoscope,
-	DollarSign,
-	Pill,
-	FileText,
-	TrendingUp,
-} from "lucide-react";
-import { trpc } from "@/lib/trpc-client";
 import { Loading } from "@/components/ui/loading";
-import { useQuery } from "@tanstack/react-query";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { trpc } from "@/lib/trpc-client";
 
 export function ReportsDashboard() {
 	const [selectedPeriod, setSelectedPeriod] = useState<"30" | "90" | "365">(
-		"30"
+		"30",
 	);
 
 	// Fetch all report data
 	const { data: patientStats, isLoading: patientLoading } = useQuery(
-		trpc.reports.getPatientStats.queryOptions({})
+		trpc.reports.getPatientStats.queryOptions({}),
 	);
 	const { data: appointmentStats, isLoading: appointmentLoading } = useQuery(
-		trpc.reports.getAppointmentStats.queryOptions({})
+		trpc.reports.getAppointmentStats.queryOptions({}),
 	);
 	const { data: financialStats, isLoading: financialLoading } = useQuery(
-		trpc.reports.getFinancialStats.queryOptions({})
+		trpc.reports.getFinancialStats.queryOptions({}),
 	);
 	const { data: inventoryStats, isLoading: inventoryLoading } = useQuery(
-		trpc.reports.getInventoryStats.queryOptions()
+		trpc.reports.getInventoryStats.queryOptions(),
 	);
 	const { data: monthlyTrends, isLoading: trendsLoading } = useQuery(
 		trpc.reports.getMonthlyTrends.queryOptions({
 			months: 6,
-		})
+		}),
 	);
 
 	const isLoading =
@@ -61,36 +61,28 @@ export function ReportsDashboard() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
-						Reports
-					</h1>
+					<h1 className="text-3xl font-bold tracking-tight">Reports</h1>
 					<p className="text-muted-foreground">
 						Comprehensive analytics and insights for your clinic
 					</p>
 				</div>
 				<div className="flex items-center space-x-2">
 					<Button
-						variant={
-							selectedPeriod === "30" ? "default" : "outline"
-						}
+						variant={selectedPeriod === "30" ? "default" : "outline"}
 						size="sm"
 						onClick={() => setSelectedPeriod("30")}
 					>
 						Last 30 Days
 					</Button>
 					<Button
-						variant={
-							selectedPeriod === "90" ? "default" : "outline"
-						}
+						variant={selectedPeriod === "90" ? "default" : "outline"}
 						size="sm"
 						onClick={() => setSelectedPeriod("90")}
 					>
 						Last 90 Days
 					</Button>
 					<Button
-						variant={
-							selectedPeriod === "365" ? "default" : "outline"
-						}
+						variant={selectedPeriod === "365" ? "default" : "outline"}
 						size="sm"
 						onClick={() => setSelectedPeriod("365")}
 					>
@@ -123,8 +115,7 @@ export function ReportsDashboard() {
 									{patientStats?.totalPatients || 0}
 								</div>
 								<p className="text-xs text-muted-foreground">
-									{patientStats?.activePatients || 0} active
-									patients
+									{patientStats?.activePatients || 0} active patients
 								</p>
 							</CardContent>
 						</Card>
@@ -141,33 +132,23 @@ export function ReportsDashboard() {
 									{appointmentStats?.totalAppointments || 0}
 								</div>
 								<p className="text-xs text-muted-foreground">
-									{Math.round(
-										appointmentStats?.completionRate || 0
-									)}
-									% completion rate
+									{Math.round(appointmentStats?.completionRate || 0)}%
+									completion rate
 								</p>
 							</CardContent>
 						</Card>
 
 						<Card>
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-								<CardTitle className="text-sm font-medium">
-									Revenue
-								</CardTitle>
+								<CardTitle className="text-sm font-medium">Revenue</CardTitle>
 								<DollarSign className="h-4 w-4 text-muted-foreground" />
 							</CardHeader>
 							<CardContent>
 								<div className="text-2xl font-bold">
-									$
-									{(
-										financialStats?.totalRevenue || 0
-									).toLocaleString()}
+									${(financialStats?.totalRevenue || 0).toLocaleString()}
 								</div>
 								<p className="text-xs text-muted-foreground">
-									$
-									{(
-										financialStats?.outstandingAmount || 0
-									).toLocaleString()}{" "}
+									${(financialStats?.outstandingAmount || 0).toLocaleString()}{" "}
 									outstanding
 								</p>
 							</CardContent>
@@ -185,8 +166,7 @@ export function ReportsDashboard() {
 									{inventoryStats?.totalMedications || 0}
 								</div>
 								<p className="text-xs text-muted-foreground">
-									{inventoryStats?.lowStockCount || 0} low
-									stock items
+									{inventoryStats?.lowStockCount || 0} low stock items
 								</p>
 							</CardContent>
 						</Card>
@@ -198,8 +178,7 @@ export function ReportsDashboard() {
 							<CardHeader>
 								<CardTitle>Monthly Trends</CardTitle>
 								<CardDescription>
-									Appointments and revenue over the last 6
-									months
+									Appointments and revenue over the last 6 months
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -217,12 +196,10 @@ export function ReportsDashboard() {
 											</div>
 											<div className="flex items-center space-x-4">
 												<span className="text-sm text-muted-foreground">
-													{trend.appointments}{" "}
-													appointments
+													{trend.appointments} appointments
 												</span>
 												<span className="text-sm font-medium">
-													$
-													{trend.revenue.toLocaleString()}
+													${trend.revenue.toLocaleString()}
 												</span>
 											</div>
 										</div>
@@ -244,25 +221,19 @@ export function ReportsDashboard() {
 						<CardContent>
 							<div className="grid gap-4 md:grid-cols-2">
 								<div>
-									<h4 className="text-sm font-medium mb-2">
-										Age Distribution
-									</h4>
+									<h4 className="text-sm font-medium mb-2">Age Distribution</h4>
 									<div className="space-y-2">
-										{Object.entries(
-											patientStats?.ageDistribution || {}
-										).map(([age, count]) => (
-											<div
-												key={age}
-												className="flex items-center justify-between"
-											>
-												<span className="text-sm">
-													{age} years
-												</span>
-												<span className="text-sm font-medium">
-													{count}
-												</span>
-											</div>
-										))}
+										{Object.entries(patientStats?.ageDistribution || {}).map(
+											([age, count]) => (
+												<div
+													key={age}
+													className="flex items-center justify-between"
+												>
+													<span className="text-sm">{age} years</span>
+													<span className="text-sm font-medium">{count}</span>
+												</div>
+											),
+										)}
 									</div>
 								</div>
 								<div>
@@ -270,22 +241,17 @@ export function ReportsDashboard() {
 										Gender Distribution
 									</h4>
 									<div className="space-y-2">
-										{Object.entries(
-											patientStats?.genderDistribution ||
-												{}
-										).map(([gender, count]) => (
-											<div
-												key={gender}
-												className="flex items-center justify-between"
-											>
-												<span className="text-sm capitalize">
-													{gender}
-												</span>
-												<span className="text-sm font-medium">
-													{count}
-												</span>
-											</div>
-										))}
+										{Object.entries(patientStats?.genderDistribution || {}).map(
+											([gender, count]) => (
+												<div
+													key={gender}
+													className="flex items-center justify-between"
+												>
+													<span className="text-sm capitalize">{gender}</span>
+													<span className="text-sm font-medium">{count}</span>
+												</div>
+											),
+										)}
 									</div>
 								</div>
 							</div>
@@ -309,19 +275,14 @@ export function ReportsDashboard() {
 									</h4>
 									<div className="space-y-2">
 										{Object.entries(
-											appointmentStats?.statusDistribution ||
-												{}
+											appointmentStats?.statusDistribution || {},
 										).map(([status, count]) => (
 											<div
 												key={status}
 												className="flex items-center justify-between"
 											>
-												<span className="text-sm capitalize">
-													{status}
-												</span>
-												<span className="text-sm font-medium">
-													{count}
-												</span>
+												<span className="text-sm capitalize">{status}</span>
+												<span className="text-sm font-medium">{count}</span>
 											</div>
 										))}
 									</div>
@@ -332,8 +293,7 @@ export function ReportsDashboard() {
 									</h4>
 									<div className="space-y-2">
 										{Object.entries(
-											appointmentStats?.typeDistribution ||
-												{}
+											appointmentStats?.typeDistribution || {},
 										).map(([type, count]) => (
 											<div
 												key={type}
@@ -342,9 +302,7 @@ export function ReportsDashboard() {
 												<span className="text-sm capitalize">
 													{type.replace("-", " ")}
 												</span>
-												<span className="text-sm font-medium">
-													{count}
-												</span>
+												<span className="text-sm font-medium">{count}</span>
 											</div>
 										))}
 									</div>
@@ -366,37 +324,21 @@ export function ReportsDashboard() {
 							<div className="grid gap-4 md:grid-cols-3">
 								<div className="text-center">
 									<div className="text-2xl font-bold text-green-600">
-										$
-										{(
-											financialStats?.totalRevenue || 0
-										).toLocaleString()}
+										${(financialStats?.totalRevenue || 0).toLocaleString()}
 									</div>
-									<p className="text-sm text-muted-foreground">
-										Total Revenue
-									</p>
+									<p className="text-sm text-muted-foreground">Total Revenue</p>
 								</div>
 								<div className="text-center">
 									<div className="text-2xl font-bold text-blue-600">
-										$
-										{(
-											financialStats?.totalPaid || 0
-										).toLocaleString()}
+										${(financialStats?.totalPaid || 0).toLocaleString()}
 									</div>
-									<p className="text-sm text-muted-foreground">
-										Total Paid
-									</p>
+									<p className="text-sm text-muted-foreground">Total Paid</p>
 								</div>
 								<div className="text-center">
 									<div className="text-2xl font-bold text-orange-600">
-										$
-										{(
-											financialStats?.outstandingAmount ||
-											0
-										).toLocaleString()}
+										${(financialStats?.outstandingAmount || 0).toLocaleString()}
 									</div>
-									<p className="text-sm text-muted-foreground">
-										Outstanding
-									</p>
+									<p className="text-sm text-muted-foreground">Outstanding</p>
 								</div>
 							</div>
 						</CardContent>
@@ -417,34 +359,25 @@ export function ReportsDashboard() {
 									<div className="text-2xl font-bold">
 										{inventoryStats?.totalMedications || 0}
 									</div>
-									<p className="text-sm text-muted-foreground">
-										Total Items
-									</p>
+									<p className="text-sm text-muted-foreground">Total Items</p>
 								</div>
 								<div className="text-center">
 									<div className="text-2xl font-bold text-green-600">
-										{inventoryStats?.stockLevels?.healthy ||
-											0}
+										{inventoryStats?.stockLevels?.healthy || 0}
 									</div>
-									<p className="text-sm text-muted-foreground">
-										Healthy Stock
-									</p>
+									<p className="text-sm text-muted-foreground">Healthy Stock</p>
 								</div>
 								<div className="text-center">
 									<div className="text-2xl font-bold text-yellow-600">
 										{inventoryStats?.stockLevels?.low || 0}
 									</div>
-									<p className="text-sm text-muted-foreground">
-										Low Stock
-									</p>
+									<p className="text-sm text-muted-foreground">Low Stock</p>
 								</div>
 								<div className="text-center">
 									<div className="text-2xl font-bold text-red-600">
 										{inventoryStats?.stockLevels?.out || 0}
 									</div>
-									<p className="text-sm text-muted-foreground">
-										Out of Stock
-									</p>
+									<p className="text-sm text-muted-foreground">Out of Stock</p>
 								</div>
 							</div>
 						</CardContent>

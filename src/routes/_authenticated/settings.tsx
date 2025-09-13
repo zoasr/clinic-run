@@ -1,11 +1,11 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
-import { SystemSettingsForm } from "@/components/system-settings-form";
 import ErrorComponent from "@/components/error";
+import { SystemSettingsForm } from "@/components/system-settings-form";
+import { Button } from "@/components/ui/button";
 import { PageLoading } from "@/components/ui/loading";
 import { systemSettingsSchema } from "@/hooks/useSettings";
-import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute("/_authenticated/settings")({
 	loader: () => ({
@@ -24,7 +24,7 @@ function SettingsComponent() {
 	} = useQuery(
 		trpc.systemSettings.getAll.queryOptions(undefined, {
 			retry: false,
-		})
+		}),
 	);
 
 	const initializeDefaultsMutation = useMutation(
@@ -34,7 +34,7 @@ function SettingsComponent() {
 					queryKey: trpc.systemSettings.getAll.queryKey(),
 				});
 			},
-		})
+		}),
 	);
 
 	if (isLoading) return <PageLoading text="Loading settings..." />;
@@ -60,8 +60,8 @@ function SettingsComponent() {
 							: "Initialize Default Settings"}
 					</Button>
 					<p className="text-muted-foreground mb-4">
-						Not All system settings have been configured yet.
-						Initialize them useing the button above
+						Not All system settings have been configured yet. Initialize them
+						useing the button above
 					</p>
 				</div>
 			)}

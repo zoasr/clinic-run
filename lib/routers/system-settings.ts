@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { router, adminProcedure, publicProcedure } from "../trpc.js";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import * as schema from "../db/schema/schema.js";
+import { adminProcedure, publicProcedure, router } from "../trpc.js";
 
 const settingInputSchema = z.object({
 	key: z.string().min(1, "Key is required"),
@@ -25,7 +25,7 @@ export const systemSettingsRouter = router({
 		.input(
 			z.object({
 				category: z.string(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const settings = await ctx.db
@@ -76,7 +76,7 @@ export const systemSettingsRouter = router({
 			z.object({
 				key: z.string(),
 				data: settingInputSchema.partial().omit({ key: true }),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedSetting = await ctx.db
@@ -103,7 +103,7 @@ export const systemSettingsRouter = router({
 					},
 				]);
 				throw new Error(
-					`Setting with key "${input.key}" not found, Setting is getting created with the value provided`
+					`Setting with key "${input.key}" not found, Setting is getting created with the value provided`,
 				);
 			}
 
@@ -113,7 +113,7 @@ export const systemSettingsRouter = router({
 	updateAll: adminProcedure
 		.input(z.array(settingInputSchema))
 		.mutation(async ({ input, ctx }) => {
-			let allUpdatedSettings = [];
+			const allUpdatedSettings = [];
 			for (const setting of input) {
 				const updatedSetting = await ctx.db
 					.update(schema.systemSettings)
@@ -125,9 +125,7 @@ export const systemSettingsRouter = router({
 					.where(eq(schema.systemSettings.key, setting.key))
 					.returning();
 				if (updatedSetting.length === 0) {
-					throw new Error(
-						`Setting with key "${setting.key}" not found`
-					);
+					throw new Error(`Setting with key "${setting.key}" not found`);
 				}
 				allUpdatedSettings.push(updatedSetting[0]);
 			}
@@ -139,7 +137,7 @@ export const systemSettingsRouter = router({
 		.input(
 			z.object({
 				key: z.string(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedSetting = await ctx.db
@@ -174,8 +172,7 @@ export const systemSettingsRouter = router({
 			{
 				key: "currency",
 				value: "USD",
-				description:
-					"Default currency for invoices and medicine prices",
+				description: "Default currency for invoices and medicine prices",
 				category: "clinic",
 				isPublic: true,
 			},

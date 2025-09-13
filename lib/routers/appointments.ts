@@ -1,9 +1,9 @@
-import { z } from "zod";
-import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
-import { eq, and, asc, lt, between, or, like } from "drizzle-orm";
-import * as schema from "../db/schema/schema.js";
-import * as authSchema from "../db/schema/auth-schema.js";
+import { and, asc, between, eq, like, lt, or } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import * as authSchema from "../db/schema/auth-schema.js";
+import * as schema from "../db/schema/schema.js";
+import { authorizedProcedure, protectedProcedure, router } from "../trpc.js";
 
 const appointmentInputSchema = createInsertSchema(schema.appointments);
 
@@ -16,7 +16,7 @@ export const appointmentsRouter = router({
 				search: z.string().optional(),
 				limit: z.number().min(1).max(100).default(10),
 				cursor: z.number().min(1).optional(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { date, status, cursor, limit, search } = input;
@@ -30,8 +30,8 @@ export const appointmentsRouter = router({
 					or(
 						like(schema.patients.firstName, `%${search}%`),
 						like(schema.patients.lastName, `%${search}%`),
-						like(authSchema.user.name, `%${search}%`)
-					)
+						like(authSchema.user.name, `%${search}%`),
+					),
 				);
 			}
 
@@ -39,11 +39,7 @@ export const appointmentsRouter = router({
 				const startOfDay = new Date(date?.setHours(0, 0, 0, 0));
 				const endOfDay = new Date(date?.setHours(23, 59, 59, 999));
 				whereConditions.push(
-					between(
-						schema.appointments.appointmentDate,
-						startOfDay,
-						endOfDay
-					)
+					between(schema.appointments.appointmentDate, startOfDay, endOfDay),
 				);
 			}
 			if (status) {
@@ -74,26 +70,20 @@ export const appointmentsRouter = router({
 				.from(schema.appointments)
 				.leftJoin(
 					schema.patients,
-					eq(schema.appointments.patientId, schema.patients.id)
+					eq(schema.appointments.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.appointments.doctorId, authSchema.user.id)
+					eq(schema.appointments.doctorId, authSchema.user.id),
 				)
-				.where(
-					whereConditions.length > 0
-						? and(...whereConditions)
-						: undefined
-				)
+				.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
 				.limit(limit + 1)
 				.orderBy(
 					asc(schema.appointments.appointmentDate),
-					asc(schema.appointments.appointmentTime)
+					asc(schema.appointments.appointmentTime),
 				);
 			const hasNextPage = appointments.length > limit;
-			const data = hasNextPage
-				? appointments.slice(0, limit)
-				: appointments;
+			const data = hasNextPage ? appointments.slice(0, limit) : appointments;
 			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
 
 			return {
@@ -119,10 +109,8 @@ export const appointmentsRouter = router({
 			z.object({
 				date: z
 					.date()
-					.describe(
-						"A date object representing any day in the month desired"
-					),
-			})
+					.describe("A date object representing any day in the month desired"),
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { date } = input;
@@ -157,22 +145,22 @@ export const appointmentsRouter = router({
 				.from(schema.appointments)
 				.leftJoin(
 					schema.patients,
-					eq(schema.appointments.patientId, schema.patients.id)
+					eq(schema.appointments.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.appointments.doctorId, authSchema.user.id)
+					eq(schema.appointments.doctorId, authSchema.user.id),
 				)
 				.where(
 					between(
 						schema.appointments.appointmentDate,
 						startOfMonth,
-						endOfMonth
-					)
+						endOfMonth,
+					),
 				)
 				.orderBy(
 					asc(schema.appointments.appointmentDate),
-					asc(schema.appointments.appointmentTime)
+					asc(schema.appointments.appointmentTime),
 				);
 			return appointments;
 		}),
@@ -185,25 +173,19 @@ export const appointmentsRouter = router({
 				status: z.string().optional(),
 				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { patientId, date, status, page, limit } = input;
 			const offset = (page - 1) * limit;
 
-			const whereConditions = [
-				eq(schema.appointments.patientId, patientId),
-			];
+			const whereConditions = [eq(schema.appointments.patientId, patientId)];
 
 			if (date) {
 				const startOfDay = new Date(date?.setHours(0, 0, 0, 0));
 				const endOfDay = new Date(date?.setHours(23, 59, 59, 999));
 				whereConditions.push(
-					between(
-						schema.appointments.appointmentDate,
-						startOfDay,
-						endOfDay
-					)
+					between(schema.appointments.appointmentDate, startOfDay, endOfDay),
 				);
 			}
 			if (status) {
@@ -234,18 +216,18 @@ export const appointmentsRouter = router({
 				.from(schema.appointments)
 				.leftJoin(
 					schema.patients,
-					eq(schema.appointments.patientId, schema.patients.id)
+					eq(schema.appointments.patientId, schema.patients.id),
 				)
 				.leftJoin(
 					authSchema.user,
-					eq(schema.appointments.doctorId, authSchema.user.id)
+					eq(schema.appointments.doctorId, authSchema.user.id),
 				)
 				.where(and(...whereConditions))
 				.limit(limit)
 				.offset(offset)
 				.orderBy(
 					asc(schema.appointments.appointmentDate),
-					asc(schema.appointments.appointmentTime)
+					asc(schema.appointments.appointmentTime),
 				);
 
 			return appointments;
@@ -271,7 +253,7 @@ export const appointmentsRouter = router({
 			z.object({
 				id: z.number(),
 				data: appointmentInputSchema.partial(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedAppointment = await ctx.db
@@ -294,7 +276,7 @@ export const appointmentsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedAppointment = await ctx.db

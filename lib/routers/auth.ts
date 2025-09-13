@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc.js";
 import { auth } from "../auth.js";
+import { protectedProcedure, publicProcedure, router } from "../trpc.js";
 
 export const authRouter = router({
 	signIn: publicProcedure
@@ -8,7 +8,7 @@ export const authRouter = router({
 			z.object({
 				email: z.string().email(),
 				password: z.string(),
-			})
+			}),
 		)
 		.mutation(async ({ input }) => {
 			return auth.api.signInEmail({
@@ -26,7 +26,7 @@ export const authRouter = router({
 				firstName: z.string(),
 				lastName: z.string(),
 				role: z.string().optional(),
-			})
+			}),
 		)
 		.mutation(async ({ input }) => {
 			return auth.api.signUpEmail({

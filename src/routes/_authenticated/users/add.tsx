@@ -1,11 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
-import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import {
 	Select,
 	SelectContent,
@@ -13,8 +13,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Role, roles, roleSchema } from "@/lib/auth";
-import { toast } from "sonner";
+import { type Role, roleSchema, roles } from "@/lib/auth";
+import { trpc } from "@/lib/trpc-client";
 
 const userFormSchema = z.object({
 	username: z.string().min(3, "Username must be at least 3 characters"),
@@ -50,7 +50,7 @@ function AddUserComponent() {
 			onError: (error: any) => {
 				toast.error(error.message || "Failed to create user");
 			},
-		})
+		}),
 	);
 
 	const form = useForm({
@@ -93,9 +93,7 @@ function AddUserComponent() {
 								name={field.name}
 								value={field.state.value}
 								onBlur={field.handleBlur}
-								onChange={(e) =>
-									field.handleChange(e.target.value)
-								}
+								onChange={(e) => field.handleChange(e.target.value)}
 							/>
 							{field.state.meta.errors && (
 								<p className="mt-2 text-sm text-red-600">
@@ -121,9 +119,7 @@ function AddUserComponent() {
 								type="email"
 								value={field.state.value}
 								onBlur={field.handleBlur}
-								onChange={(e) =>
-									field.handleChange(e.target.value)
-								}
+								onChange={(e) => field.handleChange(e.target.value)}
 							/>
 							{field.state.meta.errors && (
 								<p className="mt-2 text-sm text-red-600">
@@ -149,9 +145,7 @@ function AddUserComponent() {
 								type="password"
 								value={field.state.value}
 								onBlur={field.handleBlur}
-								onChange={(e) =>
-									field.handleChange(e.target.value)
-								}
+								onChange={(e) => field.handleChange(e.target.value)}
 							/>
 							{field.state.meta.errors && (
 								<p className="mt-2 text-sm text-red-600">
@@ -176,9 +170,7 @@ function AddUserComponent() {
 								name={field.name}
 								value={field.state.value}
 								onBlur={field.handleBlur}
-								onChange={(e) =>
-									field.handleChange(e.target.value)
-								}
+								onChange={(e) => field.handleChange(e.target.value)}
 							/>
 							{field.state.meta.errors && (
 								<p className="mt-2 text-sm text-red-600">
@@ -203,9 +195,7 @@ function AddUserComponent() {
 								name={field.name}
 								value={field.state.value}
 								onBlur={field.handleBlur}
-								onChange={(e) =>
-									field.handleChange(e.target.value)
-								}
+								onChange={(e) => field.handleChange(e.target.value)}
 							/>
 							{field.state.meta.errors && (
 								<p className="mt-2 text-sm text-red-600">
@@ -227,9 +217,7 @@ function AddUserComponent() {
 							<Label htmlFor={field.name}>Role</Label>
 							<Select
 								value={field.state.value}
-								onValueChange={(value: Role) =>
-									field.handleChange(value)
-								}
+								onValueChange={(value: Role) => field.handleChange(value)}
 							>
 								<SelectTrigger>
 									<SelectValue />
@@ -258,20 +246,13 @@ function AddUserComponent() {
 					selector={(state) => [state.canSubmit, state.isSubmitting]}
 				>
 					{([canSubmit, isSubmitting]) => (
-						<Button
-							type="submit"
-							disabled={!canSubmit || isSubmitting}
-						>
+						<Button type="submit" disabled={!canSubmit || isSubmitting}>
 							{isSubmitting ? "Adding User..." : "Add User"}
 						</Button>
 					)}
 				</form.Subscribe>
 
-				{error && (
-					<p className="mt-2 text-sm text-red-600">
-						{error?.message}
-					</p>
-				)}
+				{error && <p className="mt-2 text-sm text-red-600">{error?.message}</p>}
 			</form>
 		</div>
 	);

@@ -8,6 +8,8 @@
     "dev": "vite",
     "start": "vite preview",
     "server": "bun run --watch lib/server.ts",
+    "lint": "biome lint",
+    "format": "biome format --write",
     "dev:all": "bun run scripts/dev.ts",
     "dev:test:all": "NODE_ENV=test bun run scripts/dev.ts",
     "db:generate": "drizzle-kit generate",
@@ -78,6 +80,7 @@
   },
   "devDependencies": {
     "@better-auth/cli": "^1.3.7",
+    "@biomejs/biome": "2.2.4",
     "@faker-js/faker": "^10.0.0",
     "@tanstack/react-router-devtools": "^1.131.28",
     "@tanstack/router-plugin": "^1.131.27",

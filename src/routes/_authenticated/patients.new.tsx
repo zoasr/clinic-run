@@ -1,5 +1,5 @@
-import { PatientForm } from "@/components/patient-form";
 import { createFileRoute } from "@tanstack/react-router";
+import { PatientForm } from "@/components/patient-form";
 
 export const Route = createFileRoute("/_authenticated/patients/new")({
 	loader: () => ({

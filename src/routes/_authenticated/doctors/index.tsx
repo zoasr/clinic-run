@@ -1,17 +1,9 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
-
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import ErrorComponent from "@/components/error";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -23,11 +15,18 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, UserPlus } from "lucide-react";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-import ErrorComponent from "@/components/error";
+import { Button } from "@/components/ui/button";
 import { TableLoading } from "@/components/ui/loading";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { useAuth } from "@/contexts/AuthContext";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute("/_authenticated/doctors/")({
 	loader: () => ({
@@ -61,7 +60,7 @@ function DoctorsComponent() {
 			onError: (error: any) => {
 				toast.error(error.message || "Failed to delete doctor");
 			},
-		})
+		}),
 	);
 	const isAdmin = user?.role === "admin";
 
@@ -101,11 +100,7 @@ function DoctorsComponent() {
 							<TableHead>Username</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead>Created</TableHead>
-							{isAdmin && (
-								<TableHead className="text-right">
-									Actions
-								</TableHead>
-							)}
+							{isAdmin && <TableHead className="text-right">Actions</TableHead>}
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -117,31 +112,17 @@ function DoctorsComponent() {
 								<TableCell>{doctor.email}</TableCell>
 								<TableCell>{doctor.username}</TableCell>
 								<TableCell>
-									<Badge
-										variant={
-											doctor.isActive
-												? "default"
-												: "destructive"
-										}
-									>
-										{doctor.isActive
-											? "Active"
-											: "Inactive"}
+									<Badge variant={doctor.isActive ? "default" : "destructive"}>
+										{doctor.isActive ? "Active" : "Inactive"}
 									</Badge>
 								</TableCell>
 								<TableCell>
-									{new Date(
-										doctor.createdAt
-									).toLocaleDateString()}
+									{new Date(doctor.createdAt).toLocaleDateString()}
 								</TableCell>
 								{isAdmin && (
 									<TableCell className="text-right">
 										<div className="flex justify-end gap-2">
-											<Button
-												variant="outline"
-												size="sm"
-												asChild
-											>
+											<Button variant="outline" size="sm" asChild>
 												<Link
 													to={`/users/$userId/edit`}
 													params={{
@@ -154,9 +135,7 @@ function DoctorsComponent() {
 											<Button
 												variant="outline"
 												size="sm"
-												onClick={() =>
-													handleDeleteClick(doctor)
-												}
+												onClick={() => handleDeleteClick(doctor)}
 												className="text-red-600 hover:text-red-700 hover:bg-red-50"
 											>
 												<Trash2 className="w-4 h-4" />
@@ -171,21 +150,17 @@ function DoctorsComponent() {
 			</div>
 
 			{/* Delete Confirmation Dialog */}
-			<AlertDialog
-				open={deleteDialogOpen}
-				onOpenChange={setDeleteDialogOpen}
-			>
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Doctor</AlertDialogTitle>
 						<AlertDialogDescription>
 							Are you sure you want to delete{" "}
 							<strong>
-								{doctorToDelete?.firstName}{" "}
-								{doctorToDelete?.lastName}
+								{doctorToDelete?.firstName} {doctorToDelete?.lastName}
 							</strong>
-							? This action cannot be undone and will permanently
-							remove the doctor from the system.
+							? This action cannot be undone and will permanently remove the
+							doctor from the system.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

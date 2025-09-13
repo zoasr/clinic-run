@@ -1,10 +1,12 @@
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { ArrowLeft, User } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
 import {
 	Card,
 	CardContent,
@@ -12,18 +14,15 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DatePicker } from "@/components/date-picker";
-import { trpc } from "@/lib/trpc-client";
-import { ArrowLeft, User } from "lucide-react";
-import { MedicalRecord, Patient } from "@/lib/schema-types";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { TRPCClientErrorLike } from "@trpc/client";
-import { AppRouter } from "@/lib/trpc";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { usePatient } from "@/hooks/usePatients";
-import SearchPatientsDialog from "./search-patients-dialog";
+import { type MedicalRecord, Patient } from "@/lib/schema-types";
+import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 import DoctorsDialog from "./search-doctors-dialog";
+import SearchPatientsDialog from "./search-patients-dialog";
 import { PageLoading } from "./ui/loading";
 
 interface MedicalRecordFormProps {
@@ -49,8 +48,7 @@ export function MedicalRecordForm({
 		}
 	};
 
-	const vitalSigns =
-		record?.vitalSigns && parseVitalSigns(record?.vitalSigns);
+	const vitalSigns = record?.vitalSigns && parseVitalSigns(record?.vitalSigns);
 
 	const { mutate: create, isPending: createPending } = useMutation(
 		trpc.medicalRecords.create.mutationOptions({
@@ -59,11 +57,9 @@ export function MedicalRecordForm({
 				toast.success("Medical record created successfully");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(
-					`Failed to create medical record: ${error.message}`
-				);
+				toast.error(`Failed to create medical record: ${error.message}`);
 			},
-		})
+		}),
 	);
 
 	const { mutate: update, isPending: updatePending } = useMutation(
@@ -73,11 +69,9 @@ export function MedicalRecordForm({
 				toast.success("Medical record updated successfully");
 			},
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
-				toast.error(
-					`Failed to update medical record: ${error.message}`
-				);
+				toast.error(`Failed to update medical record: ${error.message}`);
 			},
-		})
+		}),
 	);
 
 	const form = useForm({
@@ -118,7 +112,7 @@ export function MedicalRecordForm({
 
 				// Check if any vital signs have values
 				const hasVitalSigns = Object.values(vitalSignsObj).some(
-					(val) => val && val.trim() !== ""
+					(val) => val && val.trim() !== "",
 				);
 
 				const recordData = {
@@ -130,9 +124,7 @@ export function MedicalRecordForm({
 					treatment: value.treatment?.trim() || "",
 					prescription: value.prescription?.trim() || "",
 					notes: value.notes?.trim() || "",
-					vitalSigns: hasVitalSigns
-						? JSON.stringify(vitalSignsObj)
-						: "",
+					vitalSigns: hasVitalSigns ? JSON.stringify(vitalSignsObj) : "",
 				};
 
 				if (record?.id) {
@@ -163,9 +155,7 @@ export function MedicalRecordForm({
 				</Button>
 				<div>
 					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{record
-							? "Edit Medical Record"
-							: "Add New Medical Record"}
+						{record ? "Edit Medical Record" : "Add New Medical Record"}
 					</h1>
 					<p className="text-muted-foreground">
 						{record
@@ -203,9 +193,7 @@ export function MedicalRecordForm({
 									<SearchPatientsDialog
 										patient={patient}
 										onSelect={(selectedPatient) => {
-											field.handleChange(
-												selectedPatient?.id || 0
-											);
+											field.handleChange(selectedPatient?.id || 0);
 										}}
 									/>
 									{field.state.meta.errors.length > 0 && (
@@ -229,8 +217,7 @@ export function MedicalRecordForm({
 										</div>
 										<div>
 											<h3 className="font-semibold text-foreground">
-												{patient.firstName}{" "}
-												{patient.lastName}
+												{patient.firstName} {patient.lastName}
 											</h3>
 											<p className="text-sm text-muted-foreground">
 												ID: {patient.patientId}
@@ -262,27 +249,19 @@ export function MedicalRecordForm({
 								name="visitDate"
 								validators={{
 									onChange: ({ value }) =>
-										!value
-											? "Visit date is required"
-											: undefined,
+										!value ? "Visit date is required" : undefined,
 								}}
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor="visitDate">
-											Visit Date *
-										</Label>
+										<Label htmlFor="visitDate">Visit Date *</Label>
 										<DatePicker
 											selected={
 												field.state.value
-													? new Date(
-															field.state.value
-														)
+													? new Date(field.state.value)
 													: undefined
 											}
 											onSelect={(date) => {
-												field.handleChange(
-													date ? date : new Date()
-												);
+												field.handleChange(date ? date : new Date());
 											}}
 											mode="single"
 											captionLayout="dropdown"
@@ -300,19 +279,13 @@ export function MedicalRecordForm({
 								name="doctorId"
 								validators={{
 									onChange: ({ value }) =>
-										!value
-											? "Doctor is required"
-											: undefined,
+										!value ? "Doctor is required" : undefined,
 								}}
 								children={(field) => (
 									<div>
-										<Label htmlFor="doctorId">
-											Attending Doctor *
-										</Label>
+										<Label htmlFor="doctorId">Attending Doctor *</Label>
 										<DoctorsDialog
-											onSelect={(doctor) =>
-												field.handleChange(doctor.id)
-											}
+											onSelect={(doctor) => field.handleChange(doctor.id)}
 											doctorId={field.state.value}
 										/>
 
@@ -342,18 +315,12 @@ export function MedicalRecordForm({
 								name="bloodPressure"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor="bloodPressure">
-											Blood Pressure
-										</Label>
+										<Label htmlFor="bloodPressure">Blood Pressure</Label>
 										<Input
 											id="bloodPressure"
 											placeholder="120/80"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 									</div>
 								)}
@@ -362,20 +329,14 @@ export function MedicalRecordForm({
 								name="temperature"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor="temperature">
-											Temperature (°C)
-										</Label>
+										<Label htmlFor="temperature">Temperature (°C)</Label>
 										<Input
 											id="temperature"
 											type="number"
 											step="0.1"
 											placeholder="37.0"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 									</div>
 								)}
@@ -384,19 +345,13 @@ export function MedicalRecordForm({
 								name="pulse"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor="pulse">
-											Pulse (bpm)
-										</Label>
+										<Label htmlFor="pulse">Pulse (bpm)</Label>
 										<Input
 											id="pulse"
 											type="number"
 											placeholder="72"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 									</div>
 								)}
@@ -405,19 +360,13 @@ export function MedicalRecordForm({
 								name="respiratoryRate"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor="respiratoryRate">
-											Respiratory Rate
-										</Label>
+										<Label htmlFor="respiratoryRate">Respiratory Rate</Label>
 										<Input
 											id="respiratoryRate"
 											type="number"
 											placeholder="16"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 									</div>
 								)}
@@ -426,20 +375,14 @@ export function MedicalRecordForm({
 								name="weight"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor="weight">
-											Weight (kg)
-										</Label>
+										<Label htmlFor="weight">Weight (kg)</Label>
 										<Input
 											id="weight"
 											type="number"
 											step="0.1"
 											placeholder="68"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 									</div>
 								)}
@@ -448,20 +391,14 @@ export function MedicalRecordForm({
 								name="height"
 								children={(field) => (
 									<div className="space-y-2">
-										<Label htmlFor="height">
-											Height (cm)
-										</Label>
+										<Label htmlFor="height">Height (cm)</Label>
 										<Input
 											id="height"
 											type="number"
 											step="0.1"
 											placeholder="173"
 											value={field.state.value || ""}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 										/>
 									</div>
 								)}
@@ -483,15 +420,11 @@ export function MedicalRecordForm({
 							name="chiefComplaint"
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor="chiefComplaint">
-										Chief Complaint
-									</Label>
+									<Label htmlFor="chiefComplaint">Chief Complaint</Label>
 									<Textarea
 										id="chiefComplaint"
 										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Patient's primary concern or reason for visit..."
 										rows={2}
 									/>
@@ -507,9 +440,7 @@ export function MedicalRecordForm({
 									<Input
 										id="diagnosis"
 										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Primary diagnosis..."
 									/>
 								</div>
@@ -520,15 +451,11 @@ export function MedicalRecordForm({
 							name="treatment"
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor="treatment">
-										Treatment Plan
-									</Label>
+									<Label htmlFor="treatment">Treatment Plan</Label>
 									<Textarea
 										id="treatment"
 										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Treatment plan and procedures performed..."
 										rows={3}
 									/>
@@ -540,15 +467,11 @@ export function MedicalRecordForm({
 							name="prescription"
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor="prescription">
-										Prescription
-									</Label>
+									<Label htmlFor="prescription">Prescription</Label>
 									<Textarea
 										id="prescription"
 										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Medications prescribed..."
 										rows={3}
 									/>
@@ -560,15 +483,11 @@ export function MedicalRecordForm({
 							name="notes"
 							children={(field) => (
 								<div className="space-y-2">
-									<Label htmlFor="notes">
-										Additional Notes
-									</Label>
+									<Label htmlFor="notes">Additional Notes</Label>
 									<Textarea
 										id="notes"
 										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Additional observations, follow-up instructions, etc..."
 										rows={4}
 									/>
@@ -593,9 +512,7 @@ export function MedicalRecordForm({
 						children={({ canSubmit }) => (
 							<Button
 								type="submit"
-								disabled={
-									createPending || updatePending || !canSubmit
-								}
+								disabled={createPending || updatePending || !canSubmit}
 							>
 								{createPending || updatePending
 									? "Saving..."

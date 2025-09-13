@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -7,9 +8,8 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { type Patient, usePatients } from "@/hooks/usePatients";
-import { useState } from "react";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 
 const Patient = ({
@@ -51,12 +51,12 @@ export default function SearchPatientsDialog({
 }) {
 	const [open, setOpen] = useState(false);
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
-		patient ? patient : null
+		patient ? patient : null,
 	);
 	const [search, setSearch] = useState(
 		selectedPatient
 			? `${selectedPatient.firstName} ${selectedPatient.lastName}`
-			: ""
+			: "",
 	);
 	const { data } = usePatients(
 		{
@@ -64,7 +64,7 @@ export default function SearchPatientsDialog({
 		},
 		{
 			enabled: !!search,
-		}
+		},
 	);
 	const patients = data?.data;
 	return (
@@ -72,12 +72,9 @@ export default function SearchPatientsDialog({
 			<DialogTrigger asChild>
 				{selectedPatient ? (
 					<Button type="button" variant="outline">
-						<span className="mr-2">
-							{selectedPatient.patientId}
-						</span>
+						<span className="mr-2">{selectedPatient.patientId}</span>
 						<span className="font-semibold">
-							{selectedPatient.firstName}{" "}
-							{selectedPatient.lastName}
+							{selectedPatient.firstName} {selectedPatient.lastName}
 						</span>
 					</Button>
 				) : patient ? (
@@ -94,9 +91,7 @@ export default function SearchPatientsDialog({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Search Patients</DialogTitle>
-					<DialogDescription>
-						Search for patients by name
-					</DialogDescription>
+					<DialogDescription>Search for patients by name</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4">
 					<Input
@@ -106,7 +101,7 @@ export default function SearchPatientsDialog({
 					/>
 					<ScrollArea className="h-[300px] w-full rounded-md border p-4 space-y-2">
 						<div className="grid gap-4 my-auto h-[100px]">
-							{!!patients ? (
+							{patients ? (
 								patients?.map((p) => (
 									<Patient
 										key={p.id}
@@ -114,8 +109,7 @@ export default function SearchPatientsDialog({
 										onSelect={(patient) => {
 											setSelectedPatient(patient);
 											setSearch(
-												`${patient?.firstName} ${patient?.lastName}` ||
-													""
+												`${patient?.firstName} ${patient?.lastName}` || "",
 											);
 											onSelect(patient);
 										}}
@@ -126,9 +120,7 @@ export default function SearchPatientsDialog({
 								))
 							) : (
 								<div className="w-full my-auto h-full text-center flex items-center justify-center">
-									<p className="">
-										Start searching for patients
-									</p>
+									<p className="">Start searching for patients</p>
 								</div>
 							)}
 						</div>

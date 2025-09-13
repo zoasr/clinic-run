@@ -1,7 +1,7 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
+import { Activity, Heart, Loader2, Stethoscope } from "lucide-react";
+import type * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Activity, Heart, Stethoscope } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "./card";
 
 interface LoadingProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -28,11 +28,7 @@ const LoadingSpinner = ({
 
 	return (
 		<Loader2
-			className={cn(
-				"animate-spin text-primary",
-				sizeClasses[size],
-				className
-			)}
+			className={cn("animate-spin text-primary", sizeClasses[size], className)}
 		/>
 	);
 };
@@ -80,7 +76,7 @@ const LoadingDots = ({
 					key={i}
 					className={cn(
 						"rounded-full bg-primary animate-bounce",
-						sizeClasses[size]
+						sizeClasses[size],
 					)}
 					style={{ animationDelay: `${i * 0.1}s` }}
 				/>
@@ -105,13 +101,11 @@ const LoadingMedical = ({
 
 	return (
 		<div className={cn("relative", className)}>
-			<Heart
-				className={cn("text-red-500 animate-pulse", sizeClasses[size])}
-			/>
+			<Heart className={cn("text-red-500 animate-pulse", sizeClasses[size])} />
 			<Stethoscope
 				className={cn(
 					"absolute -top-1 -right-1 text-blue-500 animate-bounce",
-					sizeClasses.sm
+					sizeClasses.sm,
 				)}
 			/>
 		</div>
@@ -171,15 +165,13 @@ export function Loading({
 			className={cn(
 				"flex flex-col items-center justify-center gap-3 !w-full",
 				fullScreen && "min-h-screen",
-				className
+				className,
 			)}
 			{...props}
 		>
 			{renderLoader()}
 			{text && (
-				<p className="text-sm text-muted-foreground animate-pulse">
-					{text}
-				</p>
+				<p className="text-sm text-muted-foreground animate-pulse">{text}</p>
 			)}
 		</div>
 	);

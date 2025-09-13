@@ -1,8 +1,8 @@
+import { QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
-import { QueryClient } from "@tanstack/react-query";
-import type { AppRouter } from "./trpc";
 import superjson from "superjson";
+import type { AppRouter } from "./trpc";
 
 const baseURL = import.meta.env.VITE_SERVER_URL || "http://localhost:3031";
 

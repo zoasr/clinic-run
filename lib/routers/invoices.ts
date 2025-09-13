@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
-import { eq, and, desc, like, or, lt } from "drizzle-orm";
-import * as schema from "../db/schema/schema.js";
+import { and, desc, eq, like, lt, or } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import * as schema from "../db/schema/schema.js";
+import { authorizedProcedure, protectedProcedure, router } from "../trpc.js";
 
 const invoiceInputSchema = createInsertSchema(schema.invoices).omit({
 	invoiceNumber: true,
@@ -17,7 +17,7 @@ export const invoicesRouter = router({
 				patientId: z.number().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				cursor: z.number().optional(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { search, status, patientId, limit, cursor } = input;
@@ -31,8 +31,8 @@ export const invoicesRouter = router({
 					or(
 						like(schema.invoices.invoiceNumber, `%${search}%`),
 						like(schema.patients.firstName, `%${search}%`),
-						like(schema.patients.lastName, `%${search}%`)
-					)
+						like(schema.patients.lastName, `%${search}%`),
+					),
 				);
 			}
 			if (status) {
@@ -65,13 +65,9 @@ export const invoicesRouter = router({
 				.from(schema.invoices)
 				.leftJoin(
 					schema.patients,
-					eq(schema.invoices.patientId, schema.patients.id)
+					eq(schema.invoices.patientId, schema.patients.id),
 				)
-				.where(
-					whereConditions.length > 0
-						? and(...whereConditions)
-						: undefined
-				)
+				.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
 				.limit(limit + 1)
 				.orderBy(desc(schema.invoices.id));
 
@@ -90,7 +86,7 @@ export const invoicesRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const invoice = await ctx.db
@@ -116,7 +112,7 @@ export const invoicesRouter = router({
 				.from(schema.invoices)
 				.leftJoin(
 					schema.patients,
-					eq(schema.invoices.patientId, schema.patients.id)
+					eq(schema.invoices.patientId, schema.patients.id),
 				)
 				.where(eq(schema.invoices.id, input.id))
 				.limit(1);
@@ -135,7 +131,7 @@ export const invoicesRouter = router({
 				status: z.string().optional(),
 				page: z.number().min(1).default(1),
 				limit: z.number().min(1).max(100).default(10),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { patientId, status, page, limit } = input;
@@ -200,7 +196,7 @@ export const invoicesRouter = router({
 			z.object({
 				id: z.number(),
 				data: invoiceInputSchema.partial(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedInvoice = await ctx.db
@@ -223,7 +219,7 @@ export const invoicesRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedInvoice = await ctx.db
@@ -243,7 +239,7 @@ export const invoicesRouter = router({
 			z.object({
 				id: z.number(),
 				paidAmount: z.number().optional(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const invoiceData = await ctx.db
@@ -264,8 +260,7 @@ export const invoicesRouter = router({
 				.update(schema.invoices)
 				.set({
 					paidAmount,
-					status:
-						paidAmount >= invoice.totalAmount ? "paid" : "pending",
+					status: paidAmount >= invoice.totalAmount ? "paid" : "pending",
 					updatedAt: new Date(),
 				})
 				.where(eq(schema.invoices.id, input.id))

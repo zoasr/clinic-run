@@ -1,20 +1,15 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-import { type Invoice } from "@/hooks/useInvoices";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
-	Search,
-	Plus,
-	Receipt,
+	AlertCircle,
 	CheckCircle,
 	Clock,
-	AlertCircle,
+	Plus,
+	Receipt,
+	Search,
 	Trash2,
 } from "lucide-react";
-import { useDeleteInvoice } from "@/hooks/useInvoices";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
 	AlertDialog,
@@ -27,11 +22,14 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Link } from "@tanstack/react-router";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { type Invoice, useDeleteInvoice } from "@/hooks/useInvoices";
 import { trpc } from "@/lib/trpc-client";
-import ErrorComponent from "./error";
 import { formatCurrency } from "@/lib/utils";
+import ErrorComponent from "./error";
 
 export function InvoiceManagement() {
 	const [searchTerm, setSearchTerm] = useState("");
@@ -51,10 +49,9 @@ export function InvoiceManagement() {
 				limit: 20,
 			},
 			{
-				getNextPageParam: (lastPage) =>
-					lastPage.nextCursor ?? undefined,
-			}
-		)
+				getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+			},
+		),
 	);
 
 	const invoices = data?.pages?.flatMap((page) => page.data) || [];
@@ -70,10 +67,9 @@ export function InvoiceManagement() {
 						limit: 20,
 					},
 					{
-						getNextPageParam: (lastPage) =>
-							lastPage.nextCursor ?? undefined,
-					}
-				)
+						getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+					},
+				),
 			);
 		},
 		onError: (error: Error) => {
@@ -183,8 +179,7 @@ export function InvoiceManagement() {
 							const statusColor = getStatusColor(invoice.status);
 							const isOverdue = invoice.status === "overdue";
 							const isPending = invoice.status === "pending";
-							const hasOutstanding =
-								invoice.totalAmount > invoice.paidAmount;
+							const hasOutstanding = invoice.totalAmount > invoice.paidAmount;
 
 							return (
 								<Card
@@ -215,8 +210,7 @@ export function InvoiceManagement() {
 													>
 														<Receipt className="h-6 w-6" />
 													</div>
-													{(isOverdue ||
-														hasOutstanding) && (
+													{(isOverdue || hasOutstanding) && (
 														<div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
 															<span className="text-xs text-white font-bold">
 																!
@@ -229,14 +223,8 @@ export function InvoiceManagement() {
 														{invoice.invoiceNumber}
 													</h3>
 													<p className="text-sm text-muted-foreground truncate">
-														{
-															invoice.patient
-																?.firstName
-														}{" "}
-														{
-															invoice.patient
-																?.lastName
-														}
+														{invoice.patient?.firstName}{" "}
+														{invoice.patient?.lastName}
 													</p>
 												</div>
 											</div>
@@ -259,25 +247,17 @@ export function InvoiceManagement() {
 										<div className="grid grid-cols-2 gap-4 mb-4">
 											{/* Total Amount */}
 											<div className="space-y-1">
-												<p className="text-xs text-muted-foreground">
-													Total
-												</p>
+												<p className="text-xs text-muted-foreground">Total</p>
 												<p className="text-lg font-bold">
-													{formatCurrency(
-														invoice.totalAmount
-													)}
+													{formatCurrency(invoice.totalAmount)}
 												</p>
 											</div>
 
 											{/* Amount Paid */}
 											<div className="space-y-1">
-												<p className="text-xs text-muted-foreground">
-													Paid
-												</p>
+												<p className="text-xs text-muted-foreground">Paid</p>
 												<p className="text-lg font-bold text-green-600">
-													{formatCurrency(
-														invoice.paidAmount
-													)}
+													{formatCurrency(invoice.paidAmount)}
 												</p>
 											</div>
 
@@ -288,9 +268,7 @@ export function InvoiceManagement() {
 												</p>
 												<p className="text-sm font-medium">
 													{invoice.dueDate
-														? new Date(
-																invoice.dueDate
-															).toLocaleDateString()
+														? new Date(invoice.dueDate).toLocaleDateString()
 														: "N/A"}
 												</p>
 											</div>
@@ -302,8 +280,7 @@ export function InvoiceManagement() {
 												</p>
 												<p className="text-sm font-medium text-orange-600">
 													{formatCurrency(
-														invoice.totalAmount -
-															invoice.paidAmount
+														invoice.totalAmount - invoice.paidAmount,
 													)}
 												</p>
 											</div>
@@ -318,8 +295,7 @@ export function InvoiceManagement() {
 													</span>
 													<span className="text-sm font-semibold text-orange-600">
 														{formatCurrency(
-															invoice.totalAmount -
-																invoice.paidAmount
+															invoice.totalAmount - invoice.paidAmount,
 														)}
 													</span>
 												</div>
@@ -330,17 +306,12 @@ export function InvoiceManagement() {
 										<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
 											<span>
 												Created{" "}
-												{new Date(
-													invoice.createdAt
-												).toLocaleDateString()}
+												{new Date(invoice.createdAt).toLocaleDateString()}
 											</span>
-											{invoice.updatedAt !==
-												invoice.createdAt && (
+											{invoice.updatedAt !== invoice.createdAt && (
 												<span>
 													Updated{" "}
-													{new Date(
-														invoice.updatedAt
-													).toLocaleDateString()}
+													{new Date(invoice.updatedAt).toLocaleDateString()}
 												</span>
 											)}
 										</div>
@@ -350,8 +321,7 @@ export function InvoiceManagement() {
 											<Link
 												to="/invoices/$invoiceId"
 												params={{
-													invoiceId:
-														invoice.id.toString(),
+													invoiceId: invoice.id.toString(),
 												}}
 												className="flex-1"
 											>
@@ -362,14 +332,10 @@ export function InvoiceManagement() {
 											<Link
 												to="/invoices/edit/$invoiceId"
 												params={{
-													invoiceId:
-														invoice.id.toLocaleString(),
+													invoiceId: invoice.id.toLocaleString(),
 												}}
 											>
-												<Button
-													variant="outline"
-													className="transition-all"
-												>
+												<Button variant="outline" className="transition-all">
 													Edit Invoice
 												</Button>
 											</Link>
@@ -379,40 +345,26 @@ export function InvoiceManagement() {
 														variant="destructive"
 														size="sm"
 														disabled={isDeleting}
-														onClick={(e) =>
-															e.stopPropagation()
-														}
+														onClick={(e) => e.stopPropagation()}
 													>
 														<Trash2 className="h-4 w-4" />
 													</Button>
 												</AlertDialogTrigger>
 												<AlertDialogContent>
 													<AlertDialogHeader>
-														<AlertDialogTitle>
-															Delete Invoice
-														</AlertDialogTitle>
+														<AlertDialogTitle>Delete Invoice</AlertDialogTitle>
 														<AlertDialogDescription>
-															Are you sure you
-															want to delete this
-															invoice? This action
-															cannot be undone.
+															Are you sure you want to delete this invoice? This
+															action cannot be undone.
 														</AlertDialogDescription>
 													</AlertDialogHeader>
 													<AlertDialogFooter>
-														<AlertDialogCancel>
-															Cancel
-														</AlertDialogCancel>
+														<AlertDialogCancel>Cancel</AlertDialogCancel>
 														<AlertDialogAction
-															onClick={() =>
-																handleDeleteInvoice(
-																	invoice.id
-																)
-															}
+															onClick={() => handleDeleteInvoice(invoice.id)}
 															asChild
 														>
-															<Button variant="destructive">
-																Delete
-															</Button>
+															<Button variant="destructive">Delete</Button>
 														</AlertDialogAction>
 													</AlertDialogFooter>
 												</AlertDialogContent>
@@ -441,9 +393,7 @@ export function InvoiceManagement() {
 							className="min-w-[120px]"
 							size="lg"
 						>
-							{isFetchingNextPage
-								? "Loading..."
-								: "Load More Invoices"}
+							{isFetchingNextPage ? "Loading..." : "Load More Invoices"}
 						</Button>
 					)}
 				</div>

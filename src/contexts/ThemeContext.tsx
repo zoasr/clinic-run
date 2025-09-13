@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAppearanceSettings } from "@/hooks/useSettings";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAppearanceSettings } from "@/hooks/useSettings";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -31,13 +32,13 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children }: ThemeProviderProps) {
 	const appearanceSettings = useAppearanceSettings();
 	const [theme, setThemeState] = useState<ThemeMode>(
-		appearanceSettings.themeMode
+		appearanceSettings.themeMode,
 	);
 	const [sidebarCollapsed, setSidebarCollapsedState] = useState(
-		appearanceSettings.sidebarCollapsed
+		appearanceSettings.sidebarCollapsed,
 	);
 	const [compactMode, setCompactModeState] = useState(
-		appearanceSettings.compactMode
+		appearanceSettings.compactMode,
 	);
 
 	// Update theme state when settings change
@@ -107,9 +108,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
 	const setCompactMode = (compact: boolean) => {
 		setCompactModeState(compact);
-		toast.success(
-			compact ? "Compact mode enabled" : "Compact mode disabled"
-		);
+		toast.success(compact ? "Compact mode enabled" : "Compact mode disabled");
 	};
 
 	const value: ThemeContextType = {

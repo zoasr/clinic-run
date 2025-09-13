@@ -1,10 +1,10 @@
-import { authClient, User, type Session } from "@/lib/auth";
+import { useQueryClient } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import type React from "react";
-import { createContext, useContext, useState, useEffect } from "react";
-import { PageLoading } from "@/components/ui/loading";
-import { useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { PageLoading } from "@/components/ui/loading";
+import { authClient, type Session, type User } from "@/lib/auth";
 
 export interface AuthContextType {
 	isAuthenticated: boolean;
@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				refreshAuth();
 
 				toast.success(
-					`Login successful! Welcome back. ${sessionData.user.name}`
+					`Login successful! Welcome back. ${sessionData.user.name}`,
 				);
 				return true;
 			}

@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { router, protectedProcedure, authorizedProcedure } from "../trpc.js";
-import { eq, like, and, desc, lt, sql, lte } from "drizzle-orm";
-import * as schema from "../db/schema/schema.js";
+import { and, desc, eq, like, lt, lte, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import * as schema from "../db/schema/schema.js";
+import { authorizedProcedure, protectedProcedure, router } from "../trpc.js";
 
 const medicationInputSchema = createInsertSchema(schema.medications);
 
@@ -15,7 +15,7 @@ export const medicationsRouter = router({
 				outOfStock: z.boolean().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				cursor: z.number().optional(), // For infinite queries
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { search, lowStock, outOfStock, limit, cursor } = input;
@@ -23,14 +23,12 @@ export const medicationsRouter = router({
 			const whereConditions = [];
 
 			if (search) {
-				whereConditions.push(
-					like(schema.medications.name, `%${search}%`)
-				);
+				whereConditions.push(like(schema.medications.name, `%${search}%`));
 			}
 
 			if (lowStock) {
 				whereConditions.push(
-					sql`${schema.medications.quantity} <= ${schema.medications.minStockLevel}`
+					sql`${schema.medications.quantity} <= ${schema.medications.minStockLevel}`,
 				);
 				whereConditions.push(sql`${schema.medications.quantity} > 0`);
 			}
@@ -53,9 +51,7 @@ export const medicationsRouter = router({
 				.orderBy(desc(schema.medications.id));
 
 			const hasNextPage = medications.length > limit;
-			const data = hasNextPage
-				? medications.slice(0, limit)
-				: medications;
+			const data = hasNextPage ? medications.slice(0, limit) : medications;
 			const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
 
 			return {
@@ -72,8 +68,8 @@ export const medicationsRouter = router({
 			.where(
 				and(
 					eq(schema.medications.isActive, true),
-					sql`${schema.medications.quantity} <= ${schema.medications.minStockLevel}`
-				)
+					sql`${schema.medications.quantity} <= ${schema.medications.minStockLevel}`,
+				),
 			)
 			.orderBy(desc(schema.medications.id));
 
@@ -94,7 +90,7 @@ export const medicationsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const medication = await ctx.db
@@ -130,7 +126,7 @@ export const medicationsRouter = router({
 			z.object({
 				id: z.number(),
 				data: medicationInputSchema.partial(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const updatedMedication = await ctx.db
@@ -153,7 +149,7 @@ export const medicationsRouter = router({
 		.input(
 			z.object({
 				id: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const deletedMedication = await ctx.db
@@ -178,7 +174,7 @@ export const medicationsRouter = router({
 				id: z.number(),
 				quantity: z.number(),
 				reason: z.string(),
-			})
+			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			const medicationData = await ctx.db

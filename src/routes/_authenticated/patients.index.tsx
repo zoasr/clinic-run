@@ -1,15 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Search, Plus, User, Phone, Mail } from "lucide-react";
-import { LoadingCards } from "@/components/ui/loading";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Mail, Phone, Plus, Search, User } from "lucide-react";
+import { useState } from "react";
 import ErrorComponent from "@/components/error";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { LoadingCards } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 import { formatAge } from "@/lib/utils";
 
 function PatientManagement() {
@@ -29,10 +28,9 @@ function PatientManagement() {
 				limit: 20,
 			},
 			{
-				getNextPageParam: (lastPage) =>
-					lastPage.nextCursor ?? undefined,
-			}
-		)
+				getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+			},
+		),
 	);
 
 	const patients = data?.pages?.flatMap((page) => page.data) || [];
@@ -81,9 +79,7 @@ function PatientManagement() {
 			{/* Patient List */}
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{isError ? (
-					<ErrorComponent
-						error={new Error("Failed to fetch patients")}
-					/>
+					<ErrorComponent error={new Error("Failed to fetch patients")} />
 				) : isLoading ? (
 					<div className="col-span-full">
 						<LoadingCards />
@@ -114,7 +110,7 @@ function PatientManagement() {
 					</div>
 				) : (
 					patients?.map((patient) =>
-						!!patient ? (
+						patient ? (
 							<Card
 								key={patient.id}
 								className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20"
@@ -136,8 +132,7 @@ function PatientManagement() {
 											</div>
 											<div className="flex-1 min-w-0">
 												<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-													{patient.firstName}{" "}
-													{patient.lastName}
+													{patient.firstName} {patient.lastName}
 												</h3>
 												<p className="text-sm text-muted-foreground font-mono">
 													ID: {patient.patientId}
@@ -153,16 +148,12 @@ function PatientManagement() {
 											<div className="flex items-center gap-2">
 												<User className="h-4 w-4 text-muted-foreground" />
 												<span className="text-sm text-muted-foreground">
-													{formatAge(
-														patient.dateOfBirth
-													)}
+													{formatAge(patient.dateOfBirth)}
 												</span>
 											</div>
 											<Badge
 												variant={
-													patient.gender === "male"
-														? "default"
-														: "secondary"
+													patient.gender === "male" ? "default" : "secondary"
 												}
 												className="text-xs"
 											>
@@ -198,10 +189,7 @@ function PatientManagement() {
 												<span className="text-xs text-muted-foreground">
 													Blood Type
 												</span>
-												<Badge
-													variant="outline"
-													className="font-mono"
-												>
+												<Badge variant="outline" className="font-mono">
 													{patient.bloodType}
 												</Badge>
 											</div>
@@ -219,7 +207,7 @@ function PatientManagement() {
 									</Link>
 								</CardContent>
 							</Card>
-						) : null
+						) : null,
 					)
 				)}
 			</div>
@@ -241,9 +229,7 @@ function PatientManagement() {
 							className="min-w-[120px]"
 							size="lg"
 						>
-							{isFetchingNextPage
-								? "Loading..."
-								: "Load More Patients"}
+							{isFetchingNextPage ? "Loading..." : "Load More Patients"}
 						</Button>
 					)}
 				</div>

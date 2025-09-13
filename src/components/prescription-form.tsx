@@ -1,9 +1,10 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TRPCClientErrorLike } from "@trpc/client";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Card,
 	CardContent,
@@ -11,16 +12,15 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { Patient } from "@/hooks/usePatients";
-import { trpc } from "@/lib/trpc-client";
-import type { TRPCClientErrorLike } from "@trpc/client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import type { Patient } from "@/hooks/usePatients";
 import type { AppRouter } from "@/lib/trpc";
-import SearchPatientsDialog from "./search-patients-dialog";
+import { trpc } from "@/lib/trpc-client";
 import DoctorsDialog from "./search-doctors-dialog";
 import SearchMedicationsDialog from "./search-medications-dialog";
+import SearchPatientsDialog from "./search-patients-dialog";
 
 // Infer types from tRPC
 type PrescriptionInput =
@@ -68,7 +68,7 @@ export function PrescriptionForm({
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(`Failed to create prescription: ${error.message}`);
 			},
-		})
+		}),
 	);
 
 	const updateMutation = useMutation(
@@ -84,7 +84,7 @@ export function PrescriptionForm({
 			onError: (error: TRPCClientErrorLike<AppRouter>) => {
 				toast.error(`Failed to update prescription: ${error.message}`);
 			},
-		})
+		}),
 	);
 
 	const { isPending, error } = prescription?.id
@@ -124,9 +124,7 @@ export function PrescriptionForm({
 				</Button>
 				<div>
 					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{prescription
-							? "Edit Prescription"
-							: "Add New Prescription"}
+						{prescription ? "Edit Prescription" : "Add New Prescription"}
 					</h1>
 					<p className="text-muted-foreground">
 						{prescription
@@ -148,8 +146,8 @@ export function PrescriptionForm({
 					<CardHeader>
 						<CardTitle>Patient, Doctor & Medication</CardTitle>
 						<CardDescription>
-							Select the patient, prescribing doctor, and
-							medication for this prescription
+							Select the patient, prescribing doctor, and medication for this
+							prescription
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -160,22 +158,14 @@ export function PrescriptionForm({
 									name="patientId"
 									validators={{
 										onChange: ({ value }) =>
-											!value || value === 0
-												? "Patient is required"
-												: undefined,
+											!value || value === 0 ? "Patient is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<>
 											<SearchPatientsDialog
-												patient={
-													prescription?.patient as Patient
-												}
-												onSelect={(patient) =>
-													field.handleChange(
-														patient?.id
-													)
-												}
+												patient={prescription?.patient as Patient}
+												onSelect={(patient) => field.handleChange(patient?.id)}
 											/>
 										</>
 									)}
@@ -188,23 +178,14 @@ export function PrescriptionForm({
 									name="doctorId"
 									validators={{
 										onChange: ({ value }) =>
-											!value?.trim()
-												? "Doctor is required"
-												: undefined,
+											!value?.trim() ? "Doctor is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<>
 											<DoctorsDialog
-												onSelect={(doctor) =>
-													field.handleChange(
-														doctor?.id
-													)
-												}
-												doctorId={
-													prescription?.doctor
-														?.id as string
-												}
+												onSelect={(doctor) => field.handleChange(doctor?.id)}
+												doctorId={prescription?.doctor?.id as string}
 											/>
 										</>
 									)}
@@ -212,9 +193,7 @@ export function PrescriptionForm({
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="medicationId">
-									Medication *
-								</Label>
+								<Label htmlFor="medicationId">Medication *</Label>
 								<form.Field
 									name="medicationId"
 									validators={{
@@ -224,7 +203,7 @@ export function PrescriptionForm({
 												: undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<>
 											<SearchMedicationsDialog
 												medication={
@@ -233,9 +212,7 @@ export function PrescriptionForm({
 														: null
 												}
 												onSelect={(medication) =>
-													field.handleChange(
-														medication?.id
-													)
+													field.handleChange(medication?.id)
 												}
 											/>
 										</>
@@ -262,20 +239,14 @@ export function PrescriptionForm({
 									name="dosage"
 									validators={{
 										onChange: ({ value }) =>
-											!value?.trim()
-												? "Dosage is required"
-												: undefined,
+											!value?.trim() ? "Dosage is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<Input
 											id="dosage"
 											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="e.g., 500mg, 2 tablets"
 											required
 										/>
@@ -289,20 +260,14 @@ export function PrescriptionForm({
 									name="frequency"
 									validators={{
 										onChange: ({ value }) =>
-											!value?.trim()
-												? "Frequency is required"
-												: undefined,
+											!value?.trim() ? "Frequency is required" : undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<Input
 											id="frequency"
 											value={field.state.value}
-											onChange={(e) =>
-												field.handleChange(
-													e.target.value
-												)
-											}
+											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="e.g., Twice daily, Every 8 hours"
 											required
 										/>
@@ -321,17 +286,14 @@ export function PrescriptionForm({
 												: undefined,
 									}}
 								>
-									{(field: any) => (
+									{(field) => (
 										<Input
 											id="quantity"
 											type="number"
 											min="1"
 											value={field.state.value}
 											onChange={(e) =>
-												field.handleChange(
-													parseInt(e.target.value) ||
-														1
-												)
+												field.handleChange(parseInt(e.target.value) || 1)
 											}
 											required
 										/>
@@ -346,18 +308,14 @@ export function PrescriptionForm({
 								name="duration"
 								validators={{
 									onChange: ({ value }) =>
-										!value?.trim()
-											? "Duration is required"
-											: undefined,
+										!value?.trim() ? "Duration is required" : undefined,
 								}}
 							>
-								{(field: any) => (
+								{(field) => (
 									<Input
 										id="duration"
 										value={field.state.value}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="e.g., 7 days, 2 weeks, 1 month"
 										required
 									/>
@@ -368,13 +326,11 @@ export function PrescriptionForm({
 						<div className="space-y-2">
 							<Label htmlFor="instructions">Instructions</Label>
 							<form.Field name="instructions">
-								{(field: any) => (
+								{(field) => (
 									<Textarea
 										id="instructions"
 										value={field.state.value || ""}
-										onChange={(e) =>
-											field.handleChange(e.target.value)
-										}
+										onChange={(e) => field.handleChange(e.target.value)}
 										placeholder="Special instructions for the patient..."
 										rows={3}
 									/>

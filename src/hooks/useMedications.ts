@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 // Infer types from tRPC
 type Medication =
@@ -18,8 +18,8 @@ export function useMedication(medicationId: number) {
 	return useQuery(
 		trpc.medications.getById.queryOptions(
 			{ id: medicationId },
-			{ enabled: !!medicationId }
-		)
+			{ enabled: !!medicationId },
+		),
 	);
 }
 

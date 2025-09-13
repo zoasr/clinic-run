@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { User } from "lucide-react";
+import { useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -6,14 +9,11 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { ScrollArea } from "./ui/scroll-area";
-import { type Doctor } from "@/lib/schema-types";
-import { User } from "lucide-react";
-import { Input } from "./ui/input";
+import type { Doctor } from "@/lib/schema-types";
 import { trpc } from "@/lib/trpc-client";
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { ScrollArea } from "./ui/scroll-area";
 
 const Doctor = ({
 	doctor,
@@ -26,7 +26,7 @@ const Doctor = ({
 }) => {
 	return (
 		<>
-			{!!doctor ? (
+			{doctor ? (
 				<div
 					key={doctor.id}
 					className="flex gap-4 items-center p-4 cursor-pointer border border-accent bg-accent/20 rounded-md"
@@ -82,11 +82,9 @@ export default function DoctorsDialog({
 							{selectedDoctor.firstName} {selectedDoctor.lastName}
 						</span>
 					</Button>
-				) : !!doctor ? (
+				) : doctor ? (
 					<Button type="button" variant="outline">
-						<span className="mr-2 truncate max-w-[5ch]">
-							{doctor?.id}
-						</span>
+						<span className="mr-2 truncate max-w-[5ch]">{doctor?.id}</span>
 						<span className="font-semibold">
 							{doctor?.firstName} {doctor?.lastName}
 						</span>
@@ -98,9 +96,7 @@ export default function DoctorsDialog({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Search Doctors</DialogTitle>
-					<DialogDescription>
-						Search for doctors by name
-					</DialogDescription>
+					<DialogDescription>Search for doctors by name</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4">
 					<Input
@@ -125,9 +121,7 @@ export default function DoctorsDialog({
 								))
 							) : (
 								<div className="w-full my-auto h-full text-center flex items-center justify-center">
-									<p className="">
-										Start searching for doctors
-									</p>
+									<p className="">Start searching for doctors</p>
 								</div>
 							)}
 						</div>

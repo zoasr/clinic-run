@@ -1,11 +1,11 @@
-import { MedicalRecordForm } from "@/components/medical-record-form";
-import { trpc } from "@/lib/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { MedicalRecordForm } from "@/components/medical-record-form";
 import { PageLoading } from "@/components/ui/loading";
+import { trpc } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(
-	"/_authenticated/medical-records/edit/$medicalRecordId"
+	"/_authenticated/medical-records/edit/$medicalRecordId",
 )({
 	loader: ({ params }) => {
 		return {
@@ -27,7 +27,7 @@ function RouteComponent() {
 	} = useQuery(
 		trpc.medicalRecords.getById.queryOptions({
 			id: Number(params.medicalRecordId),
-		})
+		}),
 	);
 
 	if (isLoading) {
@@ -37,9 +37,7 @@ function RouteComponent() {
 		return <div>Error: {error.message}</div>;
 	}
 	if (!record) {
-		return (
-			<div>Medical record with id {params.medicalRecordId} not found</div>
-		);
+		return <div>Medical record with id {params.medicalRecordId} not found</div>;
 	}
 
 	return (

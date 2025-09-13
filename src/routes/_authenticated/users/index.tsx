@@ -1,19 +1,10 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc-client";
-import { AppRouter } from "@/lib/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
-
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import ErrorComponent from "@/components/error";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -25,10 +16,18 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, UserPlus } from "lucide-react";
-import { toast } from "sonner";
-import ErrorComponent from "@/components/error";
+import { Button } from "@/components/ui/button";
 import { TableLoading } from "@/components/ui/loading";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import type { AppRouter } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc-client";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type User = RouterOutput["users"]["getAll"][number];
@@ -64,7 +63,7 @@ function UsersComponent() {
 			onError: (error: any) => {
 				toast.error(error.message || "Failed to delete user");
 			},
-		})
+		}),
 	);
 
 	const handleDeleteClick = (user: User) => {
@@ -84,9 +83,7 @@ function UsersComponent() {
 	return (
 		<div className="p-4 text-foreground">
 			<div className="flex justify-between items-center mb-4">
-				<h1 className="text-2xl font-bold text-foreground">
-					User Management
-				</h1>
+				<h1 className="text-2xl font-bold text-foreground">User Management</h1>
 				<Link to="/users/add">
 					<Button>
 						Add User
@@ -104,9 +101,7 @@ function UsersComponent() {
 							<TableHead>Role</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead>Created</TableHead>
-							<TableHead className="text-right">
-								Actions
-							</TableHead>
+							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -118,33 +113,19 @@ function UsersComponent() {
 								<TableCell>{user.email}</TableCell>
 								<TableCell>{user.username}</TableCell>
 								<TableCell>
-									<Badge variant="secondary">
-										{user.role}
-									</Badge>
+									<Badge variant="secondary">{user.role}</Badge>
 								</TableCell>
 								<TableCell>
-									<Badge
-										variant={
-											user.isActive
-												? "default"
-												: "destructive"
-										}
-									>
+									<Badge variant={user.isActive ? "default" : "destructive"}>
 										{user.isActive ? "Active" : "Inactive"}
 									</Badge>
 								</TableCell>
 								<TableCell>
-									{new Date(
-										user.createdAt
-									).toLocaleDateString()}
+									{new Date(user.createdAt).toLocaleDateString()}
 								</TableCell>
 								<TableCell className="text-right">
 									<div className="flex justify-end gap-2">
-										<Button
-											variant="outline"
-											size="sm"
-											asChild
-										>
+										<Button variant="outline" size="sm" asChild>
 											<Link
 												to={`/users/$userId/edit`}
 												params={{ userId: user.id }}
@@ -155,9 +136,7 @@ function UsersComponent() {
 										<Button
 											variant="outline"
 											size="sm"
-											onClick={() =>
-												handleDeleteClick(user)
-											}
+											onClick={() => handleDeleteClick(user)}
 											className="text-red-600 hover:text-red-700 hover:bg-red-50"
 										>
 											<Trash2 className="w-4 h-4" />
@@ -171,21 +150,17 @@ function UsersComponent() {
 			</div>
 
 			{/* Delete Confirmation Dialog */}
-			<AlertDialog
-				open={deleteDialogOpen}
-				onOpenChange={setDeleteDialogOpen}
-			>
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete User</AlertDialogTitle>
 						<AlertDialogDescription>
 							Are you sure you want to delete{" "}
 							<strong>
-								{userToDelete?.firstName}{" "}
-								{userToDelete?.lastName}
+								{userToDelete?.firstName} {userToDelete?.lastName}
 							</strong>
-							? This action cannot be undone and will permanently
-							remove the user from the system.
+							? This action cannot be undone and will permanently remove the
+							user from the system.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

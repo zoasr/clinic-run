@@ -1,7 +1,7 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { AppRouter } from "./trpc";
 import { trpcClient } from "./trpc-client";
-import { type AppRouter } from "./trpc";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
