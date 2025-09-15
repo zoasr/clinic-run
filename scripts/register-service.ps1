@@ -1,18 +1,18 @@
-# Clinic System Service Registration Script
-# This script registers the Clinic System as a Windows service
+# Clinic Run Service Registration Script
+# This script registers Clinic Run as a Windows service
 
 param(
     [switch]$Unregister,
     [switch]$Start,
     [switch]$Stop,
-    [string]$ServiceName = "ClinicSystemService",
-    [string]$DisplayName = "Clinic Management System",
-    [string]$Description = "Clinic Management System Service"
+    [string]$ServiceName = "ClinicRunService",
+    [string]$DisplayName = "Clinic Run",
+    [string]$Description = "Clinic Run Service"
 )
 
 # Configuration
-$InstallDir = "$env:ProgramFiles\ClinicSystem"
-$ExePath = "$InstallDir\bin\clinic-system.exe"
+$InstallDir = "$env:ProgramFiles\ClinicRun"
+$ExePath = "$InstallDir\bin\clinic-run.exe"
 
 # Colors for output
 $Green = "Green"
@@ -131,7 +131,7 @@ function Show-Service-Status {
 }
 
 # Main execution
-Write-ColorOutput "=== Clinic System Service Manager ===" $Cyan
+Write-ColorOutput "=== Clinic Run Service Manager ===" $Cyan
 Write-ColorOutput ""
 
 # Check admin rights
@@ -143,7 +143,7 @@ if (!(Test-AdminRights)) {
 
 # Check if executable exists
 if (!(Test-Path $ExePath) -and !$Unregister) {
-    Write-ColorOutput "Clinic System executable not found at: $ExePath" $Red
+    Write-ColorOutput "Clinic Run executable not found at: $ExePath" $Red
     Write-ColorOutput "Please ensure the application is installed first." $Yellow
     exit 1
 }

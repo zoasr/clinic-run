@@ -1,15 +1,15 @@
-# Clinic System Installer Script
-# This script creates a Windows installer for the Clinic Management System
+# Clinic Run Installer Script
+# This script creates a Windows installer for Clinic Run
 
 param(
     [string]$OutputPath = ".\installer",
-    [string]$AppName = "ClinicSystem",
+    [string]$AppName = "ClinicRun",
     [string]$Version = "1.0.0",
     [switch]$NoCleanup
 )
 
 # Configuration
-$AppDisplayName = "Clinic Management System"
+$AppDisplayName = "Clinic Run"
 $AppDescription = "Complete clinic management solution with patient records, appointments, and billing"
 $Publisher = "Clinic Software Inc."
 $InstallDir = "$env:ProgramFiles\$AppName"
@@ -66,11 +66,11 @@ function Copy-ApplicationFiles {
     Write-ColorOutput "Copying application files..." $Cyan
 
     # Copy executable
-    if (Test-Path ".\dist\clinic-system.exe") {
-        Copy-Item ".\dist\clinic-system.exe" "$OutputPath\bin\" -Force
+    if (Test-Path ".\dist\clinic-run.exe") {
+        Copy-Item ".\dist\clinic-run.exe" "$OutputPath\bin\" -Force
         Write-ColorOutput "Executable copied" $Green
     } else {
-        Write-ColorOutput "Warning: Executable not found in .\dist\clinic-system.exe" $Yellow
+        Write-ColorOutput "Warning: Executable not found in .\dist\clinic-run.exe" $Yellow
     }
 
     # Copy static files
@@ -110,7 +110,7 @@ echo Uninstalling $AppDisplayName...
 echo.
 
 REM Stop the application if running
-taskkill /f /im clinic-system.exe >nul 2>&1
+taskkill /f /im clinic-run.exe >nul 2>&1
 
 REM Remove installation directory
 if exist "$InstallDir" (
@@ -189,10 +189,10 @@ if not exist "%APPDATA%\Microsoft\Windows\Start Menu\Programs\$StartMenuFolder" 
 )
 
 echo Creating shortcuts...
-powershell -Command "`$WshShell = New-Object -comObject WScript.Shell; `$Shortcut = `$WshShell.CreateShortcut('%APPDATA%\Microsoft\Windows\Start Menu\Programs\$StartMenuFolder\$AppDisplayName.lnk'); `$Shortcut.TargetPath = '$InstallDir\bin\clinic-system.exe'; `$Shortcut.WorkingDirectory = '$InstallDir\bin'; `$Shortcut.IconLocation = '$InstallDir\$AppName.ico'; `$Shortcut.Save()"
+powershell -Command "`$WshShell = New-Object -comObject WScript.Shell; `$Shortcut = `$WshShell.CreateShortcut('%APPDATA%\Microsoft\Windows\Start Menu\Programs\$StartMenuFolder\$AppDisplayName.lnk'); `$Shortcut.TargetPath = '$InstallDir\bin\clinic-run.exe'; `$Shortcut.WorkingDirectory = '$InstallDir\bin'; `$Shortcut.IconLocation = '$InstallDir\$AppName.ico'; `$Shortcut.Save()"
 
 REM Create desktop shortcut
-powershell -Command "`$WshShell = New-Object -comObject WScript.Shell; `$Shortcut = `$WshShell.CreateShortcut('%PUBLIC%\Desktop\$AppDisplayName.lnk'); `$Shortcut.TargetPath = '$InstallDir\bin\clinic-system.exe'; `$Shortcut.WorkingDirectory = '$InstallDir\bin'; `$Shortcut.IconLocation = '$InstallDir\$AppName.ico'; `$Shortcut.Save()"
+powershell -Command "`$WshShell = New-Object -comObject WScript.Shell; `$Shortcut = `$WshShell.CreateShortcut('%PUBLIC%\Desktop\$AppDisplayName.lnk'); `$Shortcut.TargetPath = '$InstallDir\bin\clinic-run.exe'; `$Shortcut.WorkingDirectory = '$InstallDir\bin'; `$Shortcut.IconLocation = '$InstallDir\$AppName.ico'; `$Shortcut.Save()"
 
 REM Add to registry for Add/Remove Programs
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$AppName" /v DisplayName /t REG_SZ /d "$AppDisplayName" /f
