@@ -1,0 +1,16 @@
+{
+	"name": "clinic-run-demo",
+	"main": "lib/server.worker.ts",
+	"compatibility_date": "2025-09-15",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		// Optional non-secret vars can go here. Secrets must be set via:
+		// bun x wrangler secret put <KEY>
+		// "DEMO_SESSION_TTL_MINUTES": "30"
+	}
+}

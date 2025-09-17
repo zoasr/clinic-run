@@ -1,11 +1,73 @@
 import { eq } from "drizzle-orm";
-import { auth } from "../auth";
-import { db } from "./index";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin as adminPlugin } from "better-auth/plugins";
+import { ac, admin, doctor, staff } from "../permissions";
 import * as authSchema from "./schema/auth-schema";
 import * as schema from "./schema/schema";
+const rolesObj = {
+	admin,
+	doctor,
+	staff,
+} as const;
 
 // Seed initial data
-export async function seedDatabase() {
+export async function seedDatabase(db: any) {
+	const localAuth = betterAuth({
+		database: drizzleAdapter(db, {
+			provider: "sqlite",
+			schema: {
+				user: authSchema.user,
+				session: authSchema.session,
+				account: authSchema.account,
+				verification: authSchema.verification,
+			},
+		}),
+		emailAndPassword: {
+			enabled: true,
+			requireEmailVerification: false,
+		},
+		session: {
+			expiresIn: 30 * 60 * 60 * 24,
+			updateAge: 30 * 60 * 60 * 24,
+		},
+		user: {
+			additionalFields: {
+				username: {
+					type: "string",
+					required: true,
+					unique: true,
+				},
+				firstName: {
+					type: "string",
+					required: true,
+				},
+				lastName: {
+					type: "string",
+					required: true,
+				},
+				role: {
+					type: "string",
+					required: true,
+					defaultValue: "staff",
+				},
+				isActive: {
+					type: "boolean",
+					required: true,
+					defaultValue: true,
+				},
+			},
+		},
+		plugins: [
+			// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation
+			adminPlugin({
+				ac,
+				defaultRole: "staff",
+				adminRoles: ["admin"],
+				roles: rolesObj,
+			}),
+		],
+	});
 	try {
 		// Create default admin user
 		const adminExists = await db
@@ -15,7 +77,7 @@ export async function seedDatabase() {
 			.limit(1);
 
 		if (adminExists.length === 0) {
-			const newUser = await auth.api.createUser({
+			const newUser = await localAuth.api.createUser({
 				body: {
 					email: "admin@clinic.local", // required
 					password: "admin123", // required
@@ -39,7 +101,7 @@ export async function seedDatabase() {
 			.limit(1);
 
 		if (doctor1Exists.length === 0) {
-			const doctor1 = await auth.api.createUser({
+			const doctor1 = await localAuth.api.createUser({
 				body: {
 					email: "dr.smith@clinic.local",
 					password: "doctor123",
@@ -62,7 +124,7 @@ export async function seedDatabase() {
 			.limit(1);
 
 		if (doctor2Exists.length === 0) {
-			const doctor2 = await auth.api.createUser({
+			const doctor2 = await localAuth.api.createUser({
 				body: {
 					email: "dr.jones@clinic.local",
 					password: "doctor123",
@@ -85,7 +147,7 @@ export async function seedDatabase() {
 			.limit(1);
 
 		if (doctor3Exists.length === 0) {
-			const doctor3 = await auth.api.createUser({
+			const doctor3 = await localAuth.api.createUser({
 				body: {
 					email: "dr.brown@clinic.local",
 					password: "doctor123",
@@ -138,5 +200,3 @@ export async function seedDatabase() {
 		throw error;
 	}
 }
-
-seedDatabase();

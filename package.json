@@ -12,8 +12,9 @@
     "format": "biome format --write",
     "dev:all": "bun run scripts/dev.ts",
     "dev:test:all": "NODE_ENV=test bun run scripts/dev.ts",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "drizzle-kit generate && bun run scripts/bundle-migrations.ts",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:remote": "drizzle-kit migrate",
     "db:seed": "bun run lib/db/seed.ts",
     "test:setup": "NODE_ENV=test bun run scripts/test-setup.ts",
     "test:db:generate": "NODE_ENV=test drizzle-kit generate --config drizzle.config.test.ts",
@@ -21,7 +22,10 @@
     "test:db:seed": "NODE_ENV=test bun run lib/db/seed-performance.ts",
     "test:db:reset": "rm -f clinic-test.db && NODE_ENV=test bun run test:db:migrate && NODE_ENV=test bun run test:db:seed",
     "test:perf": "NODE_ENV=test bun run test:db:reset",
-    "create-installer": "pwsh -ExecutionPolicy Bypass -File scripts/create-installer.ps1"
+    "create-installer": "pwsh -ExecutionPolicy Bypass -File scripts/create-installer.ps1",
+    "worker:dev": "bun x wrangler dev",
+    "worker:deploy": "bun x wrangler deploy",
+    "worker:secrets": "bun x wrangler secret list | cat"
   },
   "workspaces": [
     "lib"
@@ -58,6 +62,7 @@
     "@trpc/server": "^11.5.0",
     "@trpc/tanstack-react-query": "^11.5.0",
     "@vitejs/plugin-react": "latest",
+    "better-auth-cloudflare": "^0.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

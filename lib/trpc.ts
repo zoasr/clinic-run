@@ -1,14 +1,34 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import superjson from "superjson";
+import * as jose from "jose";
 import { auth } from "./auth.js";
 import { db } from "./db/index.js";
+import { createDbForUrl } from "./db/factory.js";
 import * as authSchema from "./db/schema/auth-schema.js";
 
-export type CreateContextOptions = FetchCreateContextFnOptions;
+export type CreateContextOptions = FetchCreateContextFnOptions & {
+	env: { DEMO_JWT_SECRET: string; TURSO_AUTH_TOKEN: string };
+};
 
 export const createContext = async (opts: CreateContextOptions) => {
 	let session = null;
+	let dbInstance = db; // default
+
+	// Check for demo token
+	const authHeader = opts.req.headers.get("authorization");
+	if (authHeader?.startsWith("Bearer ")) {
+		const token = authHeader.slice(7);
+		try {
+			const secret = new TextEncoder().encode(opts.env.DEMO_JWT_SECRET);
+			const { payload } = await jose.jwtVerify(token, secret);
+			const branchUrl = payload.branchUrl as string;
+			dbInstance = createDbForUrl(branchUrl, opts.env.TURSO_AUTH_TOKEN);
+		} catch (error) {
+			console.error("Invalid demo token:", error);
+			// Use default db
+		}
+	}
 
 	try {
 		// Try to get the session from the request
@@ -21,7 +41,7 @@ export const createContext = async (opts: CreateContextOptions) => {
 
 	return {
 		session,
-		db,
+		db: dbInstance,
 		authSchema,
 		req: opts.req,
 	};

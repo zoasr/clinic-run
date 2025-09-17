@@ -18,6 +18,10 @@ yarn-error.log*
 .env*
 !.env*.example
 
+# wrangler
+.dev.vars
+.wrangler
+
 # vercel
 .vercel
 
