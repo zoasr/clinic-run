@@ -23,7 +23,7 @@
     "test:db:reset": "rm -f clinic-test.db && NODE_ENV=test bun run test:db:migrate && NODE_ENV=test bun run test:db:seed",
     "test:perf": "NODE_ENV=test bun run test:db:reset",
     "create-installer": "pwsh -ExecutionPolicy Bypass -File scripts/create-installer.ps1",
-    "worker:dev": "bun x wrangler dev",
+    "worker:dev": "bun x wrangler dev --port 3031",
     "worker:deploy": "bun x wrangler deploy",
     "worker:secrets": "bun x wrangler secret list | cat"
   },
