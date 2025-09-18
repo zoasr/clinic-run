@@ -1,6 +1,6 @@
 import { and, eq, like } from "drizzle-orm";
 import { z } from "zod";
-import { auth } from "../auth.js";
+import { getAuth } from "../auth.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import {
 	adminProcedure,
@@ -8,6 +8,8 @@ import {
 	publicProcedure,
 	router,
 } from "../trpc.js";
+
+const auth = getAuth();
 
 const userInputSchema = z.object({
 	username: z.string(),

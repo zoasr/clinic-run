@@ -58,6 +58,7 @@ export async function seedDatabase(db: any) {
 				},
 			},
 		},
+		trustedOrigins: [process.env["FRONTEND_URL"] || "http://localhost:3030"],
 		plugins: [
 			// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation
 			adminPlugin({

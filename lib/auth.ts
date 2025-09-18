@@ -18,78 +18,86 @@ export const roles = Object.keys(rolesObj) as Array<keyof typeof rolesObj>;
 export type Role = (typeof roles)[number];
 export const roleSchema = z.enum(roles);
 
-// Initialize auth with database
-export const auth = betterAuth({
-	...withCloudflare(
-		{
-			autoDetectIpAddress: false,
-			geolocationTracking: false,
-			cf: {},
-		},
-		{
-			database: drizzleAdapter(db, {
-				provider: "sqlite",
-				schema: {
-					user: authSchema.user,
-					session: authSchema.session,
-					account: authSchema.account,
-					verification: authSchema.verification,
-				},
-			}),
-			trustedOrigins: [
-				process.env["FRONTEND_URL"] || "http://localhost:3030",
-			],
-			emailAndPassword: {
-				enabled: true,
-				requireEmailVerification: false, // Disabled for offline clinic system
-			},
-			session: {
-				// Server-side session expiry is set to 24 hours
-				// Client-side timeout is managed dynamically via SessionManager component
-				// using the session_timeout setting from the database
-				expiresIn: 30 * 60 * 60 * 24, // 24 hours (server max)
-				updateAge: 30 * 60 * 60 * 24, // 24 hours (server max)
-				// The actual session timeout is enforced client-side based on settings
-			},
-			user: {
-				additionalFields: {
-					username: {
-						type: "string",
-						required: true,
-						unique: true,
-					},
-					firstName: {
-						type: "string",
-						required: true,
-					},
-					lastName: {
-						type: "string",
-						required: true,
-					},
-					role: {
-						type: "string",
-						required: true,
-						defaultValue: "staff",
-					},
-					isActive: {
-						type: "boolean",
-						required: true,
-						defaultValue: true,
-					},
-				},
-			},
-			plugins: [
-				// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation
-				adminPlugin({
-					ac,
-					defaultRole: "staff",
-					adminRoles: ["admin"],
-					roles: rolesObj,
-				}),
-			],
-		}
-	),
-});
+type AuthInstance = any;
 
-export type Session = typeof auth.$Infer.Session;
+let authInstance: AuthInstance | null = null;
+
+// Lazily initialize Better Auth to avoid Cloudflare global-scope restrictions
+export function getAuth(): AuthInstance {
+	if (authInstance) return authInstance;
+	authInstance = betterAuth({
+		...withCloudflare(
+			{
+				autoDetectIpAddress: false,
+				geolocationTracking: false,
+				cf: {},
+			},
+			{
+				database: drizzleAdapter(db, {
+					provider: "sqlite",
+					schema: {
+						user: authSchema.user,
+						session: authSchema.session,
+						account: authSchema.account,
+						verification: authSchema.verification,
+					},
+				}),
+				trustedOrigins: [
+					process.env["FRONTEND_URL"] || "http://localhost:3030",
+				],
+				emailAndPassword: {
+					enabled: true,
+					requireEmailVerification: false, // Disabled for offline clinic system
+				},
+				session: {
+					// Server-side session expiry is set to 24 hours
+					// Client-side timeout is managed dynamically via SessionManager component
+					// using the session_timeout setting from the database
+					expiresIn: 30 * 60 * 60 * 24, // 24 hours (server max)
+					updateAge: 30 * 60 * 60 * 24, // 24 hours (server max)
+					// The actual session timeout is enforced client-side based on settings
+				},
+				user: {
+					additionalFields: {
+						username: {
+							type: "string",
+							required: true,
+							unique: true,
+						},
+						firstName: {
+							type: "string",
+							required: true,
+						},
+						lastName: {
+							type: "string",
+							required: true,
+						},
+						role: {
+							type: "string",
+							required: true,
+							defaultValue: "staff",
+						},
+						isActive: {
+							type: "boolean",
+							required: true,
+							defaultValue: true,
+						},
+					},
+				},
+				plugins: [
+					// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation
+					adminPlugin({
+						ac,
+						defaultRole: "staff",
+						adminRoles: ["admin"],
+						roles: rolesObj,
+					}),
+				],
+			},
+		),
+	});
+	return authInstance;
+}
+
+export type Session = any;
 // export type User = typeof auth.$Infer.User;

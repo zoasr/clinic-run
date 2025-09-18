@@ -38,12 +38,15 @@ const rolesObj = {
 app.use(
 	"*",
 	cors({
-		origin: "https://clinic-run-demo.vercel.app", // Update with actual Vercel URL
+		origin: [
+			"https://clinic-run-demo.vercel.app",
+			process.env["FRONTEND_URL"] || "http://localhost:3030",
+		], // Update with actual Vercel URL
 		credentials: true,
 		allowHeaders: ["Content-Type", "Authorization", "Cookie"],
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 		exposeHeaders: ["Set-Cookie"],
-	})
+	}),
 );
 
 // Auth routes
@@ -57,10 +60,7 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
 			const secret = new TextEncoder().encode(c.env.DEMO_JWT_SECRET);
 			const { payload } = await jose.jwtVerify(token, secret);
 			const branchUrl = payload["branchUrl"] as string;
-			currentDb = createDbForUrl(
-				branchUrl,
-				c.env.TURSO_AUTH_TOKEN
-			) as any;
+			currentDb = await createDbForUrl(branchUrl, c.env.TURSO_AUTH_TOKEN);
 		} catch {
 			// use default db
 		}
@@ -84,7 +84,10 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
 						verification: authSchema.verification,
 					},
 				}),
-				trustedOrigins: ["https://clinic-run-demo.vercel.app"],
+				trustedOrigins: [
+					"https://clinic-run-demo.vercel.app",
+					process.env["FRONTEND_URL"] || "http://localhost:3030",
+				],
 				emailAndPassword: {
 					enabled: true,
 					requireEmailVerification: false,
@@ -128,7 +131,7 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
 						roles: rolesObj,
 					}),
 				],
-			}
+			},
 		),
 	});
 
@@ -187,10 +190,9 @@ app.post("/demo/init", async (c) => {
 		console.log(authToken);
 
 		// Generate unique database name
-		const id =
-			Math.random().toString(36).substring(2, 15) +
-			Date.now().toString(36);
-		const dbName = `demo-${id}`;
+		const random = Math.random().toString(36).substring(2, 15);
+		const timestamp = Date.now().toString(36);
+		const dbName = `demo-${random}-${timestamp}`;
 
 		// Create database via Turso API
 		const res = await fetch(
@@ -205,7 +207,7 @@ app.post("/demo/init", async (c) => {
 					name: dbName,
 					group: "default",
 				}),
-			}
+			},
 		);
 
 		if (!res.ok) {
@@ -224,7 +226,7 @@ app.post("/demo/init", async (c) => {
 				headers: {
 					Authorization: `Bearer ${authToken}`,
 				},
-			}
+			},
 		);
 		if (!tokenRes.ok) {
 			const error = await tokenRes.text();
@@ -267,7 +269,7 @@ app.post("/demo/init", async (c) => {
 						Authorization: `Bearer ${authToken}`,
 						"Content-Type": "application/json",
 					},
-				}
+				},
 			);
 			console.log(await deleteDbRes.json());
 			throw error as Error;

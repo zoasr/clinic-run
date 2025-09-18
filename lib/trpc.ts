@@ -2,7 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import superjson from "superjson";
 import * as jose from "jose";
-import { auth } from "./auth.js";
+import { getAuth } from "./auth.js";
 import { db } from "./db/index.js";
 import { createDbForUrl } from "./db/factory.js";
 import * as authSchema from "./db/schema/auth-schema.js";
@@ -22,8 +22,8 @@ export const createContext = async (opts: CreateContextOptions) => {
 		try {
 			const secret = new TextEncoder().encode(opts.env.DEMO_JWT_SECRET);
 			const { payload } = await jose.jwtVerify(token, secret);
-			const branchUrl = payload.branchUrl as string;
-			dbInstance = createDbForUrl(branchUrl, opts.env.TURSO_AUTH_TOKEN);
+			const branchUrl = payload["branchUrl"] as string;
+			dbInstance = await createDbForUrl(branchUrl, opts.env.TURSO_AUTH_TOKEN);
 		} catch (error) {
 			console.error("Invalid demo token:", error);
 			// Use default db
@@ -33,7 +33,7 @@ export const createContext = async (opts: CreateContextOptions) => {
 	try {
 		// Try to get the session from the request
 		// Better-Auth will handle the session extraction from cookies automatically
-		session = await auth.api.getSession(opts.req);
+		session = await getAuth().api.getSession(opts.req);
 	} catch (error) {
 		console.error("Failed to get session in tRPC context:", error);
 		session = null;
@@ -80,7 +80,9 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 });
 
 // Extract roles from session user accommodating different storage formats
-const extractRoles = (user: any): string[] => {
+const extractRoles = (
+	user: { role?: unknown; roles?: unknown } | null | undefined,
+): string[] => {
 	const value = user?.role ?? user?.roles; // support either 'role' or 'roles'
 	if (!value) return [];
 	if (Array.isArray(value)) return value.map(String);
@@ -95,7 +97,12 @@ const extractRoles = (user: any): string[] => {
 // Middleware to check if user has at least one required role
 const hasAnyRole = (required: string[]) =>
 	t.middleware(({ ctx, next }) => {
-		const roles = extractRoles((ctx as any).session?.user);
+		const roles = extractRoles(
+			(ctx as { session?: { user?: unknown } }).session?.user as
+				| { role?: unknown; roles?: unknown }
+				| null
+				| undefined,
+		);
 		// If checking for doctor, allow admin as well
 		const needed = new Set(
 			required.flatMap((r) => (r === "doctor" ? ["doctor", "admin"] : [r])),

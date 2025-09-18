@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { auth } from "../auth.js";
+import { getAuth } from "../auth.js";
 import { protectedProcedure, publicProcedure, router } from "../trpc.js";
-
+const auth = getAuth();
 export const authRouter = router({
 	signIn: publicProcedure
 		.input(
