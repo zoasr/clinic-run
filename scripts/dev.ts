@@ -77,7 +77,7 @@ console.log("[orchestrator] starting Vite and server...");
 await Promise.all([
 	start("trpc", ["bun", "--cwd=./lib", "run", "dev"], process.cwd()),
 	start("vite", ["bun", "vite"], process.cwd()),
-	start("server", ["bun", "run", "--watch", "lib/server.ts"], process.cwd()),
+	start("server", ["bun", "run", "worker:dev"], process.cwd()),
 ]);
 
 // Keep process alive
