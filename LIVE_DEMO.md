@@ -53,7 +53,7 @@ Request flow:
 ## Environment Variables
 
 - Frontend (Vercel)
-    - `VITE_API_URL` → `https://<your-worker-subdomain>.workers.dev`
+    - `VITE_SERVER_URL` → `https://<your-worker-subdomain>.workers.dev`
 - Backend (Cloudflare Workers secrets)
     - `TURSO_ORG`, `TURSO_DB`, `TURSO_AUTH_TOKEN`
     - `DEMO_JWT_SECRET`
@@ -141,7 +141,7 @@ Step 7 — Cleanup job
 
 Step 8 — Frontend wiring
 
-- Configure `VITE_API_URL` to Workers URL on Vercel project for `live-demo` branch.
+- Configure `VITE_SERVER_URL` to Workers URL on Vercel project for `live-demo` branch.
 - On first unauthenticated load, call `/demo/init` and store token; attach on tRPC client calls.
 
 ## Deployment
@@ -190,7 +190,7 @@ Vercel environment (frontend):
 
 ```bash
 # After `vercel link`, set the API URL (Workers public URL)
-bun x vercel env add VITE_API_URL
+bun x vercel env add VITE_SERVER_URL
 # Paste: https://<your-worker>.workers.dev
 ```
 
