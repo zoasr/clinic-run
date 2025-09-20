@@ -36,6 +36,7 @@
 - **Routing**: TanStack Router with file-based routing
 - **Database**: Drizzle ORM with auto-generated types
 - **Auth**: Better Auth with tRPC integration
+- **Comments**: Avoid writing unnecessary comments. Only write essential and absolutely important comments when absolutely necessary, and only when they provide context or explanation for obscure or hard to understand code, or a workaround for a known problem
 
 ## File Organization
 
