@@ -30,6 +30,7 @@ import {
 	getClinicInfo,
 	getCurrency,
 	getSessionTimeout,
+	getSettings,
 } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -45,6 +46,8 @@ export const Route = createFileRoute("/_authenticated")({
 		}
 	},
 	loader: async () => {
+		// Ensure settings are loaded first
+		await getSettings();
 		const appearanceSettings = await getAppearanceSettings();
 		const clinicInfo = await getClinicInfo();
 		const sessionTimeout = await getSessionTimeout();
