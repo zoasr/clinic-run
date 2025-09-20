@@ -90,7 +90,7 @@ export const getAppearanceSettings = async () => {
 
 export const getSessionTimeout = async () => {
 	const sessionTimeout = await getSettingAsNumber("session_timeout");
-	return sessionTimeout || 30; // Default to 30 minutes
+	return sessionTimeout || 30;
 };
 
 export const getCurrency = async () => {

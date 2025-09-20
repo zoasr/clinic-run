@@ -2,7 +2,6 @@ import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
 import { trpc } from "@/lib/trpc-client";
 
-// Infer types from tRPC
 type Prescription =
 	AppRouter["prescriptions"]["getById"]["_def"]["$types"]["output"];
 type PrescriptionInput =
@@ -70,5 +69,4 @@ export function useDispensePrescription() {
 	return useMutation(trpc.prescriptions.dispense.mutationOptions());
 }
 
-// Export the Prescription type for use in other components
 export type { Prescription, PrescriptionInput };

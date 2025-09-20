@@ -1,8 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AppRouter } from "@/lib/trpc";
 import { trpc } from "@/lib/trpc-client";
 
-// Infer types from tRPC
 type Medication =
 	AppRouter["medications"]["getAll"]["_def"]["$types"]["output"]["data"][number];
 type MedicationInput =
@@ -35,5 +34,4 @@ export function useDeleteMedication(options) {
 	return useMutation(trpc.medications.delete.mutationOptions(options));
 }
 
-// Export the Medication type for use in other components
 export type { Medication, MedicationInput, MedicationListParams };

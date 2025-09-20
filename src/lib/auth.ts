@@ -11,7 +11,6 @@ export const authClient = createAuthClient({
 			enabled: true,
 		},
 	},
-	// Ensure cookies are sent with requests
 	credentials: "include",
 	plugins: [adminClient()],
 });

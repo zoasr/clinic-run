@@ -69,7 +69,7 @@ export const Route = createFileRoute("/_authenticated")({
 	errorComponent: ({ error }) => {
 		return <ErrorComponent error={error} />;
 	},
-	staleTime: 1000 * 60 * 60, // 1 hour
+	staleTime: 1000 * 60 * 60,
 
 	component: () => {
 		const { appearanceSettings } = Route.useLoaderData();

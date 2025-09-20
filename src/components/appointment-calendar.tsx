@@ -15,13 +15,11 @@ import { LoadingCards } from "./ui/loading";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface AppointmentCalendarProps {
-	// appointments: Appointment[];
 	onAppointmentClick: (appointment: Appointment) => void;
 	onDateClick: (date: Date) => void;
 }
 
 export function AppointmentCalendar({
-	// appointments,
 	onAppointmentClick,
 	onDateClick,
 }: AppointmentCalendarProps) {
