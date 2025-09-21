@@ -27,7 +27,6 @@
     "lib"
   ],
   "dependencies": {
-    "@auth/core": "^0.40.0",
     "@fontsource-variable/playfair-display": "^5.2.6",
     "@fontsource/ibm-plex-mono": "^5.2.6",
     "@fontsource/source-sans-pro": "^5.2.5",
