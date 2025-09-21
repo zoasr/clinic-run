@@ -40,10 +40,8 @@ let settings: SystemSetting[] | null = null;
 let settingsPromise: Promise<SystemSetting[]> | null = null;
 
 export const getSettings = async () => {
-	if (settings) return settings;
-	if (!settingsPromise) {
-		settingsPromise = trpcClient.systemSettings.getPublic.query();
-	}
+	// if (settings) return settings;
+	settingsPromise = trpcClient.systemSettings.getPublic.query();
 	settings = await settingsPromise;
 	return settings;
 };
