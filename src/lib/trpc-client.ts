@@ -28,7 +28,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
 	queryClient,
 });
 
-// Query keys for invalidation
 export const queryKeys = {
 	auth: {
 		getSession: () => trpc.auth.getSession.queryKey(),

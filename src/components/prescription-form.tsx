@@ -22,7 +22,6 @@ import DoctorsDialog from "./search-doctors-dialog";
 import SearchMedicationsDialog from "./search-medications-dialog";
 import SearchPatientsDialog from "./search-patients-dialog";
 
-// Infer types from tRPC
 type PrescriptionInput =
 	AppRouter["prescriptions"]["create"]["_def"]["$types"]["input"];
 type Prescription =

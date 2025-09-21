@@ -203,7 +203,6 @@ export const AppSidebar = memo(
 
 		const isAdmin = user?.role === "admin";
 
-		// Separate navigation items by access level
 		const publicNavItems = useMemo(
 			() => navItems.filter((item) => !item.adminOnly),
 			[],

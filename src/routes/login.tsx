@@ -31,7 +31,6 @@ export const Route = createFileRoute("/login")({
 		redirect: (search.redirect as string) || "/",
 	}),
 	beforeLoad: ({ context, search }) => {
-		// Redirect if already authenticated
 		if (context.auth.isAuthenticated) {
 			throw redirect({ to: search.redirect });
 		}
@@ -71,7 +70,6 @@ function LoginForm() {
 				`${field === "email" ? "Email" : "Password"} copied to clipboard!`,
 			);
 
-			// Reset the copied state after 2 seconds
 			setTimeout(() => setCopiedField(null), 2000);
 		} catch (_err) {
 			toast.error("Failed to copy to clipboard");
@@ -82,10 +80,9 @@ function LoginForm() {
 		try {
 			const credentials = `Email: ${defaultUser?.user?.email}\nPassword: admin123`;
 			await navigator.clipboard.writeText(credentials);
-			setCopiedField("email"); // Use email state to show copied
+			setCopiedField("email");
 			toast.success("All demo credentials copied to clipboard!");
 
-			// Reset the copied state after 2 seconds
 			setTimeout(() => setCopiedField(null), 2000);
 		} catch (_err) {
 			toast.error("Failed to copy to clipboard");

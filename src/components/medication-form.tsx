@@ -56,7 +56,6 @@ export function MedicationForm({
 	const createMutation = useMutation(
 		trpc.medications.create.mutationOptions({
 			onSuccess: () => {
-				// Invalidate the patients query to refetch the list
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.medications.all(),
 					refetchType: "active",
@@ -158,7 +157,6 @@ export function MedicationForm({
 							<div className="space-y-2">
 								<Label htmlFor="name">Medication Name *</Label>
 								{
-									// Required name field
 									<form.Field
 										name="name"
 										validators={{
@@ -298,7 +296,6 @@ export function MedicationForm({
 													field.handleChange(date ? date : new Date());
 												}}
 												disabled={(date) => {
-													// Disable past dates for expiry dates
 													const today = new Date();
 													today.setHours(23, 59, 59, 999); // End of today
 													return date <= today;

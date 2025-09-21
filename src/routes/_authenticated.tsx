@@ -30,6 +30,7 @@ import {
 	getClinicInfo,
 	getCurrency,
 	getSessionTimeout,
+	getSettings,
 } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -45,6 +46,8 @@ export const Route = createFileRoute("/_authenticated")({
 		}
 	},
 	loader: async () => {
+		// Ensure settings are loaded first
+		await getSettings();
 		const appearanceSettings = await getAppearanceSettings();
 		const clinicInfo = await getClinicInfo();
 		const sessionTimeout = await getSessionTimeout();
@@ -66,13 +69,13 @@ export const Route = createFileRoute("/_authenticated")({
 	errorComponent: ({ error }) => {
 		return <ErrorComponent error={error} />;
 	},
-	staleTime: 1000 * 60 * 60, // 1 hour
+	staleTime: 1000 * 60 * 60,
 
 	component: () => {
-		const { appearanceSettings } = Route.useLoaderData();
-
+		const { appearanceSettings, clinicInfo } = Route.useLoaderData();
 		return (
 			<SessionManager>
+				<title>{clinicInfo.name}</title>
 				<SidebarProvider defaultOpen={!appearanceSettings.sidebarCollapsed}>
 					<AppSidebar />
 					<SidebarInset>

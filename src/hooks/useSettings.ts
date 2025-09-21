@@ -59,7 +59,6 @@ function useSettings(options?: {
 		? trpc.systemSettings.getAll.queryOptions()
 		: trpc.systemSettings.getPublic.queryOptions();
 
-	// Fetch either public or all settings based on includePrivate flag
 	const {
 		data: settings,
 		isLoading,
@@ -68,7 +67,6 @@ function useSettings(options?: {
 		// @ts-expect-error
 	} = useQuery(queryOptions);
 
-	// Helper function to get a setting value by key
 	const getSetting = useCallback(
 		(key: string): string | undefined => {
 			return settings?.find((s) => s.key === key)?.value;
@@ -76,7 +74,6 @@ function useSettings(options?: {
 		[settings],
 	);
 
-	// Helper function to get a setting value as a number
 	const getSettingAsNumber = useCallback(
 		(key: string): number | undefined => {
 			const value = getSetting(key);
@@ -87,7 +84,6 @@ function useSettings(options?: {
 		[getSetting],
 	);
 
-	// Helper function to get a setting value as a boolean
 	const getSettingAsBoolean = useCallback(
 		(key: string): boolean => {
 			const value = getSetting(key);
@@ -95,27 +91,6 @@ function useSettings(options?: {
 		},
 		[getSetting],
 	);
-
-	// // Subscribe to settings changes for real-time updates
-	// useEffect(() => {
-	// 	// Invalidate queries when settings are updated
-	// 	const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-	// 		if (
-	// 			event?.query?.queryKey?.[0] ===
-	// 				trpc.systemSettings.getPublic.queryKey() &&
-	// 			event.type === "updated"
-	// 		) {
-	// 			// Only refetch if the data has actually changed
-	// 			queryClient.invalidateQueries({
-	// 				queryKey: trpc.systemSettings.getPublic.queryKey(),
-	// 			});
-	// 		}
-	// 	});
-
-	// 	return () => {
-	// 		unsubscribe();
-	// 	};
-	// }, [queryClient]);
 
 	return {
 		// @ts-expect-error
@@ -129,7 +104,6 @@ function useSettings(options?: {
 	};
 }
 
-// Specific hooks for common settings
 export function useSessionTimeout(): number {
 	const { settings } = useSettings({ includePrivate: true });
 	const sessionTimeout = useMemo(() => {
@@ -144,7 +118,7 @@ export function useSessionTimeout(): number {
 			return isNaN(num) ? undefined : num;
 		};
 
-		return getSettingAsNumber("session_timeout") || 30; // Default to 30 minutes
+		return getSettingAsNumber("session_timeout") || 30;
 	}, [settings]);
 	return sessionTimeout;
 }
@@ -243,7 +217,6 @@ export function useDemoCredentials() {
 		const demoEmail = getSetting("demo_email") || "admin@clinic.local";
 		const demoPassword = getSetting("demo_password") || "admin123";
 
-		// Check if demo credentials are still default
 		const hasDefaultCredentials =
 			demoEmail === "admin@clinic.local" && demoPassword === "admin123";
 

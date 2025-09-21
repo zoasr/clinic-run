@@ -12,8 +12,7 @@ declare namespace Intl {
 }
 
 interface ImportMetaEnv {
-	readonly VITE_SERVER_URL: string;
-	// Add more env variables as needed
+	readonly VITE_API_URL: string;
 }
 
 interface ImportMeta {

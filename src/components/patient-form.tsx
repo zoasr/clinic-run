@@ -31,7 +31,6 @@ import { DatePicker } from "./date-picker";
 const EMAIL_RE =
 	/^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9-]*\.)+[A-Za-z]{2,}$/;
 
-// Infer types from tRPC
 type PatientInput = AppRouter["patients"]["create"]["_def"]["$types"]["input"];
 type Patient = AppRouter["patients"]["getById"]["_def"]["$types"]["output"];
 
@@ -66,7 +65,6 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 	const createMutation = useMutation(
 		trpc.patients.create.mutationOptions({
 			onSuccess: () => {
-				// Invalidate the patients query to refetch the list
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.patients.all(),
 					refetchType: "active",
@@ -294,7 +292,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 										validators={{
 											onChange: ({ value }) => {
 												const v = (value ?? "").trim();
-												if (v === "") return undefined; // optional
+												if (v === "") return undefined;
 												return EMAIL_RE.test(v)
 													? undefined
 													: "Invalid email address";

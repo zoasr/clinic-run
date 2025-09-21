@@ -29,7 +29,6 @@ import { formatCurrency } from "@/lib/utils";
 import { DatePicker } from "./date-picker";
 import SearchPatientsDialog from "./search-patients-dialog";
 
-// Infer types from tRPC
 type InvoiceInput = AppRouter["invoices"]["create"]["_def"]["$types"]["input"];
 type Invoice = AppRouter["invoices"]["getById"]["_def"]["$types"]["output"];
 
@@ -54,7 +53,6 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 			: [{ description: "", amount: 0 }],
 	);
 
-	// Fetch patients for dropdown
 	const { data: patient } = usePatient(invoice?.patientId || 0);
 
 	const defaultValues: InvoiceFormValues = {
@@ -101,7 +99,6 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 
 	const { isPending, error } = invoice?.id ? updateMutation : createMutation;
 
-	// Calculate total from items
 	const calculateTotal = (currentItems: InvoiceItem[]) => {
 		return currentItems.reduce((sum, item) => sum + (item.amount || 0), 0);
 	};

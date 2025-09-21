@@ -37,26 +37,32 @@ export const formatCurrency = (amount: number) => {
 type SystemSetting =
 	AppRouter["systemSettings"]["getPublic"]["_def"]["$types"]["output"][number];
 let settings: SystemSetting[] | null = null;
+let settingsPromise: Promise<SystemSetting[]> | null = null;
 
-export const setSettings = async () => {
-	settings = await trpcClient.systemSettings.getPublic.query();
+export const getSettings = async () => {
+	// if (settings) return settings;
+	settingsPromise = trpcClient.systemSettings.getPublic.query();
+	settings = await settingsPromise;
+	return settings;
 };
-setSettings();
 
 const getSetting = (key: string) => {
-	// const settings = await trpcClient.systemSettings.getPublic.query();
-	return settings?.find((s) => s.key === key)?.value;
+	if (!settings) {
+		console.warn(`Settings not loaded yet for key: ${key}`);
+		return undefined;
+	}
+	return settings.find((setting) => setting.key === key)?.value;
 };
 
 const getSettingAsBoolean = async (key: string) => {
-	const value = await getSetting(key);
+	const value = getSetting(key);
 	return value === "true";
 };
 const getSettingAsNumber = async (key: string) => {
-	const value = await getSetting(key);
+	const value = getSetting(key);
 	if (value === undefined) return undefined;
 	const num = parseInt(value, 10);
-	return isNaN(num) ? undefined : num;
+	return Number.isNaN(num) ? undefined : num;
 };
 
 export const getClinicInfo = async () => {
@@ -71,7 +77,7 @@ export const getClinicInfo = async () => {
 
 export const getAppearanceSettings = async () => {
 	return {
-		themeMode: ((await getSetting("theme_mode")) || "light") as
+		themeMode: (getSetting("theme_mode") || "light") as
 			| "light"
 			| "dark"
 			| "system",
@@ -82,7 +88,7 @@ export const getAppearanceSettings = async () => {
 
 export const getSessionTimeout = async () => {
 	const sessionTimeout = await getSettingAsNumber("session_timeout");
-	return sessionTimeout || 30; // Default to 30 minutes
+	return sessionTimeout || 30;
 };
 
 export const getCurrency = async () => {

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import {
 	AlertCircle,
@@ -9,6 +10,7 @@ import {
 	CreditCard,
 	DollarSign,
 	Edit,
+	Printer,
 	Receipt,
 	User,
 } from "lucide-react";
@@ -119,25 +121,36 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back
 					</Button>
-					<div>
-						<h1 className="text-2xl font-display font-bold text-foreground">
-							Invoice {invoice.invoiceNumber}
-						</h1>
-						<p className="text-muted-foreground">
-							Invoice for {invoice.patient?.firstName}{" "}
-							{invoice.patient?.lastName}
-						</p>
-					</div>
 				</div>
 
-				<Button
-					variant="outline"
-					onClick={() => onEdit(invoice)}
-					className="flex items-center gap-2"
-				>
-					<Edit className="h-4 w-4" />
-					Edit Invoice
-				</Button>
+				<div className="flex gap-2">
+					<Link
+						to={`/invoices/print/$invoiceId`}
+						params={{ invoiceId: `${invoice.id}` }}
+					>
+						<Button variant="outline" className="flex items-center gap-2">
+							<Printer className="h-4 w-4" />
+							Print Invoice
+						</Button>
+					</Link>
+					<Button
+						variant="outline"
+						onClick={() => onEdit(invoice)}
+						className="flex items-center gap-2"
+					>
+						<Edit className="h-4 w-4" />
+						Edit Invoice
+					</Button>
+				</div>
+			</div>
+
+			<div>
+				<h1 className="text-2xl font-display font-bold text-foreground">
+					Invoice {invoice.invoiceNumber}
+				</h1>
+				<p className="text-muted-foreground">
+					Invoice for {invoice.patient?.firstName} {invoice.patient?.lastName}
+				</p>
 			</div>
 
 			{/* Status Banner */}

@@ -30,7 +30,6 @@ import { DatePicker } from "./date-picker";
 import DoctorsDialog from "./search-doctors-dialog";
 import SearchPatientsDialog from "./search-patients-dialog";
 
-// Infer types from tRPC
 type LabTestInput = AppRouter["labTests"]["create"]["_def"]["$types"]["input"];
 type LabTest = AppRouter["labTests"]["getById"]["_def"]["$types"]["output"];
 
@@ -46,7 +45,6 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 	const queryClient = useQueryClient();
 	const { user } = useAuth();
 
-	// Fetch patient data for existing lab test
 	const { data: patient, isLoading: patientLoading } = usePatient(
 		labTest?.patientId || 0,
 	);
