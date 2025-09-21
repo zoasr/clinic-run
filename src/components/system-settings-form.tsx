@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import $ from "currency-symbol-map";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -41,7 +42,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { systemSettingsSchema } from "@/hooks/useSettings";
 import { trpc } from "@/lib/trpc-client";
-import { cn, setSettings } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface SystemSetting {
 	id: number;
@@ -134,6 +135,7 @@ const CurrencySelector = ({
 
 export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 
 	const getByKey = (key: string) => {
 		return settings.find((s) => s.key === key)?.value;
@@ -196,7 +198,12 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 				queryClient.invalidateQueries({
 					queryKey: trpc.systemSettings.getPublic.queryKey(),
 				});
-				setSettings();
+				router.invalidate({
+					filter: (d) => {
+						return d.routeId === "/_authenticated";
+					},
+				});
+				toast.success("Settings updated successfully!");
 			},
 			onError: (error: any) => {
 				toast.error(error.message || "Failed to update settings");
@@ -231,8 +238,6 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			}));
 
 			await updateSettingsMutation.mutateAsync(updates);
-
-			toast.success("Settings updated successfully!");
 		},
 	});
 
