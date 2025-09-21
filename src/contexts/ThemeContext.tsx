@@ -121,7 +121,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 		isDark,
 	};
 
+	const themeIcon = isDark ? "dark" : "light";
+	const themeIconPath = `/logo-${themeIcon}.svg`;
+
 	return (
-		<ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+		<ThemeContext.Provider value={value}>
+			<link rel="shortcut icon" href={themeIconPath} type="image/x-icon" />
+			{children}
+		</ThemeContext.Provider>
 	);
 }

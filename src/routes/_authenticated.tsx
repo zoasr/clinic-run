@@ -72,10 +72,10 @@ export const Route = createFileRoute("/_authenticated")({
 	staleTime: 1000 * 60 * 60,
 
 	component: () => {
-		const { appearanceSettings } = Route.useLoaderData();
-
+		const { appearanceSettings, clinicInfo } = Route.useLoaderData();
 		return (
 			<SessionManager>
+				<title>{clinicInfo.name}</title>
 				<SidebarProvider defaultOpen={!appearanceSettings.sidebarCollapsed}>
 					<AppSidebar />
 					<SidebarInset>
