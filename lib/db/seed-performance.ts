@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { auth } from "../auth";
+import { getAuth } from "../auth";
 import { db as testDb } from "./index";
 import * as authSchema from "./schema/auth-schema";
 import * as schema from "./schema/schema";
@@ -86,7 +86,7 @@ export async function seedPerformanceData() {
 
 			// Create auth user account for login
 			try {
-				await auth.api.createUser({
+				await getAuth().api.createUser({
 					body: {
 						email: `${username}@clinic.local`,
 						password: "doctor123", // Default password for test doctors
@@ -139,7 +139,7 @@ export async function seedPerformanceData() {
 
 			// Create auth user account for login
 			try {
-				await auth.api.createUser({
+				await getAuth().api.createUser({
 					body: {
 						email: `${username}@clinic.local`,
 						password: "admin123", // Default password for test nurses

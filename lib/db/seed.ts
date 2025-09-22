@@ -1,10 +1,11 @@
-import { eq } from "drizzle-orm";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin as adminPlugin } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { ac, admin, doctor, staff } from "../permissions";
 import * as authSchema from "./schema/auth-schema";
 import * as schema from "./schema/schema";
+
 const rolesObj = {
 	admin,
 	doctor,

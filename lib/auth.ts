@@ -5,7 +5,6 @@ import { withCloudflare } from "better-auth-cloudflare";
 import { z } from "zod";
 import { db } from "./db/index.js";
 import * as authSchema from "./db/schema/auth-schema.js";
-
 import { ac, admin, doctor, staff } from "./permissions";
 
 const rolesObj = {
@@ -20,20 +19,21 @@ export const roleSchema = z.enum(roles);
 
 type AuthInstance = any;
 
-let authInstance: AuthInstance | null = null;
-
-// Lazily initialize Better Auth to avoid Cloudflare global-scope restrictions
-export function getAuth(): AuthInstance {
-	if (authInstance) return authInstance;
-	authInstance = betterAuth({
+export function createAuthForRequest(options: {
+	cf: unknown;
+	db: unknown;
+	trustedOrigins?: string[];
+}): AuthInstance {
+	const { cf, db, trustedOrigins } = options;
+	return betterAuth({
 		...withCloudflare(
 			{
 				autoDetectIpAddress: false,
 				geolocationTracking: false,
-				cf: {},
+				cf: (cf as any) || {},
 			},
 			{
-				database: drizzleAdapter(db, {
+				database: drizzleAdapter(db as any, {
 					provider: "sqlite",
 					schema: {
 						user: authSchema.user,
@@ -42,20 +42,16 @@ export function getAuth(): AuthInstance {
 						verification: authSchema.verification,
 					},
 				}),
-				trustedOrigins: [
+				trustedOrigins: trustedOrigins || [
 					process.env["FRONTEND_URL"] || "http://localhost:3030",
 				],
 				emailAndPassword: {
 					enabled: true,
-					requireEmailVerification: false, // Disabled for offline clinic system
+					requireEmailVerification: false,
 				},
 				session: {
-					// Server-side session expiry is set to 24 hours
-					// Client-side timeout is managed dynamically via SessionManager component
-					// using the session_timeout setting from the database
-					expiresIn: 30 * 60 * 60 * 24, // 24 hours (server max)
-					updateAge: 30 * 60 * 60 * 24, // 24 hours (server max)
-					// The actual session timeout is enforced client-side based on settings
+					expiresIn: 30 * 60 * 60 * 24,
+					updateAge: 30 * 60 * 60 * 24,
 				},
 				user: {
 					additionalFields: {
@@ -85,7 +81,6 @@ export function getAuth(): AuthInstance {
 					},
 				},
 				plugins: [
-					// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation
 					adminPlugin({
 						ac,
 						defaultRole: "staff",
@@ -96,8 +91,13 @@ export function getAuth(): AuthInstance {
 			},
 		),
 	});
-	return authInstance;
 }
 
 export type Session = any;
-// export type User = typeof auth.$Infer.User;
+
+export function getAuth() {
+	return createAuthForRequest({
+		cf: {},
+		db,
+	});
+}

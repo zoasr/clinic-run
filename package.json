@@ -60,6 +60,7 @@
     "@trpc/react-query": "^11.5.0",
     "@trpc/server": "^11.5.0",
     "@trpc/tanstack-react-query": "^11.5.0",
+    "@tursodatabase/api": "^1.9.0",
     "@vitejs/plugin-react": "latest",
     "better-auth-cloudflare": "^0.2.4",
     "class-variance-authority": "^0.7.1",

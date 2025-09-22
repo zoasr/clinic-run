@@ -1,10 +1,10 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import superjson from "superjson";
 import * as jose from "jose";
-import { getAuth } from "./auth.js";
-import { db } from "./db/index.js";
+import superjson from "superjson";
+import { createAuthForRequest } from "./auth.js";
 import { createDbForUrl } from "./db/factory.js";
+import { db } from "./db/index.js";
 import * as authSchema from "./db/schema/auth-schema.js";
 
 export type CreateContextOptions = FetchCreateContextFnOptions & {
@@ -23,7 +23,8 @@ export const createContext = async (opts: CreateContextOptions) => {
 			const secret = new TextEncoder().encode(opts.env.DEMO_JWT_SECRET);
 			const { payload } = await jose.jwtVerify(token, secret);
 			const branchUrl = payload["branchUrl"] as string;
-			dbInstance = await createDbForUrl(branchUrl, opts.env.TURSO_AUTH_TOKEN);
+			const branchToken = payload["branchToken"] as string;
+			dbInstance = await createDbForUrl(branchUrl, branchToken);
 		} catch (error) {
 			console.error("Invalid demo token:", error);
 			// Use default db
@@ -31,9 +32,9 @@ export const createContext = async (opts: CreateContextOptions) => {
 	}
 
 	try {
-		// Try to get the session from the request
-		// Better-Auth will handle the session extraction from cookies automatically
-		session = await getAuth().api.getSession(opts.req);
+		const cf = (opts.req as any).cf || {};
+		const auth = createAuthForRequest({ cf, db: dbInstance });
+		session = await auth.api.getSession(opts.req);
 	} catch (error) {
 		console.error("Failed to get session in tRPC context:", error);
 		session = null;
