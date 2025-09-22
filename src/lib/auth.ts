@@ -5,7 +5,22 @@ import z from "zod";
 const baseURL = import.meta.env.VITE_SERVER_URL || "http://localhost:3031";
 
 export const authClient = createAuthClient({
-	baseURL,
+	baseURL: `${baseURL}/api/auth`,
+	fetchOptions: {
+		onRequest: (context) => {
+			const demoToken = sessionStorage.getItem("demoToken");
+			if (demoToken) {
+				return {
+					...context,
+					headers: {
+						...context.headers,
+						Authorization: `Bearer ${demoToken}`,
+					},
+				};
+			}
+			return context;
+		},
+	},
 	features: {
 		session: {
 			enabled: true,

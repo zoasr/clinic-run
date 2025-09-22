@@ -50,6 +50,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		const initAuth = async () => {
 			try {
+				// Check if we have a demo token, if not, initialize demo
+				const demoToken = sessionStorage.getItem("demoToken");
+				if (!demoToken) {
+					console.log("No demo token found, initializing demo...");
+					try {
+						const baseURL =
+							import.meta.env.VITE_SERVER_URL || "http://127.0.0.1:3031";
+						const initResponse = await fetch(`${baseURL}/demo/init`, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+						});
+
+						if (initResponse.ok) {
+							const { token } = await initResponse.json();
+							sessionStorage.setItem("demoToken", token);
+							console.log("Demo initialized with token");
+						} else {
+							console.error("Failed to initialize demo");
+						}
+					} catch (error) {
+						console.error("Demo initialization error:", error);
+					}
+				}
+
 				const response = await authClient.getSession();
 
 				if (response?.data?.user && response?.data?.session) {
@@ -90,8 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 			// Perform login
 			const response = await authClient.signIn.email({
-				email: username,
-				password,
+				email: username.trim(),
+				password: password.trim(),
 			});
 
 			if (response.error) {
@@ -140,6 +166,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				localStorage.removeItem("auth-logout");
 			}, 100);
 
+			// Clear demo token
+			sessionStorage.removeItem("demoToken");
+
 			// Clear local state first
 			setUser(null);
 			setSession(null);
@@ -165,6 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				toast.error("Logout completed with some issues.");
 			}
 			// Even if logout fails, clear local state
+			sessionStorage.removeItem("demoToken");
 			setUser(null);
 			setSession(null);
 			setIsAuthenticated(false);

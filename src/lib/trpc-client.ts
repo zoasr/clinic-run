@@ -13,8 +13,16 @@ export const trpcClient = createTRPCClient<AppRouter>({
 		httpBatchLink({
 			url: `${baseURL}/api/trpc`,
 			fetch: (url, options) => {
+				const demoToken = sessionStorage.getItem("demoToken");
+				const headers = new Headers(options?.headers);
+
+				if (demoToken) {
+					headers.set("Authorization", `Bearer ${demoToken}`);
+				}
+
 				return fetch(url, {
 					...options,
+					headers,
 					credentials: "include",
 				});
 			},
