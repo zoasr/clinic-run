@@ -1,4 +1,8 @@
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+	createHashHistory,
+	createRouter,
+	RouterProvider,
+} from "@tanstack/react-router";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {
@@ -11,11 +15,14 @@ import { TRPCProviderWrapper } from "./lib/trpc-provider";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
+const hashHistory = createHashHistory();
+
 const router = createRouter({
 	routeTree,
 	context: { auth: {} as AuthContextType },
 	defaultStaleTime: 1000 * 60,
 	defaultPreload: "intent",
+	history: hashHistory, // only for vercel deployment to avoid not found routes when reloading
 });
 
 declare module "@tanstack/react-router" {
