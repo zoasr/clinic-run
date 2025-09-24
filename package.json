@@ -23,9 +23,9 @@
     "test:db:reset": "rm -f clinic-test.db && NODE_ENV=test bun run test:db:migrate && NODE_ENV=test bun run test:db:seed",
     "test:perf": "NODE_ENV=test bun run test:db:reset",
     "create-installer": "pwsh -ExecutionPolicy Bypass -File scripts/create-installer.ps1",
-    "worker:dev": "bun x wrangler dev --port 3031",
-    "worker:deploy": "bun x wrangler deploy",
-    "worker:secrets": "bun x wrangler secret list | cat"
+    "worker:dev": "wrangler dev --port 3031",
+    "worker:deploy": "wrangler deploy",
+    "worker:secrets": "wrangler secret list | cat"
   },
   "workspaces": [
     "lib"
@@ -100,6 +100,7 @@
     "tsx": "^4.20.5",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5",
-    "vite-tsconfig-paths": "^4.0.0"
+    "vite-tsconfig-paths": "^4.0.0",
+    "wrangler": "^4.39.0"
   }
 }
