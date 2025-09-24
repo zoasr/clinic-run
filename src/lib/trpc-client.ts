@@ -17,7 +17,7 @@ export const trpcClient = createTRPCClient<AppRouter>({
 				const headers = new Headers(options?.headers);
 
 				if (demoToken) {
-					headers.set("Authorization", `Bearer ${demoToken}`);
+					headers.set("X-Demo-Token", `Bearer ${demoToken}`);
 				}
 
 				return fetch(url, {

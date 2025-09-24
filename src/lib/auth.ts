@@ -5,16 +5,18 @@ import z from "zod";
 const baseURL = import.meta.env.VITE_SERVER_URL || "http://localhost:3031";
 
 export const authClient = createAuthClient({
-	baseURL: `${baseURL}/api/auth`,
+	baseURL: baseURL,
 	fetchOptions: {
 		onRequest: (context) => {
 			const demoToken = sessionStorage.getItem("demoToken");
+			console.log(context);
 			if (demoToken) {
 				return {
 					...context,
 					headers: {
 						...context.headers,
-						Authorization: `Bearer ${demoToken}`,
+						["X-Demo-Token"]: `Bearer ${demoToken}`,
+						["Content-Type"]: "application/json",
 					},
 				};
 			}

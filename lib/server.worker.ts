@@ -1,25 +1,15 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { createClient } from "@tursodatabase/api";
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin as adminPlugin } from "better-auth/plugins";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as jose from "jose";
+import { createAuthForRequest } from "./auth.js";
 import { createDbForUrl } from "./db/factory.js";
 import { db } from "./db/index.js";
-import * as authSchema from "./db/schema/auth-schema";
 import { seedDatabase } from "./db/seed.js";
 import { appRouter } from "./index.js";
 import { migrate } from "./migrator/migrator.js";
-import { ac, admin, doctor, staff } from "./permissions.js";
 import { createContext } from "./trpc.js";
-
-const rolesObj = {
-	admin,
-	doctor,
-	staff,
-} as const;
 
 interface Env {
 	DEMO_JWT_SECRET: string;
@@ -43,7 +33,7 @@ app.use(
 			process.env["FRONTEND_URL"] || "http://localhost:3030",
 		], // Update with actual Vercel URL
 		credentials: true,
-		allowHeaders: ["Content-Type", "Authorization", "Cookie"],
+		allowHeaders: ["Content-Type", "Authorization", "Cookie", "X-Demo-Token"],
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 		exposeHeaders: ["Set-Cookie"],
 	}),
@@ -53,7 +43,7 @@ app.use(
 app.on(["POST", "GET"], "/api/auth/*", async (c) => {
 	let currentDb = db; // start with default db
 
-	const authHeader = c.req.header("authorization");
+	const authHeader = c.req.header("X-Demo-Token");
 	if (authHeader?.startsWith("Bearer ")) {
 		const token = authHeader.slice(7);
 		try {
@@ -67,62 +57,7 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
 		}
 	}
 
-	const localAuth = betterAuth({
-		database: drizzleAdapter(currentDb, {
-			provider: "sqlite",
-			schema: {
-				user: authSchema.user,
-				session: authSchema.session,
-				account: authSchema.account,
-				verification: authSchema.verification,
-			},
-		}),
-		emailAndPassword: {
-			enabled: true,
-			requireEmailVerification: false,
-		},
-		session: {
-			expiresIn: 30 * 60 * 60 * 24,
-			updateAge: 30 * 60 * 60 * 24,
-		},
-		user: {
-			additionalFields: {
-				username: {
-					type: "string",
-					required: true,
-					unique: true,
-				},
-				firstName: {
-					type: "string",
-					required: true,
-				},
-				lastName: {
-					type: "string",
-					required: true,
-				},
-				role: {
-					type: "string",
-					required: true,
-					defaultValue: "staff",
-				},
-				isActive: {
-					type: "boolean",
-					required: true,
-					defaultValue: true,
-				},
-			},
-		},
-		trustedOrigins: [process.env["FRONTEND_URL"] || "http://localhost:3030"],
-		plugins: [
-			// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation
-			adminPlugin({
-				ac,
-				defaultRole: "staff",
-				adminRoles: ["admin"],
-				roles: rolesObj,
-			}),
-		],
-	});
+	const localAuth = createAuthForRequest({ db: currentDb });
 	return localAuth.handler(c.req.raw);
 });
 

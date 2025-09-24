@@ -23,6 +23,7 @@ export function createAuthForRequest(options: {
 	trustedOrigins?: string[];
 }): AuthInstance {
 	const { db, trustedOrigins } = options;
+
 	return betterAuth({
 		database: drizzleAdapter(db, {
 			provider: "sqlite",
@@ -40,6 +41,17 @@ export function createAuthForRequest(options: {
 		session: {
 			expiresIn: 30 * 60 * 60 * 24,
 			updateAge: 30 * 60 * 60 * 24,
+		},
+		advanced: {
+			cookies: {
+				session_token: {
+					attributes: {
+						httpOnly: true,
+						secure: true,
+						sameSite: "none",
+					},
+				},
+			},
 		},
 		user: {
 			additionalFields: {
@@ -70,6 +82,7 @@ export function createAuthForRequest(options: {
 		},
 		trustedOrigins: trustedOrigins || [
 			process.env["FRONTEND_URL"] || "http://localhost:3030",
+			"http://localhost:3031",
 		],
 		plugins: [
 			// Better Auth Admin plugin to manage roles/permissions, bans, and impersonation

@@ -16,7 +16,7 @@ export const createContext = async (opts: CreateContextOptions) => {
 	let dbInstance = db; // default
 
 	// Check for demo token
-	const authHeader = opts.req.headers.get("authorization");
+	const authHeader = opts.req.headers.get("X-Demo-Token");
 	if (authHeader?.startsWith("Bearer ")) {
 		const token = authHeader.slice(7);
 		try {
