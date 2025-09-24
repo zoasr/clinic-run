@@ -1,6 +1,6 @@
 import { and, eq, like } from "drizzle-orm";
 import { z } from "zod";
-import { getAuth } from "../auth.js";
+import { createAuthForRequest } from "../auth.js";
 import * as authSchema from "../db/schema/auth-schema.js";
 import {
 	adminProcedure,
@@ -8,8 +8,6 @@ import {
 	publicProcedure,
 	router,
 } from "../trpc.js";
-
-const auth = getAuth();
 
 const userInputSchema = z.object({
 	username: z.string(),
@@ -127,23 +125,28 @@ export const usersRouter = router({
 		return users;
 	}),
 
-	create: adminProcedure.input(userInputSchema).mutation(async ({ input }) => {
-		const newUser = await auth.api.createUser({
-			body: {
-				name: `${input.firstName} ${input.lastName}`,
-				email: input.email,
-				password: input.password,
-				role: input.role || "staff",
-				data: {
-					username: input.username,
-					firstName: input.firstName,
-					lastName: input.lastName,
+	create: adminProcedure
+		.input(userInputSchema)
+		.mutation(async ({ input, ctx }) => {
+			const auth = createAuthForRequest({
+				db: ctx.db,
+			});
+			const newUser = await auth.api.createUser({
+				body: {
+					name: `${input.firstName} ${input.lastName}`,
+					email: input.email,
+					password: input.password,
+					role: input.role || "staff",
+					data: {
+						username: input.username,
+						firstName: input.firstName,
+						lastName: input.lastName,
+					},
 				},
-			},
-		});
+			});
 
-		return newUser.user;
-	}),
+			return newUser.user;
+		}),
 
 	update: adminProcedure
 		.input(
@@ -153,6 +156,9 @@ export const usersRouter = router({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
+			const auth = createAuthForRequest({
+				db: ctx.db,
+			});
 			if (input.data.role) {
 				await auth.api.setRole({
 					body: {
@@ -214,6 +220,9 @@ export const usersRouter = router({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
+			const auth = createAuthForRequest({
+				db: ctx.db,
+			});
 			// Verify current password first
 			try {
 				await auth.api.signInEmail({

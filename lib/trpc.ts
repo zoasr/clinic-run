@@ -32,8 +32,7 @@ export const createContext = async (opts: CreateContextOptions) => {
 	}
 
 	try {
-		const cf = (opts.req as any).cf || {};
-		const auth = createAuthForRequest({ cf, db: dbInstance });
+		const auth = createAuthForRequest({ db: dbInstance });
 		session = await auth.api.getSession(opts.req);
 	} catch (error) {
 		console.error("Failed to get session in tRPC context:", error);
