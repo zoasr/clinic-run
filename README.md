@@ -70,7 +70,7 @@ cp .env.test.example .env.test
 > [!IMPORTANT]
 > Before building you need to make sure that there is a `.env.build` file in the root directory. just run:
 > ```bash
-> cp .env.test.example .env.test
+> cp .env.build.example .env.build
 > ```
 
 ## Project Structure
