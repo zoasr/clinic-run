@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "./ui/button";
 
-export default function ErrorComponent({ error }) {
+export default function ErrorComponent({ error, children }: any) {
 	return (
 		<article className="w-full h-dvh grid place-items-center">
 			<section className="text-center space-y-8 bg-destructive/20 p-4 rounded-md border-2 border-destructive/30">
@@ -16,6 +16,7 @@ export default function ErrorComponent({ error }) {
 				<Link to="..">
 					<Button variant="destructive">Go Back</Button>
 				</Link>
+				{children}
 			</section>
 		</article>
 	);

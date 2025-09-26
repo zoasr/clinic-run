@@ -50,10 +50,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		const initAuth = async () => {
 			try {
-				// Check if we have a demo token, if not, initialize demo
-				const demoToken = sessionStorage.getItem("demoToken");
+				// Check if we have a demo token, if not, try to initialize demo
+				let demoToken = sessionStorage.getItem("demoToken");
+				let demoInitialized = false;
+
 				if (!demoToken) {
-					console.log("No demo token found, initializing demo...");
+					console.log("No demo token found, attempting to initialize demo...");
 					try {
 						const baseURL =
 							import.meta.env.VITE_SERVER_URL || "http://127.0.0.1:3031";
@@ -67,28 +69,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 						if (initResponse.ok) {
 							const { token } = await initResponse.json();
 							sessionStorage.setItem("demoToken", token);
-							console.log("Demo initialized with token");
+							demoToken = token;
+							demoInitialized = true;
+							console.log("Demo initialized successfully with token");
 						} else {
-							console.error("Failed to initialize demo");
+							console.warn(
+								"Demo initialization failed, proceeding without demo data",
+							);
+							// Don't throw error, just continue without demo
 						}
 					} catch (error) {
-						console.error("Demo initialization error:", error);
+						console.warn(
+							"Demo initialization error, proceeding without demo data:",
+							error,
+						);
+						// Don't throw error, just continue without demo
 					}
+				} else {
+					demoInitialized = true;
 				}
 
-				const response = await authClient.getSession();
+				// Only try to get session if we have a demo token or demo was just initialized
+				if (demoToken || demoInitialized) {
+					try {
+						const response = await authClient.getSession();
 
-				if (response?.data?.user && response?.data?.session) {
-					setUser(response.data.user);
-					setSession(response.data);
-					setIsAuthenticated(true);
+						if (response?.data?.user && response?.data?.session) {
+							setUser(response.data.user);
+							setSession(response.data);
+							setIsAuthenticated(true);
+						} else {
+							setUser(null);
+							setSession(null);
+							setIsAuthenticated(false);
+						}
+					} catch (sessionError) {
+						console.warn(
+							"Failed to get session, proceeding with unauthenticated state:",
+							sessionError,
+						);
+						setUser(null);
+						setSession(null);
+						setIsAuthenticated(false);
+					}
 				} else {
+					// No demo available, set unauthenticated state
+					console.log("No demo available, starting in unauthenticated state");
 					setUser(null);
 					setSession(null);
 					setIsAuthenticated(false);
 				}
 			} catch (error) {
 				console.error("Failed to initialize auth:", error);
+				// Ensure we always have a valid unauthenticated state
 				setUser(null);
 				setSession(null);
 				setIsAuthenticated(false);

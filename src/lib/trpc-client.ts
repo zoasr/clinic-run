@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { toast } from "sonner";
 import superjson from "superjson";
 import type { AppRouter } from "./trpc";
 
@@ -14,6 +15,21 @@ export const trpcClient = createTRPCClient<AppRouter>({
 			url: `${baseURL}/api/trpc`,
 			fetch: (url, options) => {
 				const demoToken = sessionStorage.getItem("demoToken");
+
+				// Check if this is an auth-related request (these work without demo token)
+				const isAuthRequest = url.toString().includes("auth");
+
+				// Prevent non-auth requests if no demo token is available
+				if (!demoToken && !isAuthRequest) {
+					console.warn(
+						"No demo token available - skipping non-auth tRPC request",
+					);
+					toast.error("Demo not initialized - no demo token available");
+					return Promise.reject(
+						new Error("Demo not initialized - no demo token available"),
+					);
+				}
+
 				const headers = new Headers(options?.headers);
 
 				if (demoToken) {
