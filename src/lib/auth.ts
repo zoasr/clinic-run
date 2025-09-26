@@ -9,7 +9,6 @@ export const authClient = createAuthClient({
 	fetchOptions: {
 		onRequest: (context) => {
 			const demoToken = sessionStorage.getItem("demoToken");
-			console.log(context);
 			if (demoToken) {
 				return {
 					...context,
