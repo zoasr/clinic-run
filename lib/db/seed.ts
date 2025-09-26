@@ -12,6 +12,69 @@ const rolesObj = {
 	staff,
 } as const;
 
+// Fast seed for demo initialization - direct inserts with pre-hashed passwords
+export async function seedDatabaseDemo(db: any) {
+	try {
+		// Pre-computed scrypt hash for "admin123" using Better Auth's hashPassword
+		// Generated using: await hashPassword("admin123")
+		const adminPasswordHash =
+			"4e7c46465cbe5903b2d371b3c4b64c1d:92c4145b6c910e49b8832f2cc2d666d70e91698e2a87c4c7c81f73e741c3f749c172d7cd0fb3cce40246fe78f222389ccc6ec82f4f7eaf7b60c72b7658c81118";
+
+		const adminId = `demo-admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+		await db.insert(authSchema.user).values({
+			id: adminId,
+			name: "System Administrator",
+			email: "admin@clinic.local",
+			emailVerified: true,
+			username: "admin",
+			firstName: "System",
+			lastName: "Administrator",
+			role: "admin",
+			isActive: true,
+			banned: null,
+			banReason: null,
+			banExpires: null,
+			image: null,
+		});
+
+		// Insert account with pre-hashed password
+		await db.insert(authSchema.account).values({
+			id: `acc-${adminId}`,
+			accountId: "admin@clinic.local",
+			providerId: "credential",
+			userId: adminId,
+			password: adminPasswordHash,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			accessToken: null,
+			refreshToken: null,
+			idToken: null,
+			accessTokenExpiresAt: null,
+			refreshTokenExpiresAt: null,
+			scope: null,
+		});
+
+		await db.insert(schema.medications).values([
+			{
+				name: "Paracetamol",
+				genericName: "Acetaminophen",
+				dosage: "500mg",
+				form: "tablet",
+				manufacturer: "Generic Pharma",
+				quantity: 100,
+				minStockLevel: 20,
+				unitPrice: 0.5,
+			},
+		]);
+
+		console.log("Demo database seeded successfully");
+	} catch (error) {
+		console.error("Failed to seed demo database:", error);
+		throw error;
+	}
+}
+
 // Seed initial data
 export async function seedDatabase(db: any) {
 	const localAuth = betterAuth({

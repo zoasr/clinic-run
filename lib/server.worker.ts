@@ -6,7 +6,7 @@ import * as jose from "jose";
 import { createAuthForRequest } from "./auth.js";
 import { createDbForUrl } from "./db/factory.js";
 import { db } from "./db/index.js";
-import { seedDatabase } from "./db/seed.js";
+import { seedDatabase, seedDatabaseDemo } from "./db/seed.js";
 import { appRouter } from "./index.js";
 import { migrate } from "./migrator/migrator.js";
 import { createContext } from "./trpc.js";
@@ -80,6 +80,17 @@ app.all("/api/trpc/*", async (c) => {
 	});
 });
 
+async function initDb(db: any, isDemo = false) {
+	await migrate(db, {});
+
+	// Seed the database
+	if (isDemo) {
+		await seedDatabaseDemo(db);
+	} else {
+		await seedDatabase(db);
+	}
+}
+
 // Demo initialization route
 app.post("/demo/init", async (c) => {
 	const turso = createClient({
@@ -120,24 +131,19 @@ app.post("/demo/init", async (c) => {
 		const database = await turso.databases.create(dbName, {
 			group: "default",
 		});
-		console.log(database);
 		const token = await turso.databases.createToken(database.name, {
 			expiration: "1d",
 			authorization: "full-access",
 		});
-		console.log(token.jwt);
 		const dbToken = token.jwt;
 		const dbUrl = `libsql://${database.hostname}`;
 
 		try {
+			const t = performance.now();
+			console.log(`initializing database...`);
 			// Create DB client for the new database
 			const dbClient = await createDbForUrl(dbUrl, dbToken);
-
-			// migrate database
-			await migrate(dbClient, {});
-
-			// Seed the database
-			await seedDatabase(dbClient);
+			await initDb(dbClient, true);
 
 			// Generate JWT token
 			const payload = {
@@ -150,6 +156,7 @@ app.post("/demo/init", async (c) => {
 				.setExpirationTime(`${ttl}m`)
 				.sign(secret);
 
+			console.log(`database initialized in ${performance.now() - t}ms`);
 			return c.json({ token });
 		} catch (error) {
 			// delete database from turso
