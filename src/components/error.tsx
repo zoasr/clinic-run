@@ -16,7 +16,9 @@ export default function ErrorComponent({ error, children }: any) {
 				<Link to="..">
 					<Button variant="destructive">Go Back</Button>
 				</Link>
-				<div>{children}</div>
+				<div className="m-2 p-2 rounded-md border-primary/20 border bg-primary/30">
+					{children}
+				</div>
 			</section>
 		</article>
 	);
