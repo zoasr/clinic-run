@@ -1,7 +1,9 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "sonner";
+import ErrorComponent from "@/components/error";
 import NotFound from "@/components/not-found";
+import { Button } from "@/components/ui/button";
 import type { AuthContextType } from "@/contexts/AuthContext";
 
 interface MyRouterContext {
@@ -15,6 +17,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				<TanStackRouterDevtools position="bottom-right" />
 				<Outlet />
 			</>
+		);
+	},
+	errorComponent: ({ error }) => {
+		return (
+			<ErrorComponent error={error}>
+				<Button>Hello</Button>
+			</ErrorComponent>
 		);
 	},
 	notFoundComponent: () => {
