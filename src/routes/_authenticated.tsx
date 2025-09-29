@@ -11,6 +11,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import ErrorComponent from "@/components/error";
 import NotFound from "@/components/not-found";
 import { SessionManager } from "@/components/SessionManager";
+import { DemoTimer } from "@/components/demo-timer";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -80,6 +81,9 @@ export const Route = createFileRoute("/_authenticated")({
 					<AppSidebar />
 					<SidebarInset>
 						<Header />
+						<div className="px-4 py-2">
+							<DemoTimer />
+						</div>
 						<section className="max-w-[1200px] w-full h-full mx-auto">
 							<Outlet />
 						</section>

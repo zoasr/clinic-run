@@ -10,6 +10,9 @@ export interface AuthContextType {
 	isAuthenticated: boolean;
 	user: User | null;
 	session: Session | null;
+	isDemo: boolean;
+	demoStartTime: number | null;
+	demoTimeRemaining: number;
 	login: (username: string, password: string) => Promise<boolean>;
 	logout: () => void;
 	refreshAuth: () => Promise<void>;
@@ -23,6 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [session, setSession] = useState<Session | null>(null);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isDemo, setIsDemo] = useState(false);
+	const [demoStartTime, setDemoStartTime] = useState<number | null>(null);
+	const [demoTimeRemaining, setDemoTimeRemaining] = useState(0);
 
 	// Refresh authentication state
 	const refreshAuth = async () => {
@@ -69,8 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 						if (initResponse.ok) {
 							const { token } = await initResponse.json();
 							sessionStorage.setItem("demoToken", token);
+							sessionStorage.setItem("demoStartTime", Date.now().toString());
 							demoToken = token;
 							demoInitialized = true;
+							setIsDemo(true);
+							setDemoStartTime(Date.now());
 							console.log("Demo initialized successfully with token");
 						} else {
 							console.warn(
@@ -87,6 +96,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 					}
 				} else {
 					demoInitialized = true;
+					const storedStartTime = sessionStorage.getItem("demoStartTime");
+					if (storedStartTime) {
+						const startTime = parseInt(storedStartTime);
+						setIsDemo(true);
+						setDemoStartTime(startTime);
+					}
 				}
 
 				// Only try to get session if we have a demo token or demo was just initialized
@@ -132,6 +147,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 		initAuth();
 	}, []);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: logout function changes on each rerender
+	useEffect(() => {
+		if (!isDemo || !demoStartTime) return;
+
+		const DEMO_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+		const updateTimer = () => {
+			const elapsed = Date.now() - demoStartTime;
+			const remaining = Math.max(0, DEMO_DURATION - elapsed);
+			setDemoTimeRemaining(remaining);
+
+			if (remaining <= 0) {
+				console.log("Demo time expired, logging out...");
+				logout();
+			}
+		};
+
+		// Update immediately
+		updateTimer();
+
+		// Update every second
+		const interval = setInterval(updateTimer, 1000);
+
+		return () => clearInterval(interval);
+	}, [isDemo, demoStartTime]);
 
 	// Show loading state while checking auth
 	if (isLoading) {
@@ -199,8 +240,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				localStorage.removeItem("auth-logout");
 			}, 100);
 
-			// Clear demo token
+			// Clear demo token and start time
 			sessionStorage.removeItem("demoToken");
+			sessionStorage.removeItem("demoStartTime");
+			setIsDemo(false);
+			setDemoStartTime(null);
+			setDemoTimeRemaining(0);
 
 			// Clear local state first
 			setUser(null);
@@ -252,6 +297,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				isAuthenticated,
 				user,
 				session,
+				isDemo,
+				demoStartTime,
+				demoTimeRemaining,
 				login,
 				logout,
 				refreshAuth,
