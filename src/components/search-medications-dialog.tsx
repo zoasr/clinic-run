@@ -1,48 +1,40 @@
+import { Pill } from "lucide-react";
 import { useState } from "react";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { useMedications } from "@/hooks/useMedications";
 import type { AppRouter } from "@/lib/trpc";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { ScrollArea } from "./ui/scroll-area";
+import { useMedications } from "@/hooks/useMedications";
+import { SearchDialog } from "./search-dialog";
 
 type Medication =
 	AppRouter["prescriptions"]["getAll"]["_def"]["$types"]["output"]["data"][number]["medication"];
 
-const Medication = ({
+const MedicationItem = ({
 	medication,
 	onSelect,
-	closeDialog,
+	isSelected,
 }: {
 	medication: Medication;
-	onSelect: (medication: Medication) => void;
-	closeDialog: () => void;
+	onSelect: () => void;
+	isSelected?: boolean;
 }) => {
+	if (!medication) return null;
+
 	return (
-		<>
-			{medication ? (
-				<div
-					key={medication.id}
-					className="flex items-center p-4 cursor-pointer border border-accent bg-accent/20"
-					onClick={() => {
-						onSelect(medication);
-						closeDialog();
-					}}
-				>
-					<span className="mr-4">{medication.id}</span>
-					<span className="font-semibold">
-						{medication.name} {medication.dosage}
-					</span>
+		<div
+			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
+				isSelected
+					? "border-primary bg-primary/10"
+					: "border-accent bg-accent/20 hover:bg-accent/30"
+			}`}
+			onClick={onSelect}
+		>
+			<Pill className="h-5 w-5 text-muted-foreground" />
+			<div className="flex-1 min-w-0">
+				<div className="font-semibold truncate">{medication.name}</div>
+				<div className="text-sm text-muted-foreground">
+					{medication.dosage} • ID: {medication.id}
 				</div>
-			) : null}
-		</>
+			</div>
+		</div>
 	);
 };
 
@@ -51,68 +43,53 @@ export default function SearchMedicationsDialog({
 	medication,
 }: {
 	onSelect: (medication: Medication) => void;
-	medication: Medication;
+	medication?: Medication;
 }) {
 	const [search, setSearch] = useState(medication?.name || "");
-	const [open, setOpen] = useState(false);
-	const [selectedMedication, setSelectedMedication] =
-		useState<Medication | null>(medication);
-	const { data } = useMedications(
-		{
-			search,
-		},
-		{
-			enabled: !!search,
-		},
+	const [selectedMedication, setSelectedMedication] = useState<
+		Medication | undefined
+	>(medication);
+
+	const { data, isLoading } = useMedications(
+		{ search: search || undefined },
+		{ enabled: search.length > 0 },
 	);
-	const medications = data?.data;
+
+	const medications = data?.data || [];
+
+	const handleSelect = (med: Medication) => {
+		setSelectedMedication(med);
+		onSelect(med);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				{selectedMedication ? (
-					<Button type="button" variant="outline">
-						<span className="mr-2">{selectedMedication.id}</span>
-						<span className="font-semibold">{selectedMedication.name}</span>
-					</Button>
-				) : medication ? (
-					<Button type="button" variant="outline">
-						<span className="mr-2">{medication.id}</span>
-						<span className="font-semibold">{medication.name}</span>
-					</Button>
-				) : (
-					<Button type="button">Select Medication</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Search Medications</DialogTitle>
-					<DialogDescription>Search for medications by name</DialogDescription>
-				</DialogHeader>
-				<div className="grid gap-4">
-					<Input
-						placeholder="Search medications..."
-						onChange={(e) => setSearch(e.target.value)}
-						value={search}
-						// defaultValue={medication?.name}
-					/>
-					<ScrollArea className="h-[300px] w-full rounded-md border p-4 space-y-2">
-						{medications?.map((m) => (
-							<Medication
-								key={m.id}
-								medication={m}
-								onSelect={(medication) => {
-									setSelectedMedication(medication);
-									onSelect(medication);
-								}}
-								closeDialog={() => {
-									setSearch(selectedMedication?.name || "");
-									setOpen(false);
-								}}
-							/>
-						))}
-					</ScrollArea>
-				</div>
-			</DialogContent>
-		</Dialog>
+		<SearchDialog
+			title="Search Medications"
+			description="Search for medications by name"
+			placeholder="Search medications..."
+			items={medications}
+			renderItem={(medication, onSelect, isSelected) => (
+				<MedicationItem
+					key={medication.id}
+					medication={medication}
+					onSelect={onSelect}
+					isSelected={isSelected}
+				/>
+			)}
+			onItemSelect={handleSelect}
+			selectedItem={selectedMedication}
+			getItemKey={(medication) => medication.id.toString()}
+			getItemDisplay={(medication) =>
+				`${medication.name} (${medication.dosage})`
+			}
+			isLoading={isLoading}
+			emptyMessage="No medications found matching your search"
+			searchValue={search}
+			onSearchChange={setSearch}
+			isLoading={isLoading}
+			emptyMessage="No medications found matching your search"
+			searchValue={search}
+			onSearchChange={setSearch}
+		/>
 	);
 }
