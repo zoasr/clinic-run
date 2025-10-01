@@ -291,7 +291,7 @@ export function LabTestManagement() {
 							</CardContent>
 						</Card>
 					) : (
-						<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+						<div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 							{labTests &&
 								labTests?.map((labTest) => {
 									const statusInfo = getStatusInfo(labTest.status);

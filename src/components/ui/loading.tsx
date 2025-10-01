@@ -219,7 +219,7 @@ export const TableLoading = ({ rows = 5 }: { rows?: number }) => (
 
 export const LoadingCards = () => {
 	return (
-		<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+		<div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 			{[...Array(6)].map((_, i) => (
 				<Card key={i} className="animate-pulse h-[300px]">
 					<CardContent className="p-6">
