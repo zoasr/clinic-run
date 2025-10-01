@@ -271,7 +271,7 @@ export function DashboardPage() {
 							variant={alert.type === "info" ? "default" : alert.type}
 						>
 							<AlertTriangle className="h-4 w-4" />
-							<AlertDescription className="flex items-center justify-between text-destructive">
+							<AlertDescription className="flex items-center justify-between text-destructive flex-col gap-2 sm:flex-row">
 								<span>{alert.message}</span>
 								<Button asChild variant="outline" size="sm">
 									<Link to={alert.action}>

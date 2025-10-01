@@ -131,16 +131,16 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 					<ArrowLeft className="h-4 w-4 mr-2" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{patient ? "Edit Patient" : "Add New Patient"}
-					</h1>
-					<p className="text-muted-foreground">
-						{patient
-							? "Update patient information"
-							: "Enter patient details to create a new record"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{patient ? "Edit Patient" : "Add New Patient"}
+				</h1>
+				<p className="text-muted-foreground">
+					{patient
+						? "Update patient information"
+						: "Enter patient details to create a new record"}
+				</p>
 			</div>
 
 			<form
@@ -229,7 +229,7 @@ export function PatientForm({ patient, onSave, onCancel }: PatientFormProps) {
 													today.setHours(0, 0, 0, 0);
 													return date > today;
 												}}
-												onSelect={(value: Date | undefined) => {
+												onSelect={(value) => {
 													field.handleChange(value);
 												}}
 												required

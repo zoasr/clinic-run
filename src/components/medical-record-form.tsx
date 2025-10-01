@@ -153,16 +153,16 @@ export function MedicalRecordForm({
 					<ArrowLeft className="h-4 w-4 mr-2" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{record ? "Edit Medical Record" : "Add New Medical Record"}
-					</h1>
-					<p className="text-muted-foreground">
-						{record
-							? "Update medical record details"
-							: "Create a new patient medical record"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{record ? "Edit Medical Record" : "Add New Medical Record"}
+				</h1>
+				<p className="text-muted-foreground">
+					{record
+						? "Update medical record details"
+						: "Create a new patient medical record"}
+				</p>
 			</div>
 
 			<form
@@ -310,7 +310,7 @@ export function MedicalRecordForm({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+						<div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
 							<form.Field
 								name="bloodPressure"
 								children={(field) => (

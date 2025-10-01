@@ -1,44 +1,38 @@
+import { User } from "lucide-react";
 import { useState } from "react";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import { type Patient, usePatients } from "@/hooks/usePatients";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { ScrollArea } from "./ui/scroll-area";
+import { SearchDialog } from "./search-dialog";
 
-const Patient = ({
+const PatientItem = ({
 	patient,
 	onSelect,
-	closeDialog,
+	isSelected,
 }: {
-	patient?: Patient;
-	onSelect: (patient: Patient) => void;
-	closeDialog: () => void;
+	patient: Patient;
+	onSelect: () => void;
+	isSelected?: boolean;
 }) => {
+	if (!patient) return null;
+
 	return (
-		<>
-			{patient ? (
-				<div
-					key={patient.id}
-					className="flex items-center p-4 cursor-pointer border border-accent bg-accent/20 rounded-md"
-					onClick={() => {
-						onSelect(patient);
-						closeDialog();
-					}}
-				>
-					<span className="mr-4">{patient.patientId}</span>
-					<span className="font-semibold">
-						{patient.firstName} {patient.lastName}
-					</span>
+		<div
+			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
+				isSelected
+					? "border-primary bg-primary/10"
+					: "border-accent bg-accent/20 hover:bg-accent/30"
+			}`}
+			onClick={onSelect}
+		>
+			<User className="h-5 w-5 text-muted-foreground" />
+			<div className="flex-1 min-w-0">
+				<div className="font-semibold truncate">
+					{patient.firstName} {patient.lastName}
 				</div>
-			) : null}
-		</>
+				<div className="text-sm text-muted-foreground">
+					Patient ID: {patient.patientId}
+				</div>
+			</div>
+		</div>
 	);
 };
 
@@ -47,86 +41,51 @@ export default function SearchPatientsDialog({
 	patient,
 }: {
 	onSelect: (patient: Patient) => void;
-	patient: Patient;
+	patient?: Patient;
 }) {
-	const [open, setOpen] = useState(false);
-	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
-		patient ? patient : null,
-	);
 	const [search, setSearch] = useState(
-		selectedPatient
-			? `${selectedPatient.firstName} ${selectedPatient.lastName}`
-			: "",
+		patient ? `${patient.firstName} ${patient.lastName}` : "",
 	);
-	const { data } = usePatients(
-		{
-			search,
-		},
-		{
-			enabled: !!search,
-		},
+	const [selectedPatient, setSelectedPatient] = useState<Patient | undefined>(
+		patient,
 	);
-	const patients = data?.data;
+
+	const { data, isLoading } = usePatients(
+		{ search: search || undefined },
+		{ enabled: search.length > 0 },
+	);
+
+	const patients = data?.data || [];
+
+	const handleSelect = (patient: Patient) => {
+		setSelectedPatient(patient);
+		onSelect(patient);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				{selectedPatient ? (
-					<Button type="button" variant="outline">
-						<span className="mr-2">{selectedPatient.patientId}</span>
-						<span className="font-semibold">
-							{selectedPatient.firstName} {selectedPatient.lastName}
-						</span>
-					</Button>
-				) : patient ? (
-					<Button type="button" variant="outline">
-						<span className="mr-2">{patient.patientId}</span>
-						<span className="font-semibold">
-							{patient.firstName} {patient.lastName}
-						</span>
-					</Button>
-				) : (
-					<Button type="button">Select Patient</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Search Patients</DialogTitle>
-					<DialogDescription>Search for patients by name</DialogDescription>
-				</DialogHeader>
-				<div className="grid gap-4">
-					<Input
-						placeholder="Search patients..."
-						onChange={(e) => setSearch(e.target.value)}
-						value={search}
-					/>
-					<ScrollArea className="h-[300px] w-full rounded-md border p-4 space-y-2">
-						<div className="grid gap-4 my-auto h-[100px]">
-							{patients ? (
-								patients?.map((p) => (
-									<Patient
-										key={p.id}
-										patient={p}
-										onSelect={(patient) => {
-											setSelectedPatient(patient);
-											setSearch(
-												`${patient?.firstName} ${patient?.lastName}` || "",
-											);
-											onSelect(patient);
-										}}
-										closeDialog={() => {
-											setOpen(false);
-										}}
-									/>
-								))
-							) : (
-								<div className="w-full my-auto h-full text-center flex items-center justify-center">
-									<p className="">Start searching for patients</p>
-								</div>
-							)}
-						</div>
-					</ScrollArea>
-				</div>
-			</DialogContent>
-		</Dialog>
+		<SearchDialog
+			title="Search Patients"
+			description="Search for patients by name or patient ID"
+			placeholder="Search patients..."
+			items={patients}
+			renderItem={(patient, onSelect, isSelected) => (
+				<PatientItem
+					key={patient.id}
+					patient={patient}
+					onSelect={onSelect}
+					isSelected={isSelected}
+				/>
+			)}
+			onItemSelect={handleSelect}
+			selectedItem={selectedPatient}
+			getItemKey={(patient) => patient.id.toString()}
+			getItemDisplay={(patient) =>
+				`${patient.firstName} ${patient.lastName} (${patient.patientId})`
+			}
+			isLoading={isLoading}
+			emptyMessage="No patients found matching your search"
+			searchValue={search}
+			onSearchChange={setSearch}
+		/>
 	);
 }

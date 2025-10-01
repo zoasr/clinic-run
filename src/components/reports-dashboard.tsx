@@ -2,14 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	CalendarDays,
 	DollarSign,
-	FileText,
 	Pill,
-	Stethoscope,
 	TrendingUp,
 	Users,
 } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -66,29 +63,29 @@ export function ReportsDashboard() {
 						Comprehensive analytics and insights for your clinic
 					</p>
 				</div>
-				<div className="flex items-center space-x-2">
-					<Button
-						variant={selectedPeriod === "30" ? "default" : "outline"}
-						size="sm"
-						onClick={() => setSelectedPeriod("30")}
-					>
-						Last 30 Days
-					</Button>
-					<Button
-						variant={selectedPeriod === "90" ? "default" : "outline"}
-						size="sm"
-						onClick={() => setSelectedPeriod("90")}
-					>
-						Last 90 Days
-					</Button>
-					<Button
-						variant={selectedPeriod === "365" ? "default" : "outline"}
-						size="sm"
-						onClick={() => setSelectedPeriod("365")}
-					>
-						Last Year
-					</Button>
-				</div>
+			</div>
+			<div className="flex items-center space-x-2">
+				<Button
+					variant={selectedPeriod === "30" ? "default" : "outline"}
+					size="sm"
+					onClick={() => setSelectedPeriod("30")}
+				>
+					Last 30 Days
+				</Button>
+				<Button
+					variant={selectedPeriod === "90" ? "default" : "outline"}
+					size="sm"
+					onClick={() => setSelectedPeriod("90")}
+				>
+					Last 90 Days
+				</Button>
+				<Button
+					variant={selectedPeriod === "365" ? "default" : "outline"}
+					size="sm"
+					onClick={() => setSelectedPeriod("365")}
+				>
+					Last Year
+				</Button>
 			</div>
 
 			<Tabs defaultValue="overview" className="space-y-4">
@@ -100,9 +97,9 @@ export function ReportsDashboard() {
 					<TabsTrigger value="inventory">Inventory</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="overview" className="space-y-4">
+				<TabsContent value="overview" className="space-y-4 w-full">
 					{/* Key Metrics Cards */}
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+					<div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 						<Card>
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 								<CardTitle className="text-sm font-medium">

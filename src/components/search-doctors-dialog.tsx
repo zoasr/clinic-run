@@ -1,48 +1,37 @@
-import { useQuery } from "@tanstack/react-query";
 import { User } from "lucide-react";
 import { useState } from "react";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import type { Doctor } from "@/lib/schema-types";
-import { trpc } from "@/lib/trpc-client";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { ScrollArea } from "./ui/scroll-area";
+import { useDoctors } from "@/hooks/useUsers";
+import { SearchDialog } from "./search-dialog";
 
-const Doctor = ({
+const DoctorItem = ({
 	doctor,
 	onSelect,
-	closeDialog,
+	isSelected,
 }: {
 	doctor: Doctor;
-	onSelect: (doctor: Doctor) => void;
-	closeDialog: () => void;
+	onSelect: () => void;
+	isSelected?: boolean;
 }) => {
 	return (
-		<>
-			{doctor ? (
-				<div
-					key={doctor.id}
-					className="flex gap-4 items-center p-4 cursor-pointer border border-accent bg-accent/20 rounded-md"
-					onClick={() => {
-						onSelect(doctor);
-						closeDialog();
-					}}
-				>
-					<User />
-					<span className="font-semibold">
-						{doctor.firstName} {doctor.lastName}
-					</span>
-					<span className="max-w-[10ch] truncate">{doctor.id}</span>
+		<div
+			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
+				isSelected
+					? "border-primary bg-primary/10"
+					: "border-accent bg-accent/20 hover:bg-accent/30"
+			}`}
+			onClick={onSelect}
+		>
+			<User className="h-5 w-5 text-muted-foreground" />
+			<div className="flex-1 min-w-0">
+				<div className="font-semibold truncate">
+					{doctor.firstName} {doctor.lastName}
 				</div>
-			) : null}
-		</>
+				<div className="text-sm text-muted-foreground truncate">
+					ID: {doctor.id}
+				</div>
+			</div>
+		</div>
 	);
 };
 
@@ -53,81 +42,50 @@ export default function DoctorsDialog({
 	onSelect: (doctor: Doctor) => void;
 	doctorId: string;
 }) {
-	const { data: doctors } = useQuery(trpc.users.getDoctors.queryOptions());
-	const [open, setOpen] = useState(false);
-	const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
 	const [search, setSearch] = useState("");
-	const doctor = doctors?.find((d) => d.id === doctorId);
-	const filteredDoctors = search
-		? doctors?.filter((d) => {
-				return (
-					search.toLowerCase().includes(d.firstName.toLowerCase()) ||
-					search.toLowerCase().includes(d.lastName.toLowerCase()) ||
-					search.toLowerCase().includes(d.id.toLowerCase())
-				);
-			})
-		: doctors;
-	if (!doctors) {
-		return null;
-	}
+	const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+
+	const { data, isLoading } = useDoctors(
+		{ search: search || undefined },
+		{ enabled: search.length > 0 },
+	);
+
+	const doctors = data || [];
+
+	// Find the currently selected doctor
+	const currentDoctor =
+		selectedDoctor ||
+		(doctorId ? doctors.find((d) => d.id === doctorId) : null);
+
+	const handleSelect = (doctor: Doctor) => {
+		setSelectedDoctor(doctor);
+		onSelect(doctor);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				{selectedDoctor ? (
-					<Button type="button" variant="outline">
-						<span className="mr-2 truncate max-w-[5ch]">
-							{selectedDoctor.id}
-						</span>
-						<span className="font-semibold">
-							{selectedDoctor.firstName} {selectedDoctor.lastName}
-						</span>
-					</Button>
-				) : doctor ? (
-					<Button type="button" variant="outline">
-						<span className="mr-2 truncate max-w-[5ch]">{doctor?.id}</span>
-						<span className="font-semibold">
-							{doctor?.firstName} {doctor?.lastName}
-						</span>
-					</Button>
-				) : (
-					<Button type="button">Select Doctor</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Search Doctors</DialogTitle>
-					<DialogDescription>Search for doctors by name</DialogDescription>
-				</DialogHeader>
-				<div className="grid gap-4">
-					<Input
-						placeholder="Search doctors..."
-						onChange={(e) => setSearch(e.target.value)}
-						value={search}
-					/>
-					<ScrollArea className="h-[300px] w-full rounded-md border p-4 space-y-2">
-						<div className="grid gap-4 my-auto h-[100px]">
-							{filteredDoctors ? (
-								filteredDoctors?.map((d) => (
-									<Doctor
-										key={d.id}
-										doctor={d}
-										onSelect={(doctor) => {
-											setSelectedDoctor(doctor);
-											setSearch(doctor.name);
-											onSelect(doctor);
-										}}
-										closeDialog={() => setOpen(false)}
-									/>
-								))
-							) : (
-								<div className="w-full my-auto h-full text-center flex items-center justify-center">
-									<p className="">Start searching for doctors</p>
-								</div>
-							)}
-						</div>
-					</ScrollArea>
-				</div>
-			</DialogContent>
-		</Dialog>
+		<SearchDialog
+			title="Search Doctors"
+			description="Search for doctors by name or ID"
+			placeholder="Search doctors..."
+			items={doctors}
+			renderItem={(doctor, onSelect, isSelected) => (
+				<DoctorItem
+					key={doctor.id}
+					doctor={doctor}
+					onSelect={onSelect}
+					isSelected={isSelected}
+				/>
+			)}
+			onItemSelect={handleSelect}
+			selectedItem={currentDoctor || undefined}
+			getItemKey={(doctor) => doctor.id}
+			getItemDisplay={(doctor) =>
+				`${doctor.firstName} ${doctor.lastName} (${doctor.id})`
+			}
+			isLoading={isLoading}
+			emptyMessage="No doctors found matching your search"
+			searchValue={search}
+			onSearchChange={setSearch}
+		/>
 	);
 }

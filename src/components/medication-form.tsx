@@ -125,16 +125,16 @@ export function MedicationForm({
 					<ArrowLeft className="h-4 w-4 mr-2" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{medication ? "Edit Medication" : "Add New Medication"}
-					</h1>
-					<p className="text-muted-foreground">
-						{medication
-							? "Update medication information"
-							: "Add a new medication to inventory"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{medication ? "Edit Medication" : "Add New Medication"}
+				</h1>
+				<p className="text-muted-foreground">
+					{medication
+						? "Update medication information"
+						: "Add a new medication to inventory"}
+				</p>
 			</div>
 
 			<form

@@ -156,16 +156,16 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 					<ArrowLeft className="h-4 w-4 mr-2" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{invoice ? "Edit Invoice" : "Create New Invoice"}
-					</h1>
-					<p className="text-muted-foreground">
-						{invoice
-							? "Update invoice details and billing information"
-							: "Create a new invoice for patient services"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{invoice ? "Edit Invoice" : "Create New Invoice"}
+				</h1>
+				<p className="text-muted-foreground">
+					{invoice
+						? "Update invoice details and billing information"
+						: "Create a new invoice for patient services"}
+				</p>
 			</div>
 
 			<form

@@ -77,7 +77,7 @@ function PatientManagement() {
 			</Card>
 
 			{/* Patient List */}
-			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+			<div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 				{isError ? (
 					<ErrorComponent error={new Error("Failed to fetch patients")} />
 				) : isLoading ? (
