@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import { ArrowLeft, User } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -128,16 +128,16 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 					<ArrowLeft className="h-4 w-4 mr-2" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{labTest ? "Update Lab Test" : "Order New Lab Test"}
-					</h1>
-					<p className="text-muted-foreground">
-						{labTest
-							? "Update lab test details and results"
-							: "Order a new laboratory test for a patient"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{labTest ? "Update Lab Test" : "Order New Lab Test"}
+				</h1>
+				<p className="text-muted-foreground">
+					{labTest
+						? "Update lab test details and results"
+						: "Order a new laboratory test for a patient"}
+				</p>
 			</div>
 
 			<form

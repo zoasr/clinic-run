@@ -153,16 +153,16 @@ export function MedicalRecordForm({
 					<ArrowLeft className="h-4 w-4 mr-2" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{record ? "Edit Medical Record" : "Add New Medical Record"}
-					</h1>
-					<p className="text-muted-foreground">
-						{record
-							? "Update medical record details"
-							: "Create a new patient medical record"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{record ? "Edit Medical Record" : "Add New Medical Record"}
+				</h1>
+				<p className="text-muted-foreground">
+					{record
+						? "Update medical record details"
+						: "Create a new patient medical record"}
+				</p>
 			</div>
 
 			<form

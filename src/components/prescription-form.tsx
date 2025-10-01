@@ -121,16 +121,16 @@ export function PrescriptionForm({
 					<ArrowLeft className="h-4 w-4 mr-2" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{prescription ? "Edit Prescription" : "Add New Prescription"}
-					</h1>
-					<p className="text-muted-foreground">
-						{prescription
-							? "Update prescription details"
-							: "Create a new prescription for a patient"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{prescription ? "Edit Prescription" : "Add New Prescription"}
+				</h1>
+				<p className="text-muted-foreground">
+					{prescription
+						? "Update prescription details"
+						: "Create a new prescription for a patient"}
+				</p>
 			</div>
 
 			<form
@@ -164,7 +164,9 @@ export function PrescriptionForm({
 										<>
 											<SearchPatientsDialog
 												patient={prescription?.patient as Patient}
-												onSelect={(patient) => field.handleChange(patient?.id)}
+												onSelect={(patient) =>
+													field.handleChange(patient?.id || 0)
+												}
 											/>
 										</>
 									)}
@@ -211,7 +213,7 @@ export function PrescriptionForm({
 														: null
 												}
 												onSelect={(medication) =>
-													field.handleChange(medication?.id)
+													field.handleChange(medication?.id || 0)
 												}
 											/>
 										</>

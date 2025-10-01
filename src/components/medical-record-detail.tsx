@@ -53,15 +53,17 @@ export function MedicalRecordDetail({
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back to Records
 					</Button>
-					<div>
-						<h1 className="text-2xl font-serif font-bold text-foreground">
-							Medical Record
-						</h1>
-						<p className="text-muted-foreground">
-							{record.patient?.firstName} {record.patient?.lastName} -{" "}
-							{new Date(record.visitDate).toLocaleDateString()}
-						</p>
-					</div>
+				</div>
+			</div>
+			<div className="flex justify-between gap-2 flex-wrap">
+				<div>
+					<h1 className="text-2xl font-serif font-bold text-foreground">
+						Medical Record
+					</h1>
+					<p className="text-muted-foreground">
+						{record.patient?.firstName} {record.patient?.lastName} -{" "}
+						{new Date(record.visitDate).toLocaleDateString()}
+					</p>
 				</div>
 				<Button onClick={() => onEdit(record)}>
 					<Edit className="h-4 w-4 mr-2" />

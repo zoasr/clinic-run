@@ -165,16 +165,16 @@ export function AppointmentForm({
 					<ArrowLeft className="h-4 w-4" />
 					Back
 				</Button>
-				<div>
-					<h1 className="text-2xl font-serif font-bold text-foreground">
-						{appointment ? "Edit Appointment" : "Schedule Appointment"}
-					</h1>
-					<p className="text-muted-foreground">
-						{appointment
-							? "Update appointment details"
-							: "Create a new appointment"}
-					</p>
-				</div>
+			</div>
+			<div>
+				<h1 className="text-2xl font-serif font-bold text-foreground">
+					{appointment ? "Edit Appointment" : "Schedule Appointment"}
+				</h1>
+				<p className="text-muted-foreground">
+					{appointment
+						? "Update appointment details"
+						: "Create a new appointment"}
+				</p>
 			</div>
 
 			<form
