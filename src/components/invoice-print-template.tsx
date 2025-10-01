@@ -1,6 +1,8 @@
 import { useLoaderData } from "@tanstack/react-router";
 import type { Invoice } from "@/hooks/useInvoices";
 import { formatCurrency } from "@/lib/utils";
+import { usePatient } from "@/hooks/usePatients";
+import { InvoicePrintTemplateSkeleton } from "./invoice-print-template-skeleton";
 
 interface InvoicePrintTemplateProps {
 	invoice: Invoice;
@@ -12,8 +14,11 @@ export function InvoicePrintTemplate({ invoice }: InvoicePrintTemplateProps) {
 
 	const invoiceItems = invoice.items ? JSON.parse(invoice.items) : [];
 	const outstandingAmount = invoice.totalAmount - invoice.paidAmount;
+	const { data: patient, isLoading } = usePatient(invoice.patientId);
 
-	return (
+	return isLoading ? (
+		<InvoicePrintTemplateSkeleton />
+	) : (
 		<div className="invoice-print-template bg-white text-black print-only">
 			{/* Header */}
 			<div className="border-b-2 border-gray-800 pb-6 mb-8">
@@ -58,8 +63,8 @@ export function InvoicePrintTemplate({ invoice }: InvoicePrintTemplateProps) {
 					</div>
 					<div className="text-sm text-gray-600 space-y-1">
 						<p>Patient ID: {invoice.patient?.patientId}</p>
-						<p>Phone: Not available</p>
-						<p>Email: Not available</p>
+						<p>Phone: {patient?.phone}</p>
+						<p>Email: {patient?.email}</p>
 					</div>
 				</div>
 			</div>
