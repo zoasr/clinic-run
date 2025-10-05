@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { ac, admin, doctor, staff } from "../permissions";
 import * as authSchema from "./schema/auth-schema";
 import * as schema from "./schema/schema";
+import { createHash } from "node:crypto";
 
 const rolesObj = {
 	admin,
@@ -15,10 +16,10 @@ const rolesObj = {
 // Fast seed for demo initialization - direct inserts with pre-hashed passwords
 export async function seedDatabaseDemo(db: any) {
 	try {
-		// Pre-computed scrypt hash for "admin123" using Better Auth's hashPassword
-		// Generated using: await hashPassword("admin123")
-		const adminPasswordHash =
-			"4e7c46465cbe5903b2d371b3c4b64c1d:92c4145b6c910e49b8832f2cc2d666d70e91698e2a87c4c7c81f73e741c3f749c172d7cd0fb3cce40246fe78f222389ccc6ec82f4f7eaf7b60c72b7658c81118";
+		// Simple SHA-256 hash for "admin123" for demo speed
+		const adminPasswordHash = createHash("sha256")
+			.update("admin123")
+			.digest("hex");
 
 		const adminId = `demo-admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 

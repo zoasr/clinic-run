@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin as adminPlugin } from "better-auth/plugins";
@@ -37,6 +38,19 @@ export function createAuthForRequest(options: {
 		emailAndPassword: {
 			enabled: true,
 			requireEmailVerification: false,
+			password: {
+				hash: async (password: string) => {
+					// Simple SHA-256 hash for demo - very fast, no security
+					return createHash("sha256").update(password).digest("hex");
+				},
+				verify: async ({ password, hash }) => {
+					// Simple verification for demo
+					const hashedPassword = createHash("sha256")
+						.update(password)
+						.digest("hex");
+					return hashedPassword === hash;
+				},
+			},
 		},
 		session: {
 			expiresIn: 30 * 60 * 60 * 24,

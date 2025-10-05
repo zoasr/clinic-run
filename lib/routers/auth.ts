@@ -12,7 +12,20 @@ export const authRouter = router({
 			}),
 		)
 		.mutation(async ({ input }) => {
-			return auth.signIn.email(input);
+			const start = Date.now();
+			try {
+				const result = await auth.signIn.email(input);
+				const duration = Date.now() - start;
+				console.log(`Sign-in completed in ${duration}ms for ${input.email}`);
+				return result;
+			} catch (error) {
+				const duration = Date.now() - start;
+				console.log(
+					`Sign-in failed in ${duration}ms for ${input.email}:`,
+					error,
+				);
+				throw error;
+			}
 		}),
 
 	signUp: publicProcedure
