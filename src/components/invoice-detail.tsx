@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import {
 	AlertCircle,
@@ -41,6 +41,7 @@ interface InvoiceDetailProps {
 }
 
 export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
+	const router = useRouter();
 	const queryClient = useQueryClient();
 	const [paymentAmount, setPaymentAmount] = useState("");
 
@@ -53,6 +54,7 @@ export function InvoiceDetail({ invoice, onBack, onEdit }: InvoiceDetailProps) {
 					}),
 					refetchType: "active",
 				});
+				router.invalidate();
 				toast.success("Payment recorded successfully");
 				setPaymentAmount("");
 			},

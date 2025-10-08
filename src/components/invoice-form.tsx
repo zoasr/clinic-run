@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import { ArrowLeft, Plus, Trash2, User } from "lucide-react";
 import { useState } from "react";
@@ -46,6 +47,7 @@ interface InvoiceFormProps {
 }
 
 export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
+	const router = useRouter();
 	const queryClient = useQueryClient();
 	const [items, setItems] = useState<InvoiceItem[]>(
 		invoice?.items
@@ -72,6 +74,7 @@ export function InvoiceForm({ invoice, onSave, onCancel }: InvoiceFormProps) {
 					queryKey: queryKeys.invoices.all(),
 					refetchType: "active",
 				});
+				router.invalidate();
 				onSave();
 				toast.success("Invoice created successfully");
 			},
