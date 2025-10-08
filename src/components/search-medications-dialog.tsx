@@ -17,7 +17,7 @@ const MedicationItem = ({
 	return (
 		<button
 			type="button"
-			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
+			className={`flex gap-4 items-center p-4 w-full cursor-pointer border rounded-md transition-colors ${
 				isSelected
 					? "border-primary bg-primary/10"
 					: "border-accent bg-accent/20 hover:bg-accent/30"
@@ -76,9 +76,12 @@ export default function SearchMedicationsDialog({
 			onItemSelect={handleSelect}
 			selectedItem={selectedMedication}
 			getItemKey={(medication) => medication.id.toString()}
-			getItemDisplay={(medication) =>
-				`${medication.name} (${medication.dosage})`
-			}
+			getItemDisplay={(medication) => (
+				<>
+					{medication.name}{" "}
+					<span className="text-primary font-bold">({medication.dosage})</span>
+				</>
+			)}
 			isLoading={isLoading}
 			emptyMessage="No medications found matching your search"
 			searchValue={search}

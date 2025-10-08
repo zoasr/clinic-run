@@ -17,7 +17,7 @@ const PatientItem = ({
 	return (
 		<button
 			type="button"
-			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
+			className={`flex gap-4 items-center p-4 w-full cursor-pointer border rounded-md transition-colors ${
 				isSelected
 					? "border-primary bg-primary/10"
 					: "border-accent bg-accent/20 hover:bg-accent/30"
@@ -80,9 +80,12 @@ export default function SearchPatientsDialog({
 			onItemSelect={handleSelect}
 			selectedItem={selectedPatient}
 			getItemKey={(patient) => patient.id.toString()}
-			getItemDisplay={(patient) =>
-				`${patient.firstName} ${patient.lastName} (${patient.patientId})`
-			}
+			getItemDisplay={(patient) => (
+				<>
+					{patient.firstName} {patient.lastName}{" "}
+					<span className="text-primary font-bold">({patient.patientId})</span>
+				</>
+			)}
 			isLoading={isLoading}
 			emptyMessage="No patients found matching your search"
 			searchValue={search}

@@ -16,7 +16,7 @@ const DoctorItem = ({
 	return (
 		<button
 			type="button"
-			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
+			className={`flex gap-4 items-center p-4 w-full cursor-pointer border rounded-md transition-colors ${
 				isSelected
 					? "border-primary bg-primary/10"
 					: "border-accent bg-accent/20 hover:bg-accent/30"
@@ -81,9 +81,12 @@ export default function DoctorsDialog({
 			onItemSelect={handleSelect}
 			selectedItem={currentDoctor || undefined}
 			getItemKey={(doctor) => doctor.id}
-			getItemDisplay={(doctor) =>
-				`${doctor.firstName} ${doctor.lastName} (${doctor.id})`
-			}
+			getItemDisplay={(doctor) => (
+				<>
+					{doctor.firstName} {doctor.lastName}{" "}
+					<span className="text-primary font-bold">(${doctor.id})</span>
+				</>
+			)}
 			isLoading={isLoading}
 			emptyMessage="No doctors found matching your search"
 			searchValue={search}

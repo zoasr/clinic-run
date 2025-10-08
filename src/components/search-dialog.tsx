@@ -1,5 +1,5 @@
 import { Search, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -26,7 +26,7 @@ interface SearchDialogProps<T> {
 	onItemSelect: (item: T) => void;
 	selectedItem?: T;
 	getItemKey: (item: T) => string;
-	getItemDisplay: (item: T) => string;
+	getItemDisplay: (item: T) => ReactNode;
 	isLoading?: boolean;
 	emptyMessage?: string;
 	searchValue: string;
@@ -105,11 +105,15 @@ export function SearchDialog<T>({
 	};
 
 	const defaultTrigger = selectedItem ? (
-		<Button type="button" variant="outline" className="justify-start">
+		<Button
+			type="button"
+			variant="outline"
+			className="justify-start w-full my-2"
+		>
 			<span className="truncate">{getItemDisplay(selectedItem)}</span>
 		</Button>
 	) : (
-		<Button type="button">
+		<Button type="button" className="my-2">
 			Select {title.toLowerCase().replace("search ", "")}
 		</Button>
 	);
