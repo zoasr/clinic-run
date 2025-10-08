@@ -55,7 +55,7 @@ export function SearchDialog<T>({
 	const inputRef = useRef<HTMLInputElement>(null);
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-	// Reset selected index when dialog opens/closes or items change
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Reset selected index when dialog opens/closes or items change
 	useEffect(() => {
 		setSelectedIndex(-1);
 	}, [open, items]);

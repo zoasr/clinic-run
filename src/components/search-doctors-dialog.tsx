@@ -1,7 +1,7 @@
 import { User } from "lucide-react";
 import { useState } from "react";
-import type { Doctor } from "@/lib/schema-types";
 import { useDoctors } from "@/hooks/useUsers";
+import type { Doctor } from "@/lib/schema-types";
 import { SearchDialog } from "./search-dialog";
 
 const DoctorItem = ({
@@ -14,13 +14,15 @@ const DoctorItem = ({
 	isSelected?: boolean;
 }) => {
 	return (
-		<div
+		<button
+			type="button"
 			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
 				isSelected
 					? "border-primary bg-primary/10"
 					: "border-accent bg-accent/20 hover:bg-accent/30"
 			}`}
 			onClick={onSelect}
+			onKeyUp={onSelect}
 		>
 			<User className="h-5 w-5 text-muted-foreground" />
 			<div className="flex-1 min-w-0">
@@ -31,7 +33,7 @@ const DoctorItem = ({
 					ID: {doctor.id}
 				</div>
 			</div>
-		</div>
+		</button>
 	);
 };
 

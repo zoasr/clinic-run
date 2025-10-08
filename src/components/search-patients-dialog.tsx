@@ -15,7 +15,8 @@ const PatientItem = ({
 	if (!patient) return null;
 
 	return (
-		<div
+		<button
+			type="button"
 			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
 				isSelected
 					? "border-primary bg-primary/10"
@@ -32,7 +33,7 @@ const PatientItem = ({
 					Patient ID: {patient.patientId}
 				</div>
 			</div>
-		</div>
+		</button>
 	);
 };
 
