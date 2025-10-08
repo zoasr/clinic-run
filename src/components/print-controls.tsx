@@ -5,12 +5,14 @@ interface PrintControlsProps {
 	onPrint?: () => void;
 	onBack?: () => void;
 	showBack?: boolean;
+	name?: string;
 }
 
 export function PrintControls({
 	onPrint,
 	onBack,
 	showBack = true,
+	name = "Invoice",
 }: PrintControlsProps) {
 	const handlePrint = onPrint || (() => window.print());
 
@@ -33,7 +35,7 @@ export function PrintControls({
 
 				<Button onClick={handlePrint}>
 					<Printer className="h-4 w-4 mr-2" />
-					Print Invoice
+					Print {name}
 				</Button>
 			</div>
 		</div>

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import {
 	ArrowLeft,
@@ -7,6 +8,7 @@ import {
 	Clock,
 	Edit,
 	Pill,
+	Printer,
 	User,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -100,6 +102,16 @@ export function PrescriptionDetail({
 				</div>
 
 				<div className="flex items-center gap-2">
+					<Link
+						to="/prescriptions/print/$prescriptionId"
+						params={{ prescriptionId: prescription.id.toString() }}
+					>
+						<Button variant="outline" className="flex items-center gap-2">
+							<Printer className="h-4 w-4" />
+							Print
+						</Button>
+					</Link>
+
 					<Button
 						variant="outline"
 						onClick={() => onEdit(prescription)}
