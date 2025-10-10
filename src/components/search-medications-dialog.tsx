@@ -1,11 +1,7 @@
 import { Pill } from "lucide-react";
 import { useState } from "react";
-import type { AppRouter } from "@/lib/trpc";
-import { useMedications } from "@/hooks/useMedications";
+import { type Medication, useMedications } from "@/hooks/useMedications";
 import { SearchDialog } from "./search-dialog";
-
-type Medication =
-	AppRouter["prescriptions"]["getAll"]["_def"]["$types"]["output"]["data"][number]["medication"];
 
 const MedicationItem = ({
 	medication,
@@ -19,8 +15,9 @@ const MedicationItem = ({
 	if (!medication) return null;
 
 	return (
-		<div
-			className={`flex gap-4 items-center p-4 cursor-pointer border rounded-md transition-colors ${
+		<button
+			type="button"
+			className={`flex gap-4 items-center p-4 w-full cursor-pointer border rounded-md transition-colors ${
 				isSelected
 					? "border-primary bg-primary/10"
 					: "border-accent bg-accent/20 hover:bg-accent/30"
@@ -34,7 +31,7 @@ const MedicationItem = ({
 					{medication.dosage} • ID: {medication.id}
 				</div>
 			</div>
-		</div>
+		</button>
 	);
 };
 
@@ -70,7 +67,7 @@ export default function SearchMedicationsDialog({
 			items={medications}
 			renderItem={(medication, onSelect, isSelected) => (
 				<MedicationItem
-					key={medication.id}
+					key={medication?.id}
 					medication={medication}
 					onSelect={onSelect}
 					isSelected={isSelected}
@@ -79,13 +76,12 @@ export default function SearchMedicationsDialog({
 			onItemSelect={handleSelect}
 			selectedItem={selectedMedication}
 			getItemKey={(medication) => medication.id.toString()}
-			getItemDisplay={(medication) =>
-				`${medication.name} (${medication.dosage})`
-			}
-			isLoading={isLoading}
-			emptyMessage="No medications found matching your search"
-			searchValue={search}
-			onSearchChange={setSearch}
+			getItemDisplay={(medication) => (
+				<>
+					{medication.name}{" "}
+					<span className="text-primary font-bold">({medication.dosage})</span>
+				</>
+			)}
 			isLoading={isLoading}
 			emptyMessage="No medications found matching your search"
 			searchValue={search}
