@@ -17,7 +17,7 @@ export function PrintControls({
 	const handlePrint = onPrint || (() => window.print());
 
 	return (
-		<div className="print:hidden bg-gray-50 border-b p-4">
+		<div className="print:hidden bg-accent p-4 border-1 border- rounded-t-md">
 			<div className="max-w-4xl mx-auto flex items-center justify-between">
 				{showBack && onBack && (
 					<Button variant="outline" onClick={onBack}>
@@ -27,7 +27,7 @@ export function PrintControls({
 				)}
 
 				{showBack && !onBack && (
-					<Button variant="outline" onClick={() => window.history.back()}>
+					<Button variant="destructive" onClick={() => window.history.back()}>
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back
 					</Button>
