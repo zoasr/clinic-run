@@ -1,10 +1,10 @@
 # Clinic Run
 
-<p align="center" width="100%">
+<p align="center" width="50%">
 
 <picture>
-    <source srcset="public/logo-light.svg" media="(prefers-color-scheme: dark)" />
-    <img src="public/logo-dark.svg" />
+    <source width="200px" srcset="public/logo-light.svg" media="(prefers-color-scheme: dark)" />
+    <img width="200px" src="public/logo-dark.svg" />
 </picture>
 
 </p>
