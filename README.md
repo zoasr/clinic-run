@@ -1,5 +1,14 @@
 # Clinic Run
 
+<p align="center" width="100%">
+
+<picture>
+    <source srcset="public/logo-light.svg" media="(prefers-color-scheme: dark)" />
+    <img src="public/logo-dark.svg" />
+</picture>
+
+</p>
+
 An homage to the now discontinued [hospitalrun](https://github.com/hospitalrun) project, built with React, Bun, and SQLite, and works entirely offline.
 
 ## Tech Stack
@@ -230,4 +239,3 @@ bun run dev:all
 - Type: SQLite (local file)
 - Location: `./clinic.db` (development) or `./dist/clinic.db` (production) or `./clinic-test.db` (testing)
 - ORM: Drizzle ORM
-
