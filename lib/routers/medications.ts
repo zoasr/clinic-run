@@ -280,6 +280,59 @@ export const medicationsRouter = router({
 			return updatedMedication[0];
 		}),
 
+	getStockTrends: protectedProcedure
+		.input(
+			z.object({
+				medicationId: z.number(),
+				days: z.number().default(30),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const { medicationId, days } = input;
+
+			const startDate = new Date();
+			startDate.setDate(startDate.getDate() - days);
+
+			const stockLogs = await ctx.db
+				.select()
+				.from(schema.medicationStockLog)
+				.where(
+					and(
+						eq(schema.medicationStockLog.medicationId, medicationId),
+						gte(schema.medicationStockLog.createdAt, startDate),
+					),
+				)
+				.orderBy(desc(schema.medicationStockLog.createdAt));
+
+			// Calculate daily stock changes
+			const dailyChanges: Record<string, number> = {};
+			for (const log of stockLogs) {
+				const createdAt = log.createdAt;
+				const quantityChanged = log.quantityChanged;
+				if (
+					!createdAt ||
+					quantityChanged === undefined ||
+					quantityChanged === null
+				)
+					continue;
+				const dateStr = new Date(createdAt).toISOString().split("T")[0];
+				if (!dateStr) continue;
+				const date = dateStr as string;
+				if (!dailyChanges[date]) {
+					dailyChanges[date] = 0;
+				}
+				dailyChanges[date] += quantityChanged;
+			}
+
+			return {
+				medicationId,
+				days,
+				totalChanges: stockLogs.length,
+				dailyChanges,
+				logs: stockLogs,
+			};
+		}),
+
 	getAlerts: protectedProcedure.query(async ({ ctx }) => {
 		const thirtyDaysFromNow = new Date();
 		thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
