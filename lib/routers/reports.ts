@@ -1,4 +1,4 @@
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 import * as schema from "../db/schema/schema.js";
 import { protectedProcedure, router } from "../trpc.js";
@@ -285,5 +285,125 @@ export const reportsRouter = router({
 			}
 
 			return trends;
+		}),
+
+	getInventoryReport: protectedProcedure
+		.input(
+			z.object({
+				startDate: z.date().optional(),
+				endDate: z.date().optional(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const { startDate, endDate } = input;
+
+			const whereConditions = [];
+			if (startDate) {
+				whereConditions.push(
+					gte(schema.medicationStockLog.createdAt, startDate),
+				);
+			}
+			if (endDate) {
+				whereConditions.push(lte(schema.medicationStockLog.createdAt, endDate));
+			}
+
+			const stockLogs = await ctx.db
+				.select({
+					medicationId: schema.medicationStockLog.medicationId,
+					changeType: schema.medicationStockLog.changeType,
+					quantityChanged: schema.medicationStockLog.quantityChanged,
+					createdAt: schema.medicationStockLog.createdAt,
+					medication: {
+						id: schema.medications.id,
+						name: schema.medications.name,
+						dosage: schema.medications.dosage,
+					},
+				})
+				.from(schema.medicationStockLog)
+				.leftJoin(
+					schema.medications,
+					eq(schema.medicationStockLog.medicationId, schema.medications.id),
+				)
+				.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+				.orderBy(desc(schema.medicationStockLog.createdAt));
+
+			const medications = await ctx.db
+				.select()
+				.from(schema.medications)
+				.where(eq(schema.medications.isActive, true));
+
+			const lowStock = medications.filter(
+				(med) => med.quantity <= med.minStockLevel && med.quantity > 0,
+			);
+			const outOfStock = medications.filter((med) => med.quantity === 0);
+			const expiringSoon = medications.filter((med) => {
+				if (!med.expiryDate) return false;
+				const thirtyDaysFromNow = new Date();
+				thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+				return (
+					new Date(med.expiryDate) <= thirtyDaysFromNow &&
+					new Date(med.expiryDate) >= new Date()
+				);
+			});
+
+			const totalValue = medications.reduce(
+				(sum, med) => sum + med.quantity * med.unitPrice,
+				0,
+			);
+
+			const usageByMedication = stockLogs.reduce(
+				(acc, log) => {
+					const key = log.medicationId;
+					if (!acc[key]) {
+						acc[key] = {
+							medication: log.medication,
+							additions: 0,
+							reductions: 0,
+							netChange: 0,
+						};
+					}
+					if (log.changeType === "addition") {
+						acc[key].additions += log.quantityChanged;
+					} else if (log.changeType === "reduction") {
+						acc[key].reductions += Math.abs(log.quantityChanged);
+					}
+					acc[key].netChange += log.quantityChanged;
+					return acc;
+				},
+				{} as Record<
+					number,
+					{
+						medication: {
+							id: number;
+							name: string;
+							dosage: string | null;
+						} | null;
+						additions: number;
+						reductions: number;
+						netChange: number;
+					}
+				>,
+			);
+
+			return {
+				summary: {
+					totalMedications: medications.length,
+					lowStockCount: lowStock.length,
+					outOfStockCount: outOfStock.length,
+					expiringSoonCount: expiringSoon.length,
+					totalInventoryValue: totalValue,
+				},
+				stockUsage: Object.values(usageByMedication),
+				lowStockMedications: lowStock,
+				outOfStockMedications: outOfStock,
+				expiringMedications: expiringSoon.map((med) => ({
+					...med,
+					daysToExpiry: Math.ceil(
+						(new Date(med.expiryDate as Date).getTime() - Date.now()) /
+							(1000 * 60 * 60 * 24),
+					),
+				})),
+				recentStockChanges: stockLogs.slice(0, 50), // Last 50 changes
+			};
 		}),
 });

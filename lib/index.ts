@@ -4,6 +4,7 @@ import { dashboardRouter } from "./routers/dashboard.js";
 import { invoicesRouter } from "./routers/invoices.js";
 import { labTestsRouter } from "./routers/lab-tests.js";
 import { medicalRecordsRouter } from "./routers/medical-records.js";
+import { medicationSuppliersRouter } from "./routers/medication-suppliers.js";
 import { medicationsRouter } from "./routers/medications.js";
 import { patientsRouter } from "./routers/patients.js";
 import { prescriptionsRouter } from "./routers/prescriptions.js";
@@ -18,6 +19,7 @@ export const appRouter = router({
 	appointments: appointmentsRouter,
 	medicalRecords: medicalRecordsRouter,
 	medications: medicationsRouter,
+	medicationSuppliers: medicationSuppliersRouter,
 	prescriptions: prescriptionsRouter,
 	invoices: invoicesRouter,
 	labTests: labTestsRouter,
