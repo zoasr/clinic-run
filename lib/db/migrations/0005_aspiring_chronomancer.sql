@@ -1,0 +1,1 @@
+ALTER TABLE `medications` ADD `supplier_id` integer REFERENCES medication_suppliers(id);

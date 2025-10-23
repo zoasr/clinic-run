@@ -83,6 +83,7 @@ export const medications = sqliteTable("medications", {
 	dosage: text("dosage"),
 	form: text("form"), // tablet, capsule, syrup, injection
 	manufacturer: text("manufacturer"),
+	supplierId: integer("supplier_id").references(() => medicationSuppliers.id),
 	batchNumber: text("batch_number"),
 	expiryDate: integer("expiry_date", { mode: "timestamp" }),
 	quantity: integer("quantity").notNull().default(0),
