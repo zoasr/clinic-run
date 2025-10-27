@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
-import { ArrowLeft } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,15 @@ export function PrescriptionForm({
 }: PrescriptionFormProps) {
 	const queryClient = useQueryClient();
 
+	const { data: selectedMedication } = useQuery(
+		trpc.medications.getById.queryOptions(
+			{ id: prescription ? prescription?.medicationId : 0 },
+			{
+				enabled: !!prescription?.medicationId && prescription.medicationId > 0,
+			},
+		),
+	);
+
 	const defaultValues: PrescriptionFormValues = {
 		patientId: prescription?.patientId ?? 0,
 		doctorId: prescription?.doctorId ?? "",
@@ -58,7 +67,7 @@ export function PrescriptionForm({
 		trpc.prescriptions.create.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
-					queryKey: ["prescriptions"],
+					queryKey: trpc.prescriptions.getAll.queryKey(),
 					refetchType: "active",
 				});
 				onSave();
@@ -74,7 +83,7 @@ export function PrescriptionForm({
 		trpc.prescriptions.update.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({
-					queryKey: ["prescriptions"],
+					queryKey: trpc.prescriptions.getAll.queryKey(),
 					refetchType: "active",
 				});
 				onSave();
@@ -93,6 +102,17 @@ export function PrescriptionForm({
 	const form = useForm({
 		defaultValues,
 		onSubmit: async ({ value }) => {
+			// Check stock availability for new prescriptions
+			if (prescription && !prescription?.id && selectedMedication) {
+				const availableStock = selectedMedication.quantity || 0;
+				if (value.quantity > availableStock) {
+					toast.error(
+						`Insufficient stock. Available: ${availableStock} units, Requested: ${value.quantity} units`,
+					);
+					return;
+				}
+			}
+
 			const sanitized = {
 				patientId: value.patientId,
 				doctorId: value.doctorId,
@@ -208,9 +228,11 @@ export function PrescriptionForm({
 										<>
 											<SearchMedicationsDialog
 												medication={
-													prescription?.medication
+													prescription
 														? prescription.medication
-														: null
+															? prescription.medication
+															: undefined
+														: undefined
 												}
 												onSelect={(medication) =>
 													field.handleChange(medication?.id || 0)
@@ -221,6 +243,53 @@ export function PrescriptionForm({
 								</form.Field>
 							</div>
 						</div>
+
+						{/* Stock Warning */}
+						{selectedMedication && !prescription?.id && (
+							<div className="mt-4">
+								<form.Field name="quantity">
+									{(field) => {
+										const requestedQuantity = field.state.value;
+										const availableStock = selectedMedication.quantity || 0;
+										const isLowStock = requestedQuantity > availableStock;
+
+										if (isLowStock) {
+											return (
+												<Alert variant="destructive">
+													<AlertTriangle className="h-4 w-4" />
+													<AlertDescription>
+														Insufficient stock. Available: {availableStock}{" "}
+														units, Requested: {requestedQuantity} units
+													</AlertDescription>
+												</Alert>
+											);
+										}
+
+										if (
+											availableStock <= (selectedMedication.minStockLevel || 10)
+										) {
+											return (
+												<Alert>
+													<AlertTriangle className="h-4 w-4" />
+													<AlertDescription>
+														Low stock warning. Available: {availableStock} units
+														(Minimum: {selectedMedication.minStockLevel || 10})
+													</AlertDescription>
+												</Alert>
+											);
+										}
+
+										return (
+											<Alert>
+												<AlertDescription>
+													Stock available: {availableStock} units
+												</AlertDescription>
+											</Alert>
+										);
+									}}
+								</form.Field>
+							</div>
+						)}
 					</CardContent>
 				</Card>
 

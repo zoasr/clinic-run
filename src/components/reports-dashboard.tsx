@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
 	CalendarDays,
 	DollarSign,
@@ -345,10 +346,17 @@ export function ReportsDashboard() {
 				<TabsContent value="inventory" className="space-y-4">
 					<Card>
 						<CardHeader>
-							<CardTitle>Inventory Status</CardTitle>
-							<CardDescription>
-								Medication stock levels and alerts
-							</CardDescription>
+							<div className="flex items-center justify-between">
+								<div>
+									<CardTitle>Inventory Status</CardTitle>
+									<CardDescription>
+										Medication stock levels and alerts
+									</CardDescription>
+								</div>
+								<Button asChild>
+									<Link to="/reports/inventory">Detailed inventory reports</Link>
+								</Button>
+							</div>
 						</CardHeader>
 						<CardContent>
 							<div className="grid gap-4 md:grid-cols-4">
