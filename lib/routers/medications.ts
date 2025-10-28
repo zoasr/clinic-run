@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, like, lt, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, like, lt, lte, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import * as schema from "../db/schema/schema.js";
@@ -334,8 +334,29 @@ export const medicationsRouter = router({
 		}),
 
 	getAlerts: protectedProcedure.query(async ({ ctx }) => {
-		const thirtyDaysFromNow = new Date();
-		thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+		// Get alert settings from system settings
+		const alertSettings = await ctx.db
+			.select()
+			.from(schema.systemSettings)
+			.where(
+				inArray(schema.systemSettings.key, [
+					"expiry_alert_days",
+					"low_stock_alert_threshold",
+				]),
+			);
+
+		const expiryAlertDays = parseInt(
+			alertSettings.find((s) => s.key === "expiry_alert_days")?.value || "30",
+		);
+		const lowStockThreshold = parseInt(
+			alertSettings.find((s) => s.key === "low_stock_alert_threshold")?.value ||
+				"10",
+		);
+
+		const expiryDateThreshold = new Date();
+		expiryDateThreshold.setDate(
+			expiryDateThreshold.getDate() + expiryAlertDays,
+		);
 
 		const lowStockMeds = await ctx.db
 			.select()
@@ -343,7 +364,7 @@ export const medicationsRouter = router({
 			.where(
 				and(
 					eq(schema.medications.isActive, true),
-					sql`${schema.medications.quantity} <= ${schema.medications.minStockLevel}`,
+					sql`${schema.medications.quantity} <= ${lowStockThreshold}`,
 					sql`${schema.medications.quantity} > 0`,
 				),
 			);
@@ -355,7 +376,7 @@ export const medicationsRouter = router({
 				and(
 					eq(schema.medications.isActive, true),
 					gte(schema.medications.expiryDate, new Date()),
-					lte(schema.medications.expiryDate, thirtyDaysFromNow),
+					lte(schema.medications.expiryDate, expiryDateThreshold),
 				),
 			);
 
@@ -363,7 +384,7 @@ export const medicationsRouter = router({
 			...lowStockMeds.map((med) => ({
 				...med,
 				alertType: "lowStock" as const,
-				message: `Low stock: ${med.quantity} remaining (min: ${med.minStockLevel})`,
+				message: `Low stock: ${med.quantity} remaining (threshold: ${lowStockThreshold})`,
 			})),
 			...expiringMeds.map((med) => {
 				const daysToExpiry = Math.ceil(
@@ -379,6 +400,34 @@ export const medicationsRouter = router({
 		];
 
 		return alerts;
+	}),
+
+	getLowStockAlerts: protectedProcedure.query(async ({ ctx }) => {
+		// Get low stock threshold from system settings
+		const thresholdSetting = await ctx.db
+			.select()
+			.from(schema.systemSettings)
+			.where(eq(schema.systemSettings.key, "low_stock_alert_threshold"))
+			.limit(1);
+
+		const lowStockThreshold = parseInt(thresholdSetting[0]?.value || "10");
+
+		const lowStockMeds = await ctx.db
+			.select()
+			.from(schema.medications)
+			.where(
+				and(
+					eq(schema.medications.isActive, true),
+					sql`${schema.medications.quantity} <= ${lowStockThreshold}`,
+					sql`${schema.medications.quantity} > 0`,
+				),
+			);
+
+		return lowStockMeds.map((med) => ({
+			...med,
+			alertType: "lowStock" as const,
+			message: `Low stock: ${med.quantity} remaining (threshold: ${lowStockThreshold})`,
+		}));
 	}),
 
 	getExpiringSoon: protectedProcedure
