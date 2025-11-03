@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { Medication } from "@/hooks/useMedications";
 import type { Patient } from "@/hooks/usePatients";
 import type { AppRouter } from "@/lib/trpc";
 import { trpc } from "@/lib/trpc-client";
@@ -229,8 +230,8 @@ export function PrescriptionForm({
 											<SearchMedicationsDialog
 												medication={
 													prescription
-														? prescription.medication
-															? prescription.medication
+														? (prescription.medication as Medication)
+															? (prescription.medication as Medication)
 															: undefined
 														: undefined
 												}
