@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -39,12 +39,17 @@ export function MedicationForm({
 }: MedicationFormProps) {
 	const queryClient = useQueryClient();
 
+	const { data: suppliers } = useQuery(
+		trpc.medicationSuppliers.getAll.queryOptions(),
+	);
+
 	const defaultValues: Medication = {
 		name: (medication as any)?.name ?? "",
 		genericName: (medication as any)?.genericName ?? "",
 		dosage: (medication as any)?.dosage ?? "",
 		form: (medication as any)?.form ?? "tablet",
 		manufacturer: (medication as any)?.manufacturer ?? "",
+		supplierId: (medication as any)?.supplierId ?? undefined,
 		batchNumber: (medication as any)?.batchNumber ?? "",
 		expiryDate: (medication as any)?.expiryDate ?? "",
 		quantity: (medication as any)?.quantity ?? 0,
@@ -98,6 +103,7 @@ export function MedicationForm({
 				dosage: value.dosage?.trim() || undefined,
 				form: value.form?.trim() || undefined,
 				manufacturer: value.manufacturer?.trim() || undefined,
+				supplierId: value.supplierId || undefined,
 				batchNumber: value.batchNumber?.trim() || undefined,
 				expiryDate: value.expiryDate || new Date(),
 				quantity: Number(value.quantity) || 0,
@@ -249,6 +255,37 @@ export function MedicationForm({
 											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder="e.g., Generic Pharma"
 										/>
+									)}
+								</form.Field>
+							}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="supplierId">Supplier</Label>
+							{
+								<form.Field name="supplierId">
+									{(field) => (
+										<Select
+											value={field.state.value?.toString() ?? ""}
+											onValueChange={(value) =>
+												field.handleChange(value ? parseInt(value) : undefined)
+											}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="Select a supplier" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="no-supplier">No supplier</SelectItem>
+												{suppliers?.map((supplier) => (
+													<SelectItem
+														key={supplier.id}
+														value={supplier.id.toString()}
+													>
+														{supplier.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 									)}
 								</form.Field>
 							}

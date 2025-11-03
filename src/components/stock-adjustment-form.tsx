@@ -43,7 +43,7 @@ export function StockAdjustmentForm({
 	// const [error, setError] = useState("");
 
 	const { mutate, isPending, error, isError } = useMutation(
-		trpc.medications.update.mutationOptions({
+		trpc.medications.adjustStock.mutationOptions({
 			onSuccess: () => {
 				toast.success("Stock adjusted successfully!");
 				onSave();
@@ -77,16 +77,27 @@ export function StockAdjustmentForm({
 				return;
 			}
 
-			const newQuantity = calculateNewQuantity(
-				value.adjustmentType,
-				value.adjustmentQuantity,
-			);
+			let quantityChange: number;
+			switch (value.adjustmentType) {
+				case "add":
+					quantityChange = value.adjustmentQuantity;
+					break;
+				case "remove":
+					quantityChange = -value.adjustmentQuantity;
+					break;
+				case "set":
+					quantityChange =
+						value.adjustmentQuantity - (medication.quantity ?? 0);
+					break;
+				default:
+					quantityChange = 0;
+			}
+
 			if (medication.id) {
 				mutate({
 					id: medication.id,
-					data: {
-						quantity: newQuantity,
-					},
+					quantity: quantityChange,
+					reason: value.reason || "Manual stock adjustment",
 				});
 			}
 		},

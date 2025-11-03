@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	AlertTriangle,
 	Calendar,
+	Download,
 	Package,
 	Pill,
 	Plus,
@@ -96,6 +97,54 @@ export function InventoryManagement() {
 		deleteMedication({ id: medicationId });
 	};
 
+	const handleExportInventory = () => {
+		const csvData = medications.map((med) => ({
+			Name: med.name,
+			"Generic Name": med.genericName || "",
+			Dosage: med.dosage || "",
+			Form: med.form || "",
+			Manufacturer: med.manufacturer || "",
+			"Batch Number": med.batchNumber || "",
+			"Expiry Date": med.expiryDate
+				? new Date(med.expiryDate).toLocaleDateString()
+				: "",
+			Quantity: med.quantity,
+			"Min Stock Level": med.minStockLevel,
+			"Unit Price": med.unitPrice,
+			Status:
+				med.quantity === 0
+					? "Out of Stock"
+					: med.quantity <= med.minStockLevel
+						? "Low Stock"
+						: "In Stock",
+		}));
+
+		const csvString = [
+			Object.keys(csvData[0]).join(","),
+			...csvData.map((row) =>
+				Object.values(row)
+					.map((value) =>
+						typeof value === "string" && value.includes(",")
+							? `"${value}"`
+							: value,
+					)
+					.join(","),
+			),
+		].join("\n");
+
+		const blob = new Blob([csvString], { type: "text/csv" });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `inventory-export-${new Date().toISOString().split("T")[0]}.csv`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		window.URL.revokeObjectURL(url);
+
+		toast.success("Inventory exported successfully");
+	};
+
 	const getStockStatus = (medication: Medication) => {
 		if (medication.quantity === 0)
 			return { status: "out-of-stock", color: "bg-red-100 text-red-800" };
@@ -151,12 +200,28 @@ export function InventoryManagement() {
 						Manage medications and medical supplies
 					</p>
 				</div>
-				<Link to="/medications/new">
-					<Button className="flex items-center gap-2">
-						<Plus className="h-4 w-4" />
-						Add Medication
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						onClick={handleExportInventory}
+						className="flex items-center gap-2"
+					>
+						<Download className="h-4 w-4" />
+						Export
 					</Button>
-				</Link>
+					<Link to="/medications/suppliers">
+						<Button className="flex items-center gap-2">
+							<Package className="h-4 w-4" />
+							Suppliers
+						</Button>
+					</Link>
+					<Link to="/medications/new">
+						<Button className="flex items-center gap-2">
+							<Plus className="h-4 w-4" />
+							Add Medication
+						</Button>
+					</Link>
+				</div>
 			</div>
 
 			{/* Stats Cards */}
@@ -276,239 +341,245 @@ export function InventoryManagement() {
 						</Card>
 					) : (
 						<div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
-							{medications &&
-								medications?.map((medication) => {
-									const stockStatus = getStockStatus(medication);
-									const expiryStatus = getExpiryStatus(medication?.expiryDate);
-									const isLowStock =
-										medication.quantity <= medication.minStockLevel &&
-										medication.quantity > 0;
-									const isOutOfStock = medication.quantity === 0;
-									const isExpiringSoon =
-										expiryStatus &&
-										(expiryStatus.status === "expiring-soon" ||
-											expiryStatus.status === "expired");
+							{medications
+								? medications?.map((medication) => {
+										const stockStatus = getStockStatus(medication);
+										const expiryStatus = getExpiryStatus(
+											medication?.expiryDate,
+										);
+										const isLowStock =
+											medication.quantity <= medication.minStockLevel &&
+											medication.quantity > 0;
+										const isOutOfStock = medication.quantity === 0;
+										const isExpiringSoon =
+											expiryStatus &&
+											(expiryStatus.status === "expiring-soon" ||
+												expiryStatus.status === "expired");
 
-									return (
-										<Card
-											key={medication.id}
-											className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20 ${
-												isOutOfStock
-													? "bg-red-100/30 dark:bg-red-800/10"
-													: isLowStock
-														? "bg-yellow-100/30 dark:bg-yellow-800/10"
-														: isExpiringSoon
-															? "bg-amber-200/30 dark:bg-amber-800/10"
-															: ""
-											}`}
-										>
-											<CardContent className="flex flex-col items-center justify-between h-full *:w-full">
-												{/* Header */}
-												<div className="flex items-start justify-between mb-4">
-													<div className="flex items-center gap-3 flex-1">
-														<div className="relative">
-															<div
-																className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-																	isOutOfStock
-																		? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-																		: isLowStock
-																			? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-																			: "bg-primary/20 text-primary group-hover:bg-primary/30"
-																}`}
-															>
-																<Pill className="h-6 w-6" />
+										return (
+											<Card
+												key={medication.id}
+												className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20 ${
+													isOutOfStock
+														? "bg-red-100/30 dark:bg-red-800/10"
+														: isLowStock
+															? "bg-yellow-100/30 dark:bg-yellow-800/10"
+															: isExpiringSoon
+																? "bg-amber-200/30 dark:bg-amber-800/10"
+																: ""
+												}`}
+											>
+												<CardContent className="flex flex-col items-center justify-between h-full *:w-full">
+													{/* Header */}
+													<div className="flex items-start justify-between mb-4">
+														<div className="flex items-center gap-3 flex-1">
+															<div className="relative">
+																<div
+																	className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+																		isOutOfStock
+																			? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+																			: isLowStock
+																				? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+																				: "bg-primary/20 text-primary group-hover:bg-primary/30"
+																	}`}
+																>
+																	<Pill className="h-6 w-6" />
+																</div>
+																{(isLowStock || isOutOfStock) && (
+																	<div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+																		<span className="text-xs text-white font-bold">
+																			!
+																		</span>
+																	</div>
+																)}
 															</div>
-															{(isLowStock || isOutOfStock) && (
-																<div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-																	<span className="text-xs text-white font-bold">
-																		!
+															<div className="flex-1 min-w-0">
+																<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+																	{medication.name}
+																</h3>
+																{medication.genericName && (
+																	<p className="text-sm text-muted-foreground truncate">
+																		{medication.genericName}
+																	</p>
+																)}
+															</div>
+														</div>
+														<div className="flex flex-col gap-1">
+															<Badge
+																className={`${stockStatus.color} border-black/20 text-xs`}
+															>
+																{stockStatus.status}
+															</Badge>
+															{isExpiringSoon && (
+																<Badge
+																	className={`${expiryStatus.color} border-black/20 text-xs`}
+																>
+																	{expiryStatus.status}
+																</Badge>
+															)}
+														</div>
+													</div>
+
+													{/* Key Information Grid */}
+													<div className="grid grid-cols-2 gap-4 mb-4">
+														{/* Stock Level */}
+														<div className="space-y-1">
+															<p className="text-xs text-muted-foreground">
+																Stock
+															</p>
+															<div className="flex items-center gap-2">
+																<span className="text-lg font-bold">
+																	{medication.quantity}
+																</span>
+																<span className="text-xs text-muted-foreground">
+																	/ {medication.minStockLevel} min
+																</span>
+															</div>
+														</div>
+
+														{/* Price */}
+														<div className="space-y-1">
+															<p className="text-xs text-muted-foreground">
+																Price
+															</p>
+															<p className="text-lg font-bold">
+																{formatCurrency(medication.unitPrice)}
+															</p>
+														</div>
+
+														{/* Dosage & Form */}
+														<div className="space-y-1">
+															<p className="text-xs text-muted-foreground">
+																Dosage
+															</p>
+															<p className="text-sm font-medium">
+																{medication.dosage} {medication.form}
+															</p>
+														</div>
+
+														{/* Expiry Date */}
+														{medication.expiryDate && (
+															<div className="space-y-1">
+																<p className="text-xs text-muted-foreground">
+																	Expires
+																</p>
+																<p className="text-sm font-medium">
+																	{new Date(
+																		medication.expiryDate,
+																	).toLocaleDateString()}
+																</p>
+															</div>
+														)}
+													</div>
+
+													{/* Additional Info */}
+													{(medication.manufacturer ||
+														medication.batchNumber) && (
+														<div className="space-y-2 mb-4 pt-3 border-t border-border/50">
+															{medication.manufacturer && (
+																<div className="flex justify-between items-center">
+																	<span className="text-xs text-muted-foreground">
+																		Manufacturer
+																	</span>
+																	<span className="text-sm">
+																		{medication.manufacturer}
+																	</span>
+																</div>
+															)}
+															{medication.batchNumber && (
+																<div className="flex justify-between items-center">
+																	<span className="text-xs text-muted-foreground">
+																		Batch
+																	</span>
+																	<span className="text-sm font-mono">
+																		{medication.batchNumber}
 																	</span>
 																</div>
 															)}
 														</div>
-														<div className="flex-1 min-w-0">
-															<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-																{medication.name}
-															</h3>
-															{medication.genericName && (
-																<p className="text-sm text-muted-foreground truncate">
-																	{medication.genericName}
-																</p>
-															)}
-														</div>
-													</div>
-													<div className="flex flex-col gap-1">
-														<Badge
-															className={`${stockStatus.color} border-black/20 text-xs`}
-														>
-															{stockStatus.status}
-														</Badge>
-														{isExpiringSoon && (
-															<Badge
-																className={`${expiryStatus.color} border-black/20 text-xs`}
-															>
-																{expiryStatus.status}
-															</Badge>
-														)}
-													</div>
-												</div>
-
-												{/* Key Information Grid */}
-												<div className="grid grid-cols-2 gap-4 mb-4">
-													{/* Stock Level */}
-													<div className="space-y-1">
-														<p className="text-xs text-muted-foreground">
-															Stock
-														</p>
-														<div className="flex items-center gap-2">
-															<span className="text-lg font-bold">
-																{medication.quantity}
-															</span>
-															<span className="text-xs text-muted-foreground">
-																/ {medication.minStockLevel} min
-															</span>
-														</div>
-													</div>
-
-													{/* Price */}
-													<div className="space-y-1">
-														<p className="text-xs text-muted-foreground">
-															Price
-														</p>
-														<p className="text-lg font-bold">
-															{formatCurrency(medication.unitPrice)}
-														</p>
-													</div>
-
-													{/* Dosage & Form */}
-													<div className="space-y-1">
-														<p className="text-xs text-muted-foreground">
-															Dosage
-														</p>
-														<p className="text-sm font-medium">
-															{medication.dosage} {medication.form}
-														</p>
-													</div>
-
-													{/* Expiry Date */}
-													{medication.expiryDate && (
-														<div className="space-y-1">
-															<p className="text-xs text-muted-foreground">
-																Expires
-															</p>
-															<p className="text-sm font-medium">
-																{new Date(
-																	medication.expiryDate,
-																).toLocaleDateString()}
-															</p>
-														</div>
 													)}
-												</div>
 
-												{/* Additional Info */}
-												{(medication.manufacturer ||
-													medication.batchNumber) && (
-													<div className="space-y-2 mb-4 pt-3 border-t border-border/50">
-														{medication.manufacturer && (
-															<div className="flex justify-between items-center">
-																<span className="text-xs text-muted-foreground">
-																	Manufacturer
-																</span>
-																<span className="text-sm">
-																	{medication.manufacturer}
-																</span>
-															</div>
-														)}
-														{medication.batchNumber && (
-															<div className="flex justify-between items-center">
-																<span className="text-xs text-muted-foreground">
-																	Batch
-																</span>
-																<span className="text-sm font-mono">
-																	{medication.batchNumber}
-																</span>
-															</div>
-														)}
-													</div>
-												)}
-
-												{/* Metadata */}
-												<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
-													<span>
-														Added{" "}
-														{new Date(
-															medication.createdAt,
-														).toLocaleDateString()}
-													</span>
-													{medication.updatedAt !== medication.createdAt && (
+													{/* Metadata */}
+													<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
 														<span>
-															Updated{" "}
+															Added{" "}
 															{new Date(
-																medication.updatedAt,
+																medication.createdAt,
 															).toLocaleDateString()}
 														</span>
-													)}
-												</div>
+														{medication.updatedAt !== medication.createdAt && (
+															<span>
+																Updated{" "}
+																{new Date(
+																	medication.updatedAt,
+																).toLocaleDateString()}
+															</span>
+														)}
+													</div>
 
-												{/* Actions */}
-												<div className="flex items-center gap-2 pt-4 mt-4 border-t border-border/50">
-													<Link
-														to={`/medications/$medicationId`}
-														params={{
-															medicationId: medication.id.toString(),
-														}}
-														className="flex-1"
-													>
-														<Button size="sm" className="w-full transition-all">
-															View Details
-														</Button>
-													</Link>
-													<Link
-														to={`/medications/stock/$medicationId`}
-														params={{
-															medicationId: medication.id.toString(),
-														}}
-													>
-														<Button variant="outline">Adjust Stock</Button>
-													</Link>
-													<AlertDialog>
-														<AlertDialogTrigger asChild>
+													{/* Actions */}
+													<div className="flex items-center gap-2 pt-4 mt-4 border-t border-border/50">
+														<Link
+															to={`/medications/$medicationId`}
+															params={{
+																medicationId: medication.id.toString(),
+															}}
+															className="flex-1"
+														>
 															<Button
-																variant="destructive"
 																size="sm"
-																disabled={isDeleting}
+																className="w-full transition-all"
 															>
-																<Trash2 className="h-4 w-4" />
+																View Details
 															</Button>
-														</AlertDialogTrigger>
-														<AlertDialogContent>
-															<AlertDialogHeader>
-																<AlertDialogTitle>
-																	Delete Medication
-																</AlertDialogTitle>
-																<AlertDialogDescription>
-																	Are you sure you want to delete this
-																	medication? This action cannot be undone.
-																</AlertDialogDescription>
-															</AlertDialogHeader>
-															<AlertDialogFooter>
-																<AlertDialogCancel>Cancel</AlertDialogCancel>
-																<AlertDialogAction
-																	onClick={() =>
-																		handleDeleteMedication(medication.id)
-																	}
-																	className="bg-red-600 hover:bg-red-700"
+														</Link>
+														<Link
+															to={`/medications/stock/$medicationId`}
+															params={{
+																medicationId: medication.id.toString(),
+															}}
+														>
+															<Button variant="outline">Adjust Stock</Button>
+														</Link>
+														<AlertDialog>
+															<AlertDialogTrigger asChild>
+																<Button
+																	variant="destructive"
+																	size="sm"
+																	disabled={isDeleting}
 																>
-																	Delete
-																</AlertDialogAction>
-															</AlertDialogFooter>
-														</AlertDialogContent>
-													</AlertDialog>
-												</div>
-											</CardContent>
-										</Card>
-									);
-								})}
+																	<Trash2 className="h-4 w-4" />
+																</Button>
+															</AlertDialogTrigger>
+															<AlertDialogContent>
+																<AlertDialogHeader>
+																	<AlertDialogTitle>
+																		Delete Medication
+																	</AlertDialogTitle>
+																	<AlertDialogDescription>
+																		Are you sure you want to delete this
+																		medication? This action cannot be undone.
+																	</AlertDialogDescription>
+																</AlertDialogHeader>
+																<AlertDialogFooter>
+																	<AlertDialogCancel>Cancel</AlertDialogCancel>
+																	<AlertDialogAction
+																		onClick={() =>
+																			handleDeleteMedication(medication.id)
+																		}
+																		className="bg-red-600 hover:bg-red-700"
+																	>
+																		Delete
+																	</AlertDialogAction>
+																</AlertDialogFooter>
+															</AlertDialogContent>
+														</AlertDialog>
+													</div>
+												</CardContent>
+											</Card>
+										);
+									})
+								: null}
 						</div>
 					)}
 					{/* Load More Section */}

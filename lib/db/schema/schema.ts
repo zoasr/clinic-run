@@ -83,6 +83,7 @@ export const medications = sqliteTable("medications", {
 	dosage: text("dosage"),
 	form: text("form"), // tablet, capsule, syrup, injection
 	manufacturer: text("manufacturer"),
+	supplierId: integer("supplier_id").references(() => medicationSuppliers.id),
 	batchNumber: text("batch_number"),
 	expiryDate: integer("expiry_date", { mode: "timestamp" }),
 	quantity: integer("quantity").notNull().default(0),
@@ -170,6 +171,31 @@ export const labTests = sqliteTable("lab_tests", {
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: integer("updated_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Medication stock log table
+export const medicationStockLog = sqliteTable("medication_stock_log", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	medicationId: integer("medication_id")
+		.notNull()
+		.references(() => medications.id),
+	changeType: text("change_type").notNull(), // 'addition', 'reduction', 'adjustment'
+	quantityChanged: integer("quantity_changed").notNull(),
+	reason: text("reason"),
+	createdAt: integer("created_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Medication suppliers table
+export const medicationSuppliers = sqliteTable("medication_suppliers", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	name: text("name").notNull(),
+	contactInfo: text("contact_info"),
+	address: text("address"),
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
 });

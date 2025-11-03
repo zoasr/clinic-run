@@ -42,6 +42,13 @@ export const systemSettingsSchema = z.object({
 	theme_mode: z.enum(["light", "dark", "system"]),
 	sidebar_collapsed: z.boolean(),
 	compact_mode: z.boolean(),
+	// Inventory alert settings
+	low_stock_alert_threshold: z
+		.number()
+		.min(0, "Threshold must be non-negative"),
+	expiry_alert_days: z.number().min(1, "Must be at least 1 day"),
+	email_notifications: z.boolean(),
+	sms_notifications: z.boolean(),
 });
 
 /**
@@ -199,9 +206,20 @@ export function useNotificationSettings() {
 			return value === "true";
 		};
 
+		const getSettingAsNumber = (key: string): number | undefined => {
+			const value = getSetting(key);
+			if (value === undefined) return undefined;
+			const num = parseInt(value, 10);
+			return isNaN(num) ? undefined : num;
+		};
+
 		return {
 			emailNotifications: getSettingAsBoolean("email_notifications"),
 			appointmentReminders: getSettingAsBoolean("appointment_reminders"),
+			smsNotifications: getSettingAsBoolean("sms_notifications"),
+			lowStockAlertThreshold:
+				getSettingAsNumber("low_stock_alert_threshold") || 10,
+			expiryAlertDays: getSettingAsNumber("expiry_alert_days") || 30,
 		};
 	}, [settings]);
 	return notificationSettings;

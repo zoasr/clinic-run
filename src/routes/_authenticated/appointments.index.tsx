@@ -342,9 +342,6 @@ export function AppointmentManagement() {
 		[data],
 	);
 
-	if (error) {
-		return <ErrorComponent error={error} />;
-	}
 	const appointmentsEls = useMemo(
 		() =>
 			appointmentsData.map((appointment) => (
@@ -356,6 +353,10 @@ export function AppointmentManagement() {
 			)),
 		[appointmentsData, refetch],
 	);
+
+	if (error) {
+		return <ErrorComponent error={error} />;
+	}
 
 	return (
 		<>

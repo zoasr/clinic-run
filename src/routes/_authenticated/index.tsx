@@ -11,6 +11,8 @@ import {
 	Plus,
 	Users,
 } from "lucide-react";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,52 @@ export function DashboardPage() {
 
 	const { data: upcomingAppointments, isLoading: appointmentsLoading } =
 		useQuery(trpc.dashboard.getUpcomingAppointments.queryOptions({ days: 3 }));
+
+	const { data: inventoryAlerts, isLoading: alertsLoading } = useQuery(
+		trpc.medications.getAlerts.queryOptions(),
+	);
+
+	useEffect(() => {
+		if (inventoryAlerts && inventoryAlerts.length > 0) {
+			const lowStockAlerts = inventoryAlerts.filter(
+				(alert: any) => alert.alertType === "lowStock",
+			);
+			const expiringAlerts = inventoryAlerts.filter(
+				(alert: any) => alert.alertType === "expiringSoon",
+			);
+
+			// Show low stock notifications
+			if (lowStockAlerts.length > 0) {
+				toast.warning(`Low Stock Alert`, {
+					description: `${lowStockAlerts.length} medication${
+						lowStockAlerts.length > 1 ? "s" : ""
+					} running low on stock`,
+					action: {
+						label: "View",
+						onClick: () => {
+							// Could navigate to medications page or open a modal
+							window.location.href = "/medications";
+						},
+					},
+				});
+			}
+
+			// Show expiring medication notifications
+			if (expiringAlerts.length > 0) {
+				toast.error(`Expiring Medications`, {
+					description: `${expiringAlerts.length} medication${
+						expiringAlerts.length > 1 ? "s" : ""
+					} expiring soon`,
+					action: {
+						label: "View",
+						onClick: () => {
+							window.location.href = "/medications";
+						},
+					},
+				});
+			}
+		}
+	}, [inventoryAlerts]);
 
 	if (statsLoading) {
 		return (
@@ -526,6 +574,79 @@ export function DashboardPage() {
 									<Button asChild size="sm" className="mt-2">
 										<Link to="/appointments/new">Schedule One</Link>
 									</Button>
+								</div>
+							)}
+						</CardContent>
+					</Card>
+
+					{/* Inventory Alerts */}
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<AlertTriangle className="h-5 w-5" />
+								Inventory Alerts
+							</CardTitle>
+							<CardDescription>Medications requiring attention</CardDescription>
+						</CardHeader>
+						<CardContent>
+							{alertsLoading ? (
+								<TableLoading rows={2} />
+							) : inventoryAlerts && inventoryAlerts.length > 0 ? (
+								<div className="space-y-3">
+									{inventoryAlerts.slice(0, 4).map((alert: any) => (
+										<div
+											key={`${alert.id}-${alert.alertType}`}
+											className="flex items-start gap-3 p-2 bg-muted/20 rounded"
+										>
+											<div
+												className={cn(
+													"w-2 h-2 rounded-full mt-2",
+													alert.alertType === "lowStock"
+														? "bg-orange-500"
+														: "bg-red-500",
+												)}
+											></div>
+											<div className="flex-1">
+												<p className="text-sm font-medium">{alert.name}</p>
+												<p className="text-xs text-muted-foreground">
+													{alert.message}
+												</p>
+											</div>
+											<Badge
+												variant="outline"
+												className={cn("text-xs", {
+													"border-orange-500/30 bg-orange-500/10":
+														alert.alertType === "lowStock",
+													"border-red-500/30 bg-red-500/10":
+														alert.alertType === "expiringSoon",
+												})}
+											>
+												{alert.alertType === "lowStock"
+													? "Low Stock"
+													: "Expiring"}
+											</Badge>
+										</div>
+									))}
+									{inventoryAlerts.length > 4 && (
+										<Button
+											asChild
+											variant="ghost"
+											size="sm"
+											className="w-full"
+										>
+											<Link to="/medications">
+												View All Alerts
+												<ArrowRight className="h-3 w-3 ml-1" />
+											</Link>
+										</Button>
+									)}
+								</div>
+							) : (
+								<div className="text-center py-4">
+									<Package className="h-8 w-8 text-green-500 mx-auto mb-2" />
+									<p className="text-sm text-muted-foreground">
+										All medications are well-stocked
+									</p>
 								</div>
 							)}
 						</CardContent>

@@ -1,4 +1,4 @@
-import { and, desc, eq, lt, or } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import * as authSchema from "../db/schema/auth-schema.js";
@@ -296,6 +296,42 @@ export const prescriptionsRouter = router({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
+			const prescriptionData = await ctx.db
+				.select()
+				.from(schema.prescriptions)
+				.where(eq(schema.prescriptions.id, input.id))
+				.limit(1);
+
+			if (prescriptionData.length === 0) {
+				throw new Error("Prescription not found");
+			}
+
+			const prescription = prescriptionData[0];
+
+			if (!prescription) throw new Error("Prescription not found");
+
+			if (prescription.isDispensed) {
+				throw new Error("Prescription already dispensed");
+			}
+
+			const medicationData = await ctx.db
+				.select()
+				.from(schema.medications)
+				.where(eq(schema.medications.id, prescription.medicationId))
+				.limit(1);
+
+			if (medicationData.length === 0) {
+				throw new Error("Medication not found");
+			}
+
+			const medication = medicationData[0];
+
+			if (!medication) throw new Error("Medication not found");
+
+			if (medication.quantity < prescription.quantity) {
+				throw new Error("Insufficient stock for dispensing");
+			}
+
 			const dispensedPrescription = await ctx.db
 				.update(schema.prescriptions)
 				.set({
@@ -305,9 +341,22 @@ export const prescriptionsRouter = router({
 				.where(eq(schema.prescriptions.id, input.id))
 				.returning();
 
-			if (dispensedPrescription.length === 0) {
-				throw new Error("Prescription not found");
-			}
+			const newQuantity = medication.quantity - prescription.quantity;
+			await ctx.db
+				.update(schema.medications)
+				.set({
+					quantity: newQuantity,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.medications.id, prescription.medicationId));
+
+			await ctx.db.insert(schema.medicationStockLog).values({
+				medicationId: prescription.medicationId,
+				changeType: "reduction",
+				quantityChanged: -prescription.quantity,
+				reason: `Prescription #${prescription.id} dispensed`,
+				createdAt: new Date(),
+			});
 
 			return dispensedPrescription[0];
 		}),
@@ -318,6 +367,24 @@ export const prescriptionsRouter = router({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
+			const prescriptionData = await ctx.db
+				.select()
+				.from(schema.prescriptions)
+				.where(eq(schema.prescriptions.id, input.id))
+				.limit(1);
+
+			if (prescriptionData.length === 0) {
+				throw new Error("Prescription not found");
+			}
+
+			const prescription = prescriptionData[0];
+
+			if (!prescription) throw new Error("Prescription not found");
+
+			if (!prescription.isDispensed) {
+				throw new Error("Prescription not dispensed");
+			}
+
 			const dispensedPrescription = await ctx.db
 				.update(schema.prescriptions)
 				.set({
@@ -327,9 +394,21 @@ export const prescriptionsRouter = router({
 				.where(eq(schema.prescriptions.id, input.id))
 				.returning();
 
-			if (dispensedPrescription.length === 0) {
-				throw new Error("Prescription not found");
-			}
+			await ctx.db
+				.update(schema.medications)
+				.set({
+					quantity: sql`${schema.medications.quantity} + ${prescription.quantity}`,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.medications.id, prescription.medicationId));
+
+			await ctx.db.insert(schema.medicationStockLog).values({
+				medicationId: prescription.medicationId,
+				changeType: "addition",
+				quantityChanged: prescription.quantity,
+				reason: `Prescription #${prescription.id} undispensed`,
+				createdAt: new Date(),
+			});
 
 			return dispensedPrescription[0];
 		}),

@@ -155,6 +155,10 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			theme_mode: getByKey("theme_mode") || "system",
 			sidebar_collapsed: Boolean(getByKey("sidebar_collapsed")) || false,
 			compact_mode: Boolean(getByKey("compact_mode")) || false,
+			// Inventory alert settings
+			low_stock_alert_threshold:
+				Number(getByKey("low_stock_alert_threshold")) || 10,
+			expiry_alert_days: Number(getByKey("expiry_alert_days")) || 30,
 		};
 
 		const parsed = systemSettingsSchema.safeParse(formData);
@@ -233,6 +237,8 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					"session_timeout",
 					"sidebar_collapsed",
 					"compact_mode",
+					"low_stock_alert_threshold",
+					"expiry_alert_days",
 				].includes(key),
 				category: settings.find((s) => s.key === key)?.category || "clinic",
 			}));
@@ -541,6 +547,85 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 											checked={field.state.value || false}
 											onCheckedChange={field.handleChange}
 										/>
+									</div>
+								)}
+							/>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							Inventory Alerts
+							<Badge variant="secondary">
+								{groupedSettings.notifications?.length || 0}
+							</Badge>
+						</CardTitle>
+						<CardDescription>
+							Configure alerts for medication inventory management.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<form.Field
+								name="low_stock_alert_threshold"
+								validators={{
+									onChange: z.number().min(0, "Threshold must be non-negative"),
+								}}
+								children={(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>
+											Low Stock Alert Threshold
+										</Label>
+										<Input
+											id={field.name}
+											type="number"
+											value={field.state.value || ""}
+											onChange={(e) =>
+												field.handleChange(parseInt(e.target.value) || 0)
+											}
+											min="0"
+											placeholder="10"
+										/>
+										<p className="text-sm text-muted-foreground">
+											Alert when medication stock falls below this level
+										</p>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-destructive">
+												{field.state.meta.errors[0]?.message}
+											</p>
+										)}
+									</div>
+								)}
+							/>
+
+							<form.Field
+								name="expiry_alert_days"
+								validators={{
+									onChange: z.number().min(1, "Must be at least 1 day"),
+								}}
+								children={(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>Expiry Alert Days</Label>
+										<Input
+											id={field.name}
+											type="number"
+											value={field.state.value || ""}
+											onChange={(e) =>
+												field.handleChange(parseInt(e.target.value) || 0)
+											}
+											min="1"
+											placeholder="30"
+										/>
+										<p className="text-sm text-muted-foreground">
+											Alert when medications expire within this many days
+										</p>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-destructive">
+												{field.state.meta.errors[0]?.message}
+											</p>
+										)}
 									</div>
 								)}
 							/>
