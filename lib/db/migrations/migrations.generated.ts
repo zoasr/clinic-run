@@ -87,5 +87,22 @@ export const migrations = [
     "bps": true,
     "folderMillis": 1756751191922,
     "hash": "f5ba83acd99446deb9196eefc4f08021a44bf13c541f4e99ef648deb1271b660"
+  },
+  {
+    "sql": [
+      "CREATE TABLE `medication_stock_log` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`medication_id` integer NOT NULL,\r\n\t`change_type` text NOT NULL,\r\n\t`quantity_changed` integer NOT NULL,\r\n\t`reason` text,\r\n\t`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,\r\n\tFOREIGN KEY (`medication_id`) REFERENCES `medications`(`id`) ON UPDATE no action ON DELETE no action\r\n);\r\n",
+      "\r\nCREATE TABLE `medication_suppliers` (\r\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\r\n\t`name` text NOT NULL,\r\n\t`contact_info` text,\r\n\t`address` text,\r\n\t`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL\r\n);\r\n"
+    ],
+    "bps": true,
+    "folderMillis": 1761157504577,
+    "hash": "53705780eaa0e5e1b7a73c1136678cadc06c17e8e4528ab8a8dec9c1102261ca"
+  },
+  {
+    "sql": [
+      "ALTER TABLE `medications` ADD `supplier_id` integer REFERENCES medication_suppliers(id);"
+    ],
+    "bps": true,
+    "folderMillis": 1761221700584,
+    "hash": "17f233b1e3bcc60cfab4e8348bbc8e71148f4c52443443031f59e01138eb0841"
   }
 ];
