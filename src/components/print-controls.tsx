@@ -20,7 +20,7 @@ export function PrintControls({
 		<div className="print:hidden bg-accent p-4 border-1 border- rounded-t-md">
 			<div className="max-w-4xl mx-auto flex items-center justify-between">
 				{showBack && onBack && (
-					<Button variant="outline"  onClick={onBack}>
+					<Button variant="outline" onClick={onBack}>
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back
 					</Button>

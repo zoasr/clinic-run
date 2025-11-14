@@ -44,7 +44,7 @@ interface PatientDetailProps {
 	onEdit: (patient: Patient) => void;
 }
 
-export function PatientDetail({ patient, onBack, onEdit }: PatientDetailProps) {
+export function PatientDetail({ patient, onBack }: PatientDetailProps) {
 	const { data: appointments = [], isLoading: isLoadingAppointments } =
 		usePatientAppointments(patient?.id ?? 0);
 	const { data: medicalRecords = [], isLoading: isLoadingRecords } =

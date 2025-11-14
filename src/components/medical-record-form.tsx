@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import { ArrowLeft, User } from "lucide-react";
 import { useState } from "react";
@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { usePatient } from "@/hooks/usePatients";
-import { type MedicalRecord, Patient } from "@/lib/schema-types";
+import type { MedicalRecord } from "@/lib/schema-types";
 import type { AppRouter } from "@/lib/trpc";
 import { trpc } from "@/lib/trpc-client";
 import DoctorsDialog from "./search-doctors-dialog";

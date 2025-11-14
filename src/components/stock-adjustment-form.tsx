@@ -2,7 +2,6 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import { ArrowLeft, Package } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -494,7 +493,7 @@ export function StockAdjustmentForm({
 					</Button>
 					<form.Field
 						name="adjustmentQuantity"
-						children={(field) => (
+						children={(_field) => (
 							<form.Subscribe
 								selector={(state) => ({
 									adjustmentType: state.values.adjustmentType,

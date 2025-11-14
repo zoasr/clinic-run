@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import $ from "currency-symbol-map";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -61,6 +61,12 @@ interface SystemSettingsFormProps {
 }
 
 const currencies = Intl.supportedValuesOf("currency");
+const getDisplayName = (currency: string) => {
+	const dsiplayName = new Intl.DisplayNames(["en"], {
+		type: "currency",
+	}).of(currency);
+	return dsiplayName;
+};
 
 const CurrencySelector = ({
 	onChange,
@@ -71,13 +77,6 @@ const CurrencySelector = ({
 }) => {
 	const [open, setOpen] = useState(false);
 	const [currencyValue, setCurrencyValue] = useState(value || "USD");
-
-	const getDisplayName = (currency: string) => {
-		const dsiplayName = new Intl.DisplayNames(["en"], {
-			type: "currency",
-		}).of(currency);
-		return dsiplayName;
-	};
 
 	const currencyItems = useMemo(() => {
 		return currencies.map((c) => {
@@ -103,7 +102,7 @@ const CurrencySelector = ({
 				</CommandItem>
 			);
 		});
-	}, []);
+	}, [onChange, value]);
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
@@ -137,9 +136,12 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
-	const getByKey = (key: string) => {
-		return settings.find((s) => s.key === key)?.value;
-	};
+	const getByKey = useCallback(
+		(key: string) => {
+			return settings.find((s) => s.key === key)?.value;
+		},
+		[settings],
+	);
 
 	// Convert settings array to form object
 	const initialValues = useMemo(() => {
@@ -178,7 +180,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 				}
 			});
 		return formData;
-	}, [settings]);
+	}, [settings, getByKey]);
 
 	// Group settings by category
 	const groupedSettings = useMemo(() => {

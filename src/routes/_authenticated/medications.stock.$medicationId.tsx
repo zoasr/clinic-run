@@ -19,11 +19,9 @@ function RouteComponent() {
 	);
 	if (!medication)
 		return (
-			<>
-				<section className="flex items-center justify-center h-screen">
-					<h1 className="text-2xl font-bold">Medication not found</h1>
-				</section>
-			</>
+			<section className="flex items-center justify-center h-screen">
+				<h1 className="text-2xl font-bold">Medication not found</h1>
+			</section>
 		);
 	return (
 		<StockAdjustmentForm

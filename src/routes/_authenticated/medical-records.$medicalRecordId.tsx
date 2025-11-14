@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { MedicalRecordDetail } from "@/components/medical-record-detail";
-import { MedicalRecordForm } from "@/components/medical-record-form";
 import { PageLoading } from "@/components/ui/loading";
 import { trpc } from "@/lib/trpc-client";
 

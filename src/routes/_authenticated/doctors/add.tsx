@@ -39,7 +39,7 @@ function AddUserComponent() {
 	const queryClient = useQueryClient();
 	const doctorsKey = trpc.users.getByRole.queryKey();
 
-	const { mutate, isPending, error } = useMutation(
+	const { mutate, error } = useMutation(
 		trpc.users.create.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({ queryKey: doctorsKey });

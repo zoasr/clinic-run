@@ -14,7 +14,9 @@
 			"!**/package.json",
 			"!**/*.json",
 			"!**/routeTree.gen.ts",
-			"!**/dist"
+			"!**/dist",
+			"!**/*.css",
+			"!src/components/ui/**.*"
 		]
 	},
 	"formatter": {
@@ -29,7 +31,8 @@
 				"useLiteralKeys": "off"
 			},
 			"suspicious": {
-				"noArrayIndexKey": "off"
+				"noArrayIndexKey": "off",
+				"noExplicitAny": "off"
 			},
 			"correctness": {
 				"useUniqueElementIds": "off",

@@ -45,9 +45,7 @@ export function LabTestForm({ labTest, onSave, onCancel }: LabTestFormProps) {
 	const queryClient = useQueryClient();
 	const { user } = useAuth();
 
-	const { data: patient, isLoading: patientLoading } = usePatient(
-		labTest?.patientId || 0,
-	);
+	const { data: patient } = usePatient(labTest?.patientId || 0);
 
 	const defaultValues: LabTestFormValues = {
 		patientId: labTest?.patientId ?? 0,

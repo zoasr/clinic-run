@@ -175,7 +175,7 @@ export function InvoiceManagement() {
 					{!!invoices &&
 						invoices?.map((invoice: Invoice) => {
 							if (!invoice) return null;
-							const StatusIcon = getStatusIcon(invoice.status);
+							const _StatusIcon = getStatusIcon(invoice.status);
 							const statusColor = getStatusColor(invoice.status);
 							const isOverdue = invoice.status === "overdue";
 							const isPending = invoice.status === "pending";

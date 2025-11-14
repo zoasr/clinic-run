@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import z from "zod";
 import { trpc } from "@/lib/trpc-client";
 
@@ -59,7 +59,7 @@ export const systemSettingsSchema = z.object({
 function useSettings(options?: {
 	includePrivate?: boolean;
 }): UseSettingsReturn {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const includePrivate = options?.includePrivate ?? false;
 
 	const queryOptions = includePrivate
@@ -86,7 +86,7 @@ function useSettings(options?: {
 			const value = getSetting(key);
 			if (value === undefined) return undefined;
 			const num = parseInt(value, 10);
-			return isNaN(num) ? undefined : num;
+			return Number.isNaN(num) ? undefined : num;
 		},
 		[getSetting],
 	);
@@ -122,7 +122,7 @@ export function useSessionTimeout(): number {
 			const value = getSetting(key);
 			if (value === undefined) return undefined;
 			const num = parseInt(value, 10);
-			return isNaN(num) ? undefined : num;
+			return Number.isNaN(num) ? undefined : num;
 		};
 
 		return getSettingAsNumber("session_timeout") || 30;
@@ -183,7 +183,7 @@ export function useSecuritySettings() {
 			const value = getSetting(key);
 			if (value === undefined) return undefined;
 			const num = parseInt(value, 10);
-			return isNaN(num) ? undefined : num;
+			return Number.isNaN(num) ? undefined : num;
 		};
 
 		return {
@@ -210,7 +210,7 @@ export function useNotificationSettings() {
 			const value = getSetting(key);
 			if (value === undefined) return undefined;
 			const num = parseInt(value, 10);
-			return isNaN(num) ? undefined : num;
+			return Number.isNaN(num) ? undefined : num;
 		};
 
 		return {

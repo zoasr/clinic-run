@@ -718,7 +718,9 @@ export function InventoryManagement() {
 												return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
 											})
 											.map((medication) => {
-												const expiry = new Date(medication.expiryDate!);
+												const expiry = new Date(
+													medication.expiryDate || "12-12-2030",
+												);
 												const today = new Date();
 												const daysUntilExpiry = Math.ceil(
 													(expiry.getTime() - today.getTime()) /

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: databse inserts will always return with an id */
 import { eq } from "drizzle-orm";
 import { auth } from "../auth";
 import { db } from "./index";

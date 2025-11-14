@@ -354,7 +354,9 @@ export function ReportsDashboard() {
 									</CardDescription>
 								</div>
 								<Button asChild>
-									<Link to="/reports/inventory">Detailed inventory reports</Link>
+									<Link to="/reports/inventory">
+										Detailed inventory reports
+									</Link>
 								</Button>
 							</div>
 						</CardHeader>

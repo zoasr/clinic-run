@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
 	Building2,
 	Edit,
@@ -21,7 +21,6 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -45,7 +44,7 @@ export function SupplierManagement() {
 	} = useQuery(trpc.medicationSuppliers.getAll.queryOptions());
 
 	// Mutation for deleting suppliers
-	const { mutate: deleteSupplier, isPending: isDeleting } = useDeleteSupplier({
+	const { mutate: deleteSupplier } = useDeleteSupplier({
 		onSuccess: () => {
 			toast.success("Supplier deleted successfully");
 			refetch();
@@ -227,6 +226,6 @@ export function SupplierManagement() {
 	);
 }
 
-function RouteComponent() {
+function _RouteComponent() {
 	return <SupplierManagement />;
 }
