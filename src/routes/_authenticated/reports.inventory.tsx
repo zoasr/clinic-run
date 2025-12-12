@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, TrendingUp } from "lucide-react";
 import { useState } from "react";
@@ -98,7 +98,7 @@ function RouteComponent() {
 				(med.quantity || 0) > 0,
 		).length || 0;
 
-	const outOfStockCount =
+	const _outOfStockCount =
 		inventoryData?.data?.filter((med) => (med.quantity || 0) === 0).length || 0;
 
 	const expiringSoonCount =
@@ -188,14 +188,19 @@ function RouteComponent() {
 					<CardTitle>Stock Usage Trends</CardTitle>
 					<div className="flex gap-4">
 						<div className="space-y-2">
-							<label className="text-sm font-medium">Select Medication</label>
+							<label
+								htmlFor="medication-selector"
+								className="text-sm font-medium"
+							>
+								Select Medication
+							</label>
 							<Select
 								value={selectedMedicationId?.toString() || ""}
 								onValueChange={(value) =>
 									setSelectedMedicationId(value ? parseInt(value) : null)
 								}
 							>
-								<SelectTrigger className="w-64">
+								<SelectTrigger id="medication-selector" className="w-64">
 									<SelectValue placeholder="Choose a medication" />
 								</SelectTrigger>
 								<SelectContent>
@@ -208,9 +213,11 @@ function RouteComponent() {
 							</Select>
 						</div>
 						<div className="space-y-2">
-							<label className="text-sm font-medium">Time Period</label>
+							<label htmlFor="time-period" className="text-sm font-medium">
+								Time Period
+							</label>
 							<Select value={reportPeriod} onValueChange={setReportPeriod}>
-								<SelectTrigger className="w-32">
+								<SelectTrigger id="time-period" className="w-32">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: databse inserts will always return with an id */
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin as adminPlugin } from "better-auth/plugins";

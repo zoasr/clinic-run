@@ -3,9 +3,7 @@ import { cva } from "class-variance-authority";
 import {
 	Activity,
 	Calendar,
-	ChevronDown,
 	ChevronsUpDown,
-	ChevronUp,
 	ClipboardList,
 	FileText,
 	Home,
@@ -19,7 +17,7 @@ import {
 	User,
 	Users,
 } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

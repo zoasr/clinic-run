@@ -217,7 +217,7 @@ export function DashboardPage() {
 
 	const getStockStatus = () => {
 		if (!stats) return "Loading...";
-		const total = stats.totalMedications;
+		const _total = stats.totalMedications;
 		const low = stats.lowStockMedications;
 		const out = stats.outOfStockMedications;
 		if (out > 0) return `${out} out of stock`;
@@ -228,7 +228,7 @@ export function DashboardPage() {
 	const getOutOfStockStatus = () => {
 		if (!stats) return "Loading...";
 		const outOfStock = stats.outOfStockMedications;
-		const total = stats.totalMedications;
+		const _total = stats.totalMedications;
 		if (outOfStock === 0) return "All stocked";
 		return `${outOfStock} items unavailable`;
 	};

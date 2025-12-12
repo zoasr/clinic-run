@@ -292,224 +292,218 @@ export function LabTestManagement() {
 						</Card>
 					) : (
 						<div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
-							{labTests &&
-								labTests?.map((labTest) => {
-									const statusInfo = getStatusInfo(labTest.status);
-									const urgencyStatus = getUrgencyStatus(labTest);
-									const StatusIcon = statusInfo.icon;
-									const isUrgent =
-										urgencyStatus && urgencyStatus.status === "urgent";
-									const isPending =
-										urgencyStatus && urgencyStatus.status === "pending";
+							{labTests?.map((labTest) => {
+								const statusInfo = getStatusInfo(labTest.status);
+								const urgencyStatus = getUrgencyStatus(labTest);
+								const _StatusIcon = statusInfo.icon;
+								const isUrgent =
+									urgencyStatus && urgencyStatus.status === "urgent";
+								const isPending =
+									urgencyStatus && urgencyStatus.status === "pending";
 
-									return (
-										<Card
-											key={labTest.id}
-											className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20 ${
-												isUrgent
-													? " bg-red-100/30 dark:bg-red-800/10"
-													: isPending
-														? "bg-orange-100/30 dark:bg-orange-800/10"
-														: ""
-											}`}
-										>
-											<CardContent className="flex flex-col items-center justify-between h-full *:w-full">
-												{/* Header */}
-												<div className="flex items-start justify-between mb-4">
-													<div className="flex items-center gap-3 flex-1">
-														<div className="relative">
-															<div
-																className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-																	isUrgent
-																		? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-																		: isPending
-																			? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
-																			: "bg-primary/20 text-primary group-hover:bg-primary/30"
-																}`}
-															>
-																<TestTube className="h-6 w-6" />
-															</div>
-															{isUrgent && (
-																<div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-																	<span className="text-xs text-white font-bold">
-																		!
-																	</span>
-																</div>
-															)}
-														</div>
-														<div className="flex-1 min-w-0">
-															<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-																{labTest.testName}
-															</h3>
-															<p className="text-sm text-muted-foreground truncate">
-																{labTest.patient?.firstName}{" "}
-																{labTest.patient?.lastName}
-															</p>
-														</div>
-													</div>
-													<div className="flex flex-col gap-1">
-														<Badge
-															className={`${statusInfo.color} border-0 text-xs`}
+								return (
+									<Card
+										key={labTest.id}
+										className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary/20 ${
+											isUrgent
+												? " bg-red-100/30 dark:bg-red-800/10"
+												: isPending
+													? "bg-orange-100/30 dark:bg-orange-800/10"
+													: ""
+										}`}
+									>
+										<CardContent className="flex flex-col items-center justify-between h-full *:w-full">
+											{/* Header */}
+											<div className="flex items-start justify-between mb-4">
+												<div className="flex items-center gap-3 flex-1">
+													<div className="relative">
+														<div
+															className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+																isUrgent
+																	? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+																	: isPending
+																		? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+																		: "bg-primary/20 text-primary group-hover:bg-primary/30"
+															}`}
 														>
-															{statusInfo.status}
-														</Badge>
-														{urgencyStatus &&
-															urgencyStatus.status !== "recent" && (
-																<Badge
-																	className={`${urgencyStatus.color} border-0 text-xs`}
-																>
-																	{urgencyStatus.status}
-																</Badge>
-															)}
+															<TestTube className="h-6 w-6" />
+														</div>
+														{isUrgent && (
+															<div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+																<span className="text-xs text-white font-bold">
+																	!
+																</span>
+															</div>
+														)}
+													</div>
+													<div className="flex-1 min-w-0">
+														<h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+															{labTest.testName}
+														</h3>
+														<p className="text-sm text-muted-foreground truncate">
+															{labTest.patient?.firstName}{" "}
+															{labTest.patient?.lastName}
+														</p>
 													</div>
 												</div>
+												<div className="flex flex-col gap-1">
+													<Badge
+														className={`${statusInfo.color} border-0 text-xs`}
+													>
+														{statusInfo.status}
+													</Badge>
+													{urgencyStatus &&
+														urgencyStatus.status !== "recent" && (
+															<Badge
+																className={`${urgencyStatus.color} border-0 text-xs`}
+															>
+																{urgencyStatus.status}
+															</Badge>
+														)}
+												</div>
+											</div>
 
-												{/* Key Information Grid */}
-												<div className="grid grid-cols-2 gap-4 mb-4">
-													{/* Test Type */}
-													<div className="space-y-1">
-														<p className="text-xs text-muted-foreground">
-															Test Type
-														</p>
-														<p className="text-sm font-medium">
-															{labTest.testType}
-														</p>
-													</div>
-
-													{/* Order Date */}
-													<div className="space-y-1">
-														<p className="text-xs text-muted-foreground">
-															Ordered
-														</p>
-														<p className="text-sm font-medium">
-															{new Date(labTest.orderDate).toLocaleDateString()}
-														</p>
-													</div>
-
-													{/* Doctor */}
-													<div className="space-y-1">
-														<p className="text-xs text-muted-foreground">
-															Doctor
-														</p>
-														<p className="text-sm font-medium">
-															Dr. {labTest.doctor?.firstName}{" "}
-															{labTest.doctor?.lastName}
-														</p>
-													</div>
-
-													{/* Completed Date */}
-													{labTest.completedDate && (
-														<div className="space-y-1">
-															<p className="text-xs text-muted-foreground">
-																Completed
-															</p>
-															<p className="text-sm font-medium">
-																{new Date(
-																	labTest.completedDate,
-																).toLocaleDateString()}
-															</p>
-														</div>
-													)}
+											{/* Key Information Grid */}
+											<div className="grid grid-cols-2 gap-4 mb-4">
+												{/* Test Type */}
+												<div className="space-y-1">
+													<p className="text-xs text-muted-foreground">
+														Test Type
+													</p>
+													<p className="text-sm font-medium">
+														{labTest.testType}
+													</p>
 												</div>
 
-												{/* Results Preview */}
-												{labTest.results && (
-													<div className="space-y-2 mb-4 pt-3 border-t border-border/50">
-														<div className="flex justify-between items-center">
-															<span className="text-xs text-muted-foreground">
-																Results
-															</span>
-															<span className="text-sm line-clamp-2">
-																{labTest.results.length > 50
-																	? `${labTest.results.substring(0, 50)}...`
-																	: labTest.results}
-															</span>
-														</div>
+												{/* Order Date */}
+												<div className="space-y-1">
+													<p className="text-xs text-muted-foreground">
+														Ordered
+													</p>
+													<p className="text-sm font-medium">
+														{new Date(labTest.orderDate).toLocaleDateString()}
+													</p>
+												</div>
+
+												{/* Doctor */}
+												<div className="space-y-1">
+													<p className="text-xs text-muted-foreground">
+														Doctor
+													</p>
+													<p className="text-sm font-medium">
+														Dr. {labTest.doctor?.firstName}{" "}
+														{labTest.doctor?.lastName}
+													</p>
+												</div>
+
+												{/* Completed Date */}
+												{labTest.completedDate && (
+													<div className="space-y-1">
+														<p className="text-xs text-muted-foreground">
+															Completed
+														</p>
+														<p className="text-sm font-medium">
+															{new Date(
+																labTest.completedDate,
+															).toLocaleDateString()}
+														</p>
 													</div>
 												)}
+											</div>
 
-												{/* Metadata */}
-												<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
-													<span>
-														Ordered{" "}
-														{new Date(labTest.createdAt).toLocaleDateString()}
-													</span>
-													{labTest.updatedAt !== labTest.createdAt && (
-														<span>
-															Updated{" "}
-															{new Date(labTest.updatedAt).toLocaleDateString()}
+											{/* Results Preview */}
+											{labTest.results && (
+												<div className="space-y-2 mb-4 pt-3 border-t border-border/50">
+													<div className="flex justify-between items-center">
+														<span className="text-xs text-muted-foreground">
+															Results
 														</span>
-													)}
+														<span className="text-sm line-clamp-2">
+															{labTest.results.length > 50
+																? `${labTest.results.substring(0, 50)}...`
+																: labTest.results}
+														</span>
+													</div>
 												</div>
+											)}
 
-												{/* Actions */}
-												<div className="flex items-center gap-2 pt-4 mt-4 border-t border-border/50">
-													<Link
-														to={`/lab-tests/$labTestId`}
-														params={{
-															labTestId: labTest.id.toString(),
-														}}
-														className="flex-1"
-													>
-														<Button size="sm" className="w-full transition-all">
-															View Details
-														</Button>
-													</Link>
-													<Link
-														to={`/lab-tests/edit/$labTestId`}
-														params={{
-															labTestId: labTest.id.toString(),
-														}}
-													>
+											{/* Metadata */}
+											<div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
+												<span>
+													Ordered{" "}
+													{new Date(labTest.createdAt).toLocaleDateString()}
+												</span>
+												{labTest.updatedAt !== labTest.createdAt && (
+													<span>
+														Updated{" "}
+														{new Date(labTest.updatedAt).toLocaleDateString()}
+													</span>
+												)}
+											</div>
+
+											{/* Actions */}
+											<div className="flex items-center gap-2 pt-4 mt-4 border-t border-border/50">
+												<Link
+													to={`/lab-tests/$labTestId`}
+													params={{
+														labTestId: labTest.id.toString(),
+													}}
+													className="flex-1"
+												>
+													<Button size="sm" className="w-full transition-all">
+														View Details
+													</Button>
+												</Link>
+												<Link
+													to={`/lab-tests/edit/$labTestId`}
+													params={{
+														labTestId: labTest.id.toString(),
+													}}
+												>
+													<Button variant="outline" className="transition-all">
+														Edit Test
+													</Button>
+												</Link>
+												<AlertDialog>
+													<AlertDialogTrigger asChild>
 														<Button
-															variant="outline"
-															className="transition-all"
+															variant="destructive"
+															size="sm"
+															disabled={isDeleting}
 														>
-															Edit Test
+															<Trash2 className="h-4 w-4" />
 														</Button>
-													</Link>
-													<AlertDialog>
-														<AlertDialogTrigger asChild>
-															<Button
-																variant="destructive"
-																size="sm"
-																disabled={isDeleting}
+													</AlertDialogTrigger>
+													<AlertDialogContent>
+														<AlertDialogHeader>
+															<AlertDialogTitle>
+																Delete Lab Test
+															</AlertDialogTitle>
+															<AlertDialogDescription>
+																Are you sure you want to delete this lab test
+																&quot;
+																{labTest.testName}
+																&quot; for {labTest.patient?.firstName}{" "}
+																{labTest.patient?.lastName}? This action cannot
+																be undone.
+															</AlertDialogDescription>
+														</AlertDialogHeader>
+														<AlertDialogFooter>
+															<AlertDialogCancel>Cancel</AlertDialogCancel>
+															<AlertDialogAction
+																onClick={() => handleDeleteLabTest(labTest.id)}
+																asChild
 															>
-																<Trash2 className="h-4 w-4" />
-															</Button>
-														</AlertDialogTrigger>
-														<AlertDialogContent>
-															<AlertDialogHeader>
-																<AlertDialogTitle>
-																	Delete Lab Test
-																</AlertDialogTitle>
-																<AlertDialogDescription>
-																	Are you sure you want to delete this lab test
-																	&quot;
-																	{labTest.testName}
-																	&quot; for {labTest.patient?.firstName}{" "}
-																	{labTest.patient?.lastName}? This action
-																	cannot be undone.
-																</AlertDialogDescription>
-															</AlertDialogHeader>
-															<AlertDialogFooter>
-																<AlertDialogCancel>Cancel</AlertDialogCancel>
-																<AlertDialogAction
-																	onClick={() =>
-																		handleDeleteLabTest(labTest.id)
-																	}
-																	asChild
-																>
-																	<Button variant="destructive">Delete</Button>
-																</AlertDialogAction>
-															</AlertDialogFooter>
-														</AlertDialogContent>
-													</AlertDialog>
-												</div>
-											</CardContent>
-										</Card>
-									);
-								})}
+																<Button variant="destructive">Delete</Button>
+															</AlertDialogAction>
+														</AlertDialogFooter>
+													</AlertDialogContent>
+												</AlertDialog>
+											</div>
+										</CardContent>
+									</Card>
+								);
+							})}
 						</div>
 					)}
 					{/* Load More Section */}

@@ -150,7 +150,7 @@ export function PrescriptionManagement() {
 				<div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 					{prescriptions?.map((prescription: Prescription) => {
 						if (!prescription) return null;
-						const StatusIcon = getStatusIcon(prescription.isDispensed);
+						const _StatusIcon = getStatusIcon(prescription.isDispensed);
 						const isPending = !prescription.isDispensed;
 						const isDispensed = prescription.isDispensed;
 

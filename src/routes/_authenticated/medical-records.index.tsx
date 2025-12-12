@@ -242,7 +242,10 @@ function MedicalRecordsPage() {
 											</Link>
 										</TableCell>
 										<TableCell>
-											<div onClick={(e) => e.stopPropagation()}>
+											<button
+												type="button"
+												onClick={(e) => e.stopPropagation()}
+											>
 												<AlertDialog>
 													<AlertDialogTrigger asChild>
 														<Button
@@ -277,7 +280,7 @@ function MedicalRecordsPage() {
 														</AlertDialogFooter>
 													</AlertDialogContent>
 												</AlertDialog>
-											</div>
+											</button>
 										</TableCell>
 									</TableRow>
 								))}

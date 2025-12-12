@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import $ from "currency-symbol-map";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -61,6 +61,12 @@ interface SystemSettingsFormProps {
 }
 
 const currencies = Intl.supportedValuesOf("currency");
+const getDisplayName = (currency: string) => {
+	const dsiplayName = new Intl.DisplayNames(["en"], {
+		type: "currency",
+	}).of(currency);
+	return dsiplayName;
+};
 
 const CurrencySelector = ({
 	onChange,
@@ -71,13 +77,6 @@ const CurrencySelector = ({
 }) => {
 	const [open, setOpen] = useState(false);
 	const [currencyValue, setCurrencyValue] = useState(value || "USD");
-
-	const getDisplayName = (currency: string) => {
-		const dsiplayName = new Intl.DisplayNames(["en"], {
-			type: "currency",
-		}).of(currency);
-		return dsiplayName;
-	};
 
 	const currencyItems = useMemo(() => {
 		return currencies.map((c) => {
@@ -103,7 +102,7 @@ const CurrencySelector = ({
 				</CommandItem>
 			);
 		});
-	}, []);
+	}, [onChange, value]);
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
@@ -137,9 +136,12 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
-	const getByKey = (key: string) => {
-		return settings.find((s) => s.key === key)?.value;
-	};
+	const getByKey = useCallback(
+		(key: string) => {
+			return settings.find((s) => s.key === key)?.value;
+		},
+		[settings],
+	);
 
 	// Convert settings array to form object
 	const initialValues = useMemo(() => {
@@ -157,8 +159,8 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			compact_mode: Boolean(getByKey("compact_mode")) || false,
 			// Inventory alert settings
 			low_stock_alert_threshold:
-				Number(getByKey("low_stock_alert_threshold")) || 10,
-			expiry_alert_days: Number(getByKey("expiry_alert_days")) || 30,
+				parseInt(getByKey("low_stock_alert_threshold") || "10"),
+			expiry_alert_days: parseInt(getByKey("expiry_alert_days") || "30"),
 		};
 
 		const parsed = systemSettingsSchema.safeParse(formData);
@@ -173,12 +175,16 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					case "compact_mode":
 						formData[setting.key] = setting.value === "true";
 						break;
+					case "low_stock_alert_threshold":
+					case "expiry_alert_days":
+						formData[setting.key] = parseInt(setting.value) || 10;
+						break;
 					default:
 						formData[setting.key] = setting.value;
 				}
 			});
 		return formData;
-	}, [settings]);
+	}, [settings, getByKey]);
 
 	// Group settings by category
 	const groupedSettings = useMemo(() => {
@@ -581,7 +587,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 										<Input
 											id={field.name}
 											type="number"
-											value={field.state.value || ""}
+											value={Number(field.state.value) || 10}
 											onChange={(e) =>
 												field.handleChange(parseInt(e.target.value) || 0)
 											}
@@ -611,11 +617,11 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 										<Input
 											id={field.name}
 											type="number"
-											value={field.state.value || ""}
+											value={Number(field.state.value) || 30}
 											onChange={(e) =>
 												field.handleChange(parseInt(e.target.value) || 0)
 											}
-											min="1"
+											min={1}
 											placeholder="30"
 										/>
 										<p className="text-sm text-muted-foreground">

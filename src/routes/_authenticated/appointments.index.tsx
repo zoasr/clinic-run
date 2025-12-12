@@ -52,7 +52,7 @@ const AppointmentCard = memo(
 		appointment: Appointment;
 		refetch: () => void;
 	}) => {
-		const navigate = Route.useNavigate();
+		const _navigate = Route.useNavigate();
 
 		// Mutation for updating appointment status
 		const { mutate: updateStatus, isPending: isUpdating } =
@@ -100,7 +100,7 @@ const AppointmentCard = memo(
 		const appointmentDate = new Date(appointment.appointmentDate);
 		const isToday =
 			appointmentDate.toDateString() === new Date().toDateString();
-		const isPast = appointmentDate < new Date();
+		const _isPast = appointmentDate < new Date();
 
 		const getStatusColor = (status: string) => {
 			switch (status) {

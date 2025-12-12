@@ -3,7 +3,6 @@ import ErrorComponent from "@/components/error";
 import { InvoicePrintTemplate } from "@/components/invoice-print-template";
 import { PrintControls } from "@/components/print-controls";
 import { PageLoading } from "@/components/ui/loading";
-import { useInvoice } from "@/hooks/useInvoices";
 import { trpcClient } from "@/lib/trpc-client";
 
 export const Route = createFileRoute(

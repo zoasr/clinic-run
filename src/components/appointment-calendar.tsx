@@ -1,5 +1,4 @@
 import {
-	ArrowDownIcon,
 	Calendar,
 	ChevronDownCircle,
 	ChevronLeft,
