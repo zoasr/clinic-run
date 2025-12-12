@@ -159,8 +159,8 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 			compact_mode: Boolean(getByKey("compact_mode")) || false,
 			// Inventory alert settings
 			low_stock_alert_threshold:
-				Number(getByKey("low_stock_alert_threshold")) || 10,
-			expiry_alert_days: Number(getByKey("expiry_alert_days")) || 30,
+				parseInt(getByKey("low_stock_alert_threshold") || "10"),
+			expiry_alert_days: parseInt(getByKey("expiry_alert_days") || "30"),
 		};
 
 		const parsed = systemSettingsSchema.safeParse(formData);
@@ -174,6 +174,10 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 					case "sidebar_collapsed":
 					case "compact_mode":
 						formData[setting.key] = setting.value === "true";
+						break;
+					case "low_stock_alert_threshold":
+					case "expiry_alert_days":
+						formData[setting.key] = parseInt(setting.value) || 10;
 						break;
 					default:
 						formData[setting.key] = setting.value;
@@ -583,7 +587,7 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 										<Input
 											id={field.name}
 											type="number"
-											value={field.state.value || ""}
+											value={Number(field.state.value) || 10}
 											onChange={(e) =>
 												field.handleChange(parseInt(e.target.value) || 0)
 											}
@@ -613,11 +617,11 @@ export function SystemSettingsForm({ settings }: SystemSettingsFormProps) {
 										<Input
 											id={field.name}
 											type="number"
-											value={field.state.value || ""}
+											value={Number(field.state.value) || 30}
 											onChange={(e) =>
 												field.handleChange(parseInt(e.target.value) || 0)
 											}
-											min="1"
+											min={1}
 											placeholder="30"
 										/>
 										<p className="text-sm text-muted-foreground">

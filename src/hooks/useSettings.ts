@@ -47,8 +47,6 @@ export const systemSettingsSchema = z.object({
 		.number()
 		.min(0, "Threshold must be non-negative"),
 	expiry_alert_days: z.number().min(1, "Must be at least 1 day"),
-	email_notifications: z.boolean(),
-	sms_notifications: z.boolean(),
 });
 
 /**
