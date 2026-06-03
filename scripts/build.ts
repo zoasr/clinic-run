@@ -1,9 +1,39 @@
 import { platform } from "node:os";
 import { $, type BuildConfig } from "bun";
+import { existsSync } from "node:fs";
 
 $.env({ ...process.env });
 // Ensure production mode across child processes
 process.env.NODE_ENV = "production";
+
+const colors = {
+	reset: "\x1b[0m",
+	green: "\x1b[32m",
+	blue: "\x1b[34m",
+	yellow: "\x1b[33m",
+	red: "\x1b[31m",
+	cyan: "\x1b[36m",
+};
+
+function log(message: string, color: string = colors.reset) {
+	console.log(`${color}${message}${colors.reset}`);
+}
+
+function success(message: string) {
+	log(`[SUCCESS] ${message}`, colors.green);
+}
+
+function info(message: string) {
+	log(`[INFO] ${message}`, colors.blue);
+}
+
+function warn(message: string) {
+	log(`[WARN] ${message}`, colors.yellow);
+}
+
+function error(message: string) {
+	log(`[ERROR] ${message}`, colors.red);
+}
 
 const supportedPlatforms = ["win32", "darwin", "linux"];
 
@@ -15,17 +45,17 @@ const isWindows = currentPlatform === "win32";
 const isLinux = currentPlatform === "linux";
 const isMacOS = currentPlatform === "darwin";
 
-console.log(`Building tRPC...`);
+info("Building tRPC...");
 await $`bun --cwd=./lib run build`;
 
-console.log(`Building client...`);
+info("Building client...");
 await $`bun vite build`;
 
-console.log(`Running database migrations & seeds...`);
+info("Running database migrations & seeds...");
 await $`bun run db:migrate`;
 await $`bun run db:seed`;
 
-console.log(`Building server executable for ${currentPlatform}...`);
+info(`Building server executable for ${currentPlatform}...`);
 
 let target: Bun.Build.Target = "bun-windows-x64";
 if (isWindows) {
@@ -35,6 +65,24 @@ if (isWindows) {
 } else if (isMacOS) {
 	target = "bun-darwin-x64";
 }
+// Embed systray native binary into the executable via define
+const trayBinName = isWindows
+	? "tray_windows_release.exe"
+	: isLinux
+		? "tray_linux_release"
+		: "tray_darwin_release";
+const trayBinPath = `./node_modules/systray/traybin/${trayBinName}`;
+const define: Record<string, string> = {};
+if (existsSync(trayBinPath)) {
+	const trayBuffer = await Bun.file(trayBinPath).arrayBuffer();
+	const trayBinBase64 = Buffer.from(trayBuffer).toString("base64");
+	define["process.env.__TRAY_BIN_DATA__"] = JSON.stringify(trayBinBase64);
+	define["process.env.__TRAY_BIN_NAME__"] = JSON.stringify(trayBinName);
+	success(`Tray binary embedded: ${trayBinName} (${trayBuffer.byteLength} bytes)`);
+} else {
+	warn(`Tray binary not found at ${trayBinPath}, systray will be unavailable in compiled build`);
+}
+
 const buildConfig: BuildConfig = {
 	entrypoints: ["./lib/server.ts"],
 	outdir: "./dist",
@@ -42,6 +90,7 @@ const buildConfig: BuildConfig = {
 		target,
 		outfile: isWindows ? "clinic-run.exe" : "clinic-run",
 	},
+	define,
 };
 
 if (isWindows) {
@@ -65,19 +114,15 @@ if (!isWindows) {
 
 await $`cp .env.build ./dist/.env`;
 
-console.log(`\n✅ Build completed successfully!`);
-console.log(
-	`📁 Executable: ./dist/${isWindows ? "clinic-run.exe" : "clinic-run"}`
-);
-console.log(`📊 Platform: ${currentPlatform}`);
+success("Build completed successfully!");
+info(`Executable: ./dist/${isWindows ? "clinic-run.exe" : "clinic-run"}`);
+info(`Platform: ${currentPlatform}`);
 
 if (isWindows) {
-	console.log(
-		`📊 Data Location: User AppData directory (no admin rights required)`
-	);
+	info("Data Location: User AppData directory (no admin rights required)");
 } else {
-	console.log(`📊 Data Location: ~/.local/share/clinic-run (user directory)`);
+	info("Data Location: ~/.local/share/clinic-run (user directory)");
 }
 
-console.log(`💾 Backups: Automatic daily backups in user directory`);
-console.log(`🚀 Ready to run - no installation required!`);
+info("Backups: Automatic daily backups in user directory");
+success("Ready to run - no installation required!");
