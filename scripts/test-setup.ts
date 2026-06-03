@@ -2,27 +2,56 @@
 import { $ } from "bun";
 $.env({ ...process.env });
 
-console.log("🧪 Setting up test environment for Clinic Run...");
+const colors = {
+	reset: "\x1b[0m",
+	green: "\x1b[32m",
+	blue: "\x1b[34m",
+	yellow: "\x1b[33m",
+	red: "\x1b[31m",
+	cyan: "\x1b[36m",
+};
+
+function log(message: string, color: string = colors.reset) {
+	console.log(`${color}${message}${colors.reset}`);
+}
+
+function success(message: string) {
+	log(`[SUCCESS] ${message}`, colors.green);
+}
+
+function info(message: string) {
+	log(`[INFO] ${message}`, colors.blue);
+}
+
+function warn(message: string) {
+	log(`[WARN] ${message}`, colors.yellow);
+}
+
+function error(message: string) {
+	log(`[ERROR] ${message}`, colors.red);
+}
+
+info("Setting up test environment for Clinic Run...");
 
 // Check if required dependencies are installed
 async function checkDependencies() {
-	console.log("📦 Checking dependencies...");
+	info("Checking dependencies...");
 
 	try {
 		// Check if faker is installed
 		await $`bun add @faker-js/faker --dev`.quiet();
-		console.log("✅ Faker.js installed");
-	} catch (error) {
-		console.log("ℹ️  Faker.js already installed or failed to install");
+		success("Faker.js installed");
+	} catch (err) {
+		warn("Faker.js already installed or failed to install");
 	}
 
 	try {
 		// Check if drizzle-kit is available
 		await $`bun x drizzle-kit --version`.quiet();
-		console.log("✅ Drizzle Kit available");
-	} catch (error) {
-		console.log(
-			"❌ Drizzle Kit not found. Please install it globally or ensure it's in your dependencies"
+		success("Drizzle Kit available");
+	} catch (err) {
+		error(
+			"Drizzle Kit not found. Please install it globally or ensure it's in your dependencies"
 		);
 		process.exit(1);
 	}
@@ -30,54 +59,52 @@ async function checkDependencies() {
 
 // Setup test database
 async function setupTestDatabase() {
-	console.log("🗄️  Setting up test database...");
+	info("Setting up test database...");
 
 	try {
 		// Remove existing test database if it exists
 		await $`rm -f clinic-test.db`.quiet();
-		console.log("🗑️  Removed existing test database");
+		success("Removed existing test database");
 
 		// Generate migrations for test database
-		console.log("🔄 Generating test database schema...");
+		info("Generating test database schema...");
 		await $`NODE_ENV=test bun run test:db:generate`;
 
 		// Run migrations for test database
-		console.log("📋 Running test database migrations...");
+		info("Running test database migrations...");
 		await $`NODE_ENV=test bun run test:db:migrate`;
 
-		console.log("✅ Test database setup completed");
-	} catch (error) {
-		console.error("❌ Failed to setup test database:", error);
+		success("Test database setup completed");
+	} catch (err) {
+		error(`Failed to setup test database: ${err}`);
 		process.exit(1);
 	}
 }
 
 // Seed performance data
 async function seedPerformanceData() {
-	console.log("🌱 Seeding performance data...");
+	info("Seeding performance data...");
 
 	try {
-		console.log(
-			"⏳ This may take several minutes depending on your system..."
-		);
+		warn("This may take several minutes depending on your system...");
 		const startTime = Date.now();
 
 		await $`NODE_ENV=test bun run test:db:seed`;
 
 		const endTime = Date.now();
 		const duration = (endTime - startTime) / 1000;
-		console.log(
-			`✅ Performance data seeded in ${duration.toFixed(2)} seconds`
+		success(
+			`Performance data seeded in ${duration.toFixed(2)} seconds`
 		);
-	} catch (error) {
-		console.error("❌ Failed to seed performance data:", error);
+	} catch (err) {
+		error(`Failed to seed performance data: ${err}`);
 		process.exit(1);
 	}
 }
 
 // Display database statistics
 async function displayStats() {
-	console.log("📊 Test Database Statistics:");
+	info("Test Database Statistics:");
 
 	try {
 		// Use sqlite3 to query database stats
@@ -89,7 +116,7 @@ async function displayStats() {
 			.split("\n")
 			.filter((line) => line && !line.includes("name"));
 
-		console.log(`📋 Tables created: ${tables.length}`);
+		info(`Tables created: ${tables.length}`);
 		tables.forEach((table) => console.log(`   - ${table}`));
 
 		// Get record counts for main tables
@@ -101,7 +128,7 @@ async function displayStats() {
 			"invoices",
 			"lab_tests",
 		];
-		console.log("\n📈 Record counts:");
+		info("Record counts:");
 
 		for (const table of mainTables) {
 			try {
@@ -111,7 +138,7 @@ async function displayStats() {
 				console.log(
 					`   - ${table}: ${parseInt(count).toLocaleString()} records`
 				);
-			} catch (error) {
+			} catch (err) {
 				console.log(`   - ${table}: Error getting count`);
 			}
 		}
@@ -120,15 +147,15 @@ async function displayStats() {
 		const sizeResult =
 			await $`ls -lh clinic-test.db | awk '{print $5}'`.quiet();
 		const size = sizeResult.stdout.toString().trim();
-		console.log(`\n💾 Database file size: ${size}`);
-	} catch (error) {
-		console.log("ℹ️  Could not retrieve detailed statistics");
+		info(`Database file size: ${size}`);
+	} catch (err) {
+		warn("Could not retrieve detailed statistics");
 	}
 }
 
 // Main setup function
 async function main() {
-	console.log("🚀 Starting Clinic Run test environment setup...\n");
+	info("Starting Clinic Run test environment setup...\n");
 
 	try {
 		await checkDependencies();
@@ -143,8 +170,8 @@ async function main() {
 		await displayStats();
 		console.log("");
 
-		console.log("🎉 Test environment setup completed successfully!");
-		console.log("\n📝 Available test commands:");
+		success("Test environment setup completed successfully!");
+		info("Available test commands:");
 		console.log(
 			"   bun run test:db:reset    - Reset and reseed test database"
 		);
@@ -152,9 +179,9 @@ async function main() {
 		console.log(
 			"   bun run test:db:seed     - Reseed performance data only"
 		);
-		console.log("\n🔍 Test database location: ./clinic-test.db");
-	} catch (error) {
-		console.error("❌ Test environment setup failed:", error);
+		info("Test database location: ./clinic-test.db");
+	} catch (err) {
+		error(`Test environment setup failed: ${err}`);
 		process.exit(1);
 	}
 }

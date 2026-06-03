@@ -9,6 +9,27 @@
 
 const processes: { name: string; proc: Bun.Subprocess }[] = [];
 
+const colors = {
+	reset: "\x1b[0m",
+	cyan: "\x1b[36m",
+	green: "\x1b[32m",
+	yellow: "\x1b[33m",
+	blue: "\x1b[34m",
+	red: "\x1b[31m",
+};
+
+const processColors: Record<string, string> = {
+	trpc: colors.cyan,
+	vite: colors.green,
+	server: colors.yellow,
+	orchestrator: colors.blue,
+};
+
+function colorLog(name: string, message: string) {
+	const color = processColors[name] || colors.reset;
+	console.log(`${color}[${name}]${colors.reset} ${message}`);
+}
+
 function prefixStream(stream: ReadableStream<Uint8Array> | null, name: string) {
 	if (!stream) return;
 	(async () => {
@@ -21,7 +42,7 @@ function prefixStream(stream: ReadableStream<Uint8Array> | null, name: string) {
 				const text = decoder.decode(value, { stream: true });
 				for (const line of text.split(/\r?\n/)) {
 					if (line.length === 0) continue;
-					console.log(`[${name}] ${line}`);
+					colorLog(name, line);
 				}
 			}
 		} catch (_) {
@@ -52,7 +73,7 @@ async function start(name: string, cmd: string[], cwd?: string) {
 	prefixStream(proc.stderr, name);
 
 	proc.exited.then((code) => {
-		console.log(`[${name}] exited with code ${code}`);
+		colorLog(name, `exited with code ${code}`);
 		// If one dies, stop all
 		shutdown();
 	});
@@ -62,7 +83,7 @@ async function shutdown() {
 	for (const { proc, name } of processes) {
 		try {
 			proc.kill();
-			console.log(`[orchestrator] sent kill to ${name}`);
+			colorLog("orchestrator", `sent kill to ${name}`);
 		} catch (_) {}
 	}
 	// Give some time for processes to exit
@@ -72,7 +93,7 @@ async function shutdown() {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-console.log("[orchestrator] starting Vite and server...");
+colorLog("orchestrator", "starting Vite and server...");
 
 await Promise.all([
 	start("trpc", ["bun", "--cwd=./lib", "run", "dev"], process.cwd()),

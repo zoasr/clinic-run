@@ -212,7 +212,7 @@ Test database location: `./clinic-test.db`
 bun run build
 ```
 
-This creates `./dist/clinic-system.exe` for Windows (for now).
+This creates `./dist/clinic-run.exe` for Windows (for now).
 
 ### Create Windows Installer
 
@@ -220,7 +220,12 @@ This creates `./dist/clinic-system.exe` for Windows (for now).
 bun run create-installer
 ```
 
-Creates a simple `.bat` installer and uninstaller scripts in the `./installer` .
+Creates a professional Windows installer using Inno Setup. Requires Inno Setup to be installed.
+
+**Prerequisites:**
+- Download and install Inno Setup from https://jrsoftware.org/isdl.php
+
+The installer will be created in `./scripts/Output/ClinicRun-Setup.exe`
 
 ## Running the Application
 
