@@ -101,14 +101,9 @@ app.get("/api/health", (c) => {
 // System tray and GUI functionality for desktop app
 async function setupSystemTray() {
 	try {
-		// Only setup system tray in production (desktop app)
-		if (process.env.NODE_ENV === "production") {
-			console.log("Setting up system tray...");
-
-			// Import system tray functionality (will be available in desktop build)
-			const { setupTray } = await import("./system-tray.js");
-			await setupTray(PORT);
-		}
+		// Import system tray functionality
+		const { setupTray } = await import("./system-tray.js");
+		await setupTray(PORT);
 	} catch (_error) {
 		console.log("System tray not available, running in server mode");
 	}

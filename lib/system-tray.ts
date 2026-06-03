@@ -1,10 +1,99 @@
-// import { exec } from "child_process";
-
-import { readdir } from "node:fs/promises";
+import { readdir, mkdir } from "node:fs/promises";
 import path from "node:path";
+import { homedir } from "node:os";
+import { getIconBase64 } from "./icon-utils.js";
+// Use require() for systray to avoid ESM interop issues with Bun's compiled exe
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const SyTray: new (conf: any) => any = require("systray").default;
 
 export async function setupTray(port: number) {
 	const isDev = process.env.NODE_ENV === "development";
+
+	// In compiled mode, extract embedded tray binary to systray cache dir
+	// so SyTray's copyDir: true mechanism finds it before trying to copy
+	// @ts-expect-error - Bun's define replaces process.env.__TRAY_BIN_* at build time
+	const trayBinData = process.env.__TRAY_BIN_DATA__;
+	// @ts-expect-error - Bun's define replaces process.env.__TRAY_BIN_* at build time
+	const trayBinName = process.env.__TRAY_BIN_NAME__;
+	if (trayBinData && trayBinName) {
+		try {
+			const cacheDir = path.join(homedir(), ".cache", "node-systray", "1.0.5");
+			const cachePath = path.join(cacheDir, trayBinName);
+			const exists = await Bun.file(cachePath).exists();
+			if (!exists) {
+				await mkdir(cacheDir, { recursive: true });
+				const decoded = Buffer.from(trayBinData, "base64");
+				await Bun.write(cachePath, decoded);
+			}
+		} catch (error) {
+			console.log("Failed to extract tray binary:", error);
+		}
+	}
+
+	// Setup system tray (works in both dev and production now)
+	try {
+		const iconBase64 = getIconBase64();
+
+		const systray = new SyTray({
+			menu: {
+				icon: iconBase64,
+				title: "Clinic Run",
+				tooltip: "Clinic Run - Running",
+				items: [
+					{
+						title: "Open Clinic Run",
+						tooltip: "Open Clinic Run in browser",
+						checked: false,
+						enabled: true,
+					},
+					{
+						title: "Stop Server",
+						tooltip: "Stop the Clinic Run server",
+						checked: false,
+						enabled: true,
+					},
+					{
+						title: "-",
+						tooltip: "Separator",
+						checked: false,
+						enabled: false,
+					},
+					{
+						title: "Exit",
+						tooltip: "Exit Clinic Run",
+						checked: false,
+						enabled: true,
+					},
+				],
+			},
+			debug: false,
+			copyDir: true,
+		});
+
+		systray.onClick((action: any) => {
+			if (action.seq_id === 0) {
+				// Open Clinic Run in browser
+				Bun.spawn(["cmd", "/c", `start http://localhost:${port}`], {
+					stdout: "pipe",
+					stderr: "pipe",
+				});
+			} else if (action.seq_id === 1) {
+				// Stop server - this will close the tray too
+				console.log("Stopping Clinic Run server...");
+				systray.kill();
+				process.exit(0);
+			} else if (action.seq_id === 3) {
+				// Exit
+				console.log("Exiting Clinic Run...");
+				systray.kill();
+				process.exit(0);
+			}
+		});
+
+		console.log(`System tray initialized (${isDev ? "development" : "production"} mode)`);
+	} catch (error) {
+		console.log("System tray setup failed, continuing without tray:", error);
+	}
 
 	// For Bun executable, we'll use a simpler approach
 	// Open browser automatically when the app starts
